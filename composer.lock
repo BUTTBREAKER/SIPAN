@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b54b5350ca3ddb27ea10678aa806b20e",
+    "content-hash": "064114e4d929a808d706e43db335e610",
     "packages": [
         {
             "name": "flightphp/core",
-            "version": "v3.13.0",
+            "version": "v3.14.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/flightphp/core.git",
-                "reference": "1307e8a39d89fadba69d0c2dad53b6e0da83fd96"
+                "reference": "2762daf4f4725eae784291ac4ef21b04a6863be6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/flightphp/core/zipball/1307e8a39d89fadba69d0c2dad53b6e0da83fd96",
-                "reference": "1307e8a39d89fadba69d0c2dad53b6e0da83fd96",
+                "url": "https://api.github.com/repos/flightphp/core/zipball/2762daf4f4725eae784291ac4ef21b04a6863be6",
+                "reference": "2762daf4f4725eae784291ac4ef21b04a6863be6",
                 "shasum": ""
             },
             "require": {
@@ -76,22 +76,22 @@
             "homepage": "http://flightphp.com",
             "support": {
                 "issues": "https://github.com/flightphp/core/issues",
-                "source": "https://github.com/flightphp/core/tree/v3.13.0"
+                "source": "https://github.com/flightphp/core/tree/v3.14.0"
             },
-            "time": "2024-10-30T19:52:23+00:00"
+            "time": "2025-02-21T17:42:57+00:00"
         },
         {
             "name": "illuminate/container",
-            "version": "v11.30.0",
+            "version": "v11.43.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/container.git",
-                "reference": "06dfc614aff58384b28ba5ad191f6a02d6b192cb"
+                "reference": "4dcc3fcbab92e734fc0c08d9cfd97f5a1aef18ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/container/zipball/06dfc614aff58384b28ba5ad191f6a02d6b192cb",
-                "reference": "06dfc614aff58384b28ba5ad191f6a02d6b192cb",
+                "url": "https://api.github.com/repos/illuminate/container/zipball/4dcc3fcbab92e734fc0c08d9cfd97f5a1aef18ca",
+                "reference": "4dcc3fcbab92e734fc0c08d9cfd97f5a1aef18ca",
                 "shasum": ""
             },
             "require": {
@@ -129,20 +129,20 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2024-10-11T15:30:11+00:00"
+            "time": "2025-02-10T14:20:57+00:00"
         },
         {
             "name": "illuminate/contracts",
-            "version": "v11.30.0",
+            "version": "v11.43.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
-                "reference": "56312862af937bd6da8e6dc8bbd88188dfb478f8"
+                "reference": "b350a3cd8450846325cb49e1cbc1293598b18898"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/contracts/zipball/56312862af937bd6da8e6dc8bbd88188dfb478f8",
-                "reference": "56312862af937bd6da8e6dc8bbd88188dfb478f8",
+                "url": "https://api.github.com/repos/illuminate/contracts/zipball/b350a3cd8450846325cb49e1cbc1293598b18898",
+                "reference": "b350a3cd8450846325cb49e1cbc1293598b18898",
                 "shasum": ""
             },
             "require": {
@@ -177,7 +177,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2024-09-22T15:08:08+00:00"
+            "time": "2025-02-10T14:20:57+00:00"
         },
         {
             "name": "psr/container",
@@ -311,8 +311,8 @@
             "type": "library",
             "extra": {
                 "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
                 }
             },
             "autoload": {
