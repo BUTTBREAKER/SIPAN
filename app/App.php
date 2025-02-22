@@ -4,7 +4,8 @@ namespace SIPAN;
 
 use Flight;
 
-final class App extends Flight {
+final class App extends Flight
+{
   static function renderPage(
     string $pageFileName,
     string $pageTitle,
