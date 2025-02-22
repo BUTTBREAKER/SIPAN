@@ -11,8 +11,8 @@ if (!file_exists('vendor/autoload.php')) {
   html);
 }
 
-require 'vendor/autoload.php';
-require 'app/configs.php';
-require 'app/routes.php';
+require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/app/configs.php';
+require_once __DIR__ . '/app/routes.php';
 
 App::start();
