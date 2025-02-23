@@ -14,7 +14,7 @@ final readonly class LoginController
     App::renderPage('login', 'Iniciar sesión', 'login-layout');
   }
 
-  function handleCredentials(): void
+  function handleCredentials(): never
   {
     $credentials = App::request()->data;
 

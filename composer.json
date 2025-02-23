@@ -25,12 +25,14 @@
       "composer archive"
     ],
     "setup": "php -r \"if (!file_exists('.env.php')) copy('.env.example.php', '.env.php');\"",
-    "test": "phpunit"
+    "test": "phpunit",
+    "rector": "rector"
   },
   "require-dev": {
     "symfony/var-dumper": "^7.1",
     "phpunit/phpunit": "^11.5",
-    "guzzlehttp/guzzle": "^7.9"
+    "guzzlehttp/guzzle": "^7.9",
+    "rector/rector": "^2.0"
   },
   "archive": {
     "name": "SIPAN",

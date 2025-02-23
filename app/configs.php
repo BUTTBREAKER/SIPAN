@@ -21,4 +21,4 @@ $container->singleton(PDO::class, static fn(): PDO => new PDO(
   $_ENV['PDO']['PASSWORD'],
 ));
 
-App::registerContainerHandler([$container, 'get']);
+App::registerContainerHandler($container->get(...));
