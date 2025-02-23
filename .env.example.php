@@ -6,5 +6,6 @@ return [
     'USER' => null,
     'PASSWORD' => null
   ],
-  'TIMEZONE' => 'America/Caracas'
+  'TIMEZONE' => 'America/Caracas',
+  'TEST_ENDPOINT' => 'http://localhost/sipan'
 ];

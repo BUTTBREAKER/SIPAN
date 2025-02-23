@@ -9,6 +9,11 @@
       "SIPAN\\": "app"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests"
+    }
+  },
   "scripts": {
     "dev": [
       "Composer\\Config::disableProcessTimeout",
@@ -19,10 +24,13 @@
       "composer i --no-dev -o",
       "composer archive"
     ],
-    "setup": "php -r \"if (!file_exists('.env.php')) copy('.env.example.php', '.env.php');\""
+    "setup": "php -r \"if (!file_exists('.env.php')) copy('.env.example.php', '.env.php');\"",
+    "test": "phpunit"
   },
   "require-dev": {
-    "symfony/var-dumper": "^7.1"
+    "symfony/var-dumper": "^7.1",
+    "phpunit/phpunit": "^11.5",
+    "guzzlehttp/guzzle": "^7.9"
   },
   "archive": {
     "name": "SIPAN",

@@ -3,7 +3,12 @@
 use Illuminate\Container\Container;
 use SIPAN\App;
 
-$_ENV += require '.env.php';
+$_ENV = array_merge(
+  require __DIR__ . '/../.env.example.php',
+  file_exists(__DIR__ . '/../.env.php')
+    ? require __DIR__ . '/../.env.php'
+    : []
+);
 
 session_start();
 date_default_timezone_set($_ENV['TIMEZONE']);

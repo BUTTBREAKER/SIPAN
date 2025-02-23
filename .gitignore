@@ -2,3 +2,4 @@ vendor
 .env.php
 *.tar
 *.sublime-*
+.phpunit.cache
