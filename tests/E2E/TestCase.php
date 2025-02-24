@@ -3,9 +3,8 @@
 namespace Tests\E2E;
 
 use GuzzleHttp\Client;
-use PHPUnit\Framework\TestCase;
 
-abstract class BaseTest extends TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
   protected readonly Client $client;
   protected readonly string $endpoint;
