@@ -2,8 +2,9 @@
   "require": {
     "php": ">=8.2",
     "flightphp/core": "^3.14",
-    "illuminate/container": "^11.43",
-    "leafs/auth": "^3.4"
+    "illuminate/container": "^12.0",
+    "leafs/auth": "^3.4",
+    "leafs/leaf": "^3.12"
   },
   "autoload": {
     "psr-4": {
@@ -30,7 +31,7 @@
     "rector": "rector"
   },
   "require-dev": {
-    "symfony/var-dumper": "^7.1",
+    "symfony/var-dumper": "^7.2",
     "phpunit/phpunit": "^11.5",
     "guzzlehttp/guzzle": "^7.9",
     "rector/rector": "^2.0"
