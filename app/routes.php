@@ -2,29 +2,26 @@
 
 use SIPAN\App;
 use SIPAN\Controllers\LandingController;
-use SIPAN\Controllers\LoginController;
-use SIPAN\Controllers\RegisterController;
+use SIPAN\Controllers\AuthController;
 use SIPAN\Middlewares\EnsureUserIsLoggedMiddleware;
 use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 
-// Ruta pública para la landing page
+// 📌 Ruta principal (Landing Page)
 App::route('GET /', [LandingController::class, 'showLanding']);
 
-// Grupo para rutas de login (solo si no estás logueado)
+// 📌 Rutas de autenticación
 App::group('/ingresar', function (): void {
-  App::route('GET /', [LoginController::class, 'showLogin']);
-  App::route('POST /', [LoginController::class, 'handleCredentials']);
+    App::route('GET /', function () { App::renderPage('login', 'Iniciar Sesión', 'auth-layout'); });
+    App::route('POST /', [AuthController::class, 'login']);
 }, [EnsureUserIsNotLoggedMiddleware::class]);
 
-// Grupo para el registro (público)
 App::group('/registrarse', function (): void {
-  App::route('GET /', [RegisterController::class, 'showRegister']);
-  App::route('POST /', [RegisterController::class, 'handleRegister']);
-});
+    App::route('GET /', function () { App::renderPage('register', 'Registro', 'auth-layout'); });
+    App::route('POST /', [AuthController::class, 'register']);
+}, [EnsureUserIsNotLoggedMiddleware::class]);
 
-// Grupo para rutas protegidas por login
+// 📌 Rutas protegidas con autenticación
 App::group('/app', function (): void {
-  App::route('', function (): void {
-    // HOME CONTROLLER
-  });
+    App::route('POST /logout', [AuthController::class, 'logout']);
+    App::route('GET /perfil', function () { App::renderPage('perfil', 'Perfil', 'main-layout'); });
 }, [EnsureUserIsLoggedMiddleware::class]);
