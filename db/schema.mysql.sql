@@ -29,7 +29,7 @@ CREATE TABLE estados (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(255) NOT NULL UNIQUE CHECK (LENGTH(nombre) > 0),
   id_negocio INTEGER NOT NULL,
-  fecha_registro DATETIME NOT NULL
+  fecha_registro DATETIME NOT NULL,
 
   FOREIGN KEY (id_negocio) REFERENCES negocios(id)
 );
