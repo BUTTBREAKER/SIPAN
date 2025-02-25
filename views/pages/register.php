@@ -3,9 +3,13 @@
   <p class="text-center text-muted">
     Completa el formulario para registrar tu negocio en nuestra plataforma.
   </p>
-  <form action="./registro" class="row row-cols-lg-2" method="post">
+
+  <form action="./registrarse" class="row row-cols-lg-2" method="post">
+
+    <!-- 📌 SECCIÓN: INFORMACIÓN DEL NEGOCIO -->
     <section class="col d-grid gap-3">
       <h2 class="text-center">Información del Negocio</h2>
+
       <div>
         <label for="nombre_negocio" class="form-label">Nombre del Negocio</label>
         <input
@@ -15,15 +19,37 @@
           placeholder="Ejemplo: Panadería Delicias"
           required />
       </div>
+
       <div>
-        <label for="direccion" class="form-label">Dirección</label>
-        <textarea
-          id="direccion"
-          name="direccion"
+        <label for="estado" class="form-label">Estado</label>
+        <input
+          id="estado"
+          name="estado"
           class="form-control"
-          placeholder="Ejemplo: Av. Principal #123, Ciudad"
-          required></textarea>
+          placeholder="Ejemplo: Miranda"
+          required />
       </div>
+
+      <div>
+        <label for="ciudad" class="form-label">Ciudad</label>
+        <input
+          id="ciudad"
+          name="ciudad"
+          class="form-control"
+          placeholder="Ejemplo: Caracas"
+          required />
+      </div>
+
+      <div>
+        <label for="sector" class="form-label">Sector</label>
+        <input
+          id="sector"
+          name="sector"
+          class="form-control"
+          placeholder="Ejemplo: Chacao"
+          required />
+      </div>
+
       <div>
         <label for="telefono" class="form-label">Teléfono</label>
         <input
@@ -31,9 +57,11 @@
           id="telefono"
           name="telefono"
           class="form-control"
-          placeholder="Ejemplo: +1234567890"
+          pattern="^\+\d{7,15}$"
+          placeholder="Ejemplo: +584141234567"
           required />
       </div>
+
       <div>
         <label for="correo_negocio" class="form-label">Correo Electrónico</label>
         <input
@@ -44,18 +72,57 @@
           placeholder="Ejemplo: negocio@correo.com"
           required />
       </div>
+
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="es_principal" name="es_principal" checked>
+        <label class="form-check-label" for="es_principal">
+          Marcar como negocio principal
+        </label>
+      </div>
     </section>
+
+    <!-- 📌 SECCIÓN: INFORMACIÓN DEL ADMINISTRADOR -->
     <section class="col d-grid gap-3">
       <h2 class="text-center">Información del Administrador</h2>
+
       <div>
-        <label for="admin_nombre" class="form-label">Nombre</label>
+        <label for="primer_nombre" class="form-label">Primer Nombre</label>
         <input
-          id="admin_nombre"
-          name="admin_nombre"
+          id="primer_nombre"
+          name="primer_nombre"
           class="form-control"
-          placeholder="Tu nombre completo"
+          placeholder="Ejemplo: Juan"
           required />
       </div>
+
+      <div>
+        <label for="segundo_nombre" class="form-label">Segundo Nombre (Opcional)</label>
+        <input
+          id="segundo_nombre"
+          name="segundo_nombre"
+          class="form-control"
+          placeholder="Ejemplo: Carlos" />
+      </div>
+
+      <div>
+        <label for="primer_apellido" class="form-label">Primer Apellido</label>
+        <input
+          id="primer_apellido"
+          name="primer_apellido"
+          class="form-control"
+          placeholder="Ejemplo: Pérez"
+          required />
+      </div>
+
+      <div>
+        <label for="segundo_apellido" class="form-label">Segundo Apellido (Opcional)</label>
+        <input
+          id="segundo_apellido"
+          name="segundo_apellido"
+          class="form-control"
+          placeholder="Ejemplo: López" />
+      </div>
+
       <div>
         <label for="admin_correo" class="form-label">Correo Electrónico</label>
         <input
@@ -66,29 +133,33 @@
           placeholder="Ejemplo: admin@correo.com"
           required />
       </div>
+
       <div>
-        <label for="admin_contrasena" class="form-label">Contraseña</label>
+        <label for="admin_clave" class="form-label">Contraseña</label>
         <input
           type="password"
-          id="admin_contrasena"
-          name="admin_contrasena"
+          id="admin_clave"
+          name="admin_clave"
           class="form-control"
           placeholder="Tu contraseña segura"
           required
-          onchange="document.querySelector('#admin_contrasena_confirm').setAttribute('pattern', this.value)" />
+          onchange="document.querySelector('#admin_clave_confirm').setAttribute('pattern', this.value)" />
       </div>
+
       <div>
-        <label for="admin_contrasena_confirm" class="form-label">Confirma tu Contraseña</label>
+        <label for="admin_clave_confirm" class="form-label">Confirma tu Contraseña</label>
         <input
           type="password"
-          id="admin_contrasena_confirm"
-          name="admin_contrasena_confirm"
+          id="admin_clave_confirm"
+          name="admin_clave_confirm"
           class="form-control"
           placeholder="Confirma tu contraseña"
           required
           title="Las contraseñas deben ser iguales" />
       </div>
     </section>
+
+    <!-- 📌 BOTONES -->
     <footer class="col-lg-12 text-center">
       <button class="btn btn-primary">Registrar Negocio</button>
       <button type="reset" class="btn btn-outline-dark">Limpiar</button>

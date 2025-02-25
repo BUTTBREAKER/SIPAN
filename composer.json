@@ -2,7 +2,8 @@
   "require": {
     "php": ">=8.2",
     "flightphp/core": "^3.14",
-    "illuminate/container": "^11.43"
+    "illuminate/container": "^11.43",
+    "leafs/auth": "^3.4"
   },
   "autoload": {
     "psr-4": {
