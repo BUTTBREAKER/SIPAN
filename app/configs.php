@@ -3,10 +3,12 @@
 use Illuminate\Container\Container;
 use SIPAN\App;
 
+$envFilePath = __DIR__ . '/../.env.php';
+
 $_ENV = array_merge(
   require __DIR__ . '/../.env.example.php',
-  file_exists(__DIR__ . '/../.env.php')
-    ? require __DIR__ . '/../.env.php'
+  file_exists($envFilePath)
+    ? require $envFilePath
     : []
 );
 

@@ -6,7 +6,7 @@ use SIPAN\App;
 
 final readonly class EnsureUserIsNotLoggedMiddleware
 {
-  function before(): void
+  static function before(): void
   {
     if (key_exists('loggedUserId', $_SESSION)) {
       App::redirect('/app');

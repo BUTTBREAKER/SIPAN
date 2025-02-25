@@ -128,57 +128,59 @@ CREATE TABLE detalles_venta (
   FOREIGN KEY (id_producto) REFERENCES productos(id)
 );
 
--- Tabla: Producción
-CREATE TABLE produccion (
-    id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    negocio_id INTEGER NOT NULL,
-    usuario_id INTEGER NOT NULL,
-    fecha DATE NOT NULL,
-    estado ENUM('En Proceso', 'Finalizado') NOT NULL,
-    FOREIGN KEY (negocio_id) REFERENCES negocio(id),
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id)
+CREATE TABLE producciones (
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  id_negocio INTEGER NOT NULL,
+  id_usuario INTEGER NOT NULL,
+  estado ENUM('En proceso', 'Finalizado') NOT NULL,
+  fecha_registro DATE NOT NULL,
+
+  FOREIGN KEY (id_negocio) REFERENCES negocios(id),
+  FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
--- Tabla: Detalles de Producción
-CREATE TABLE detalle_produccion (
-    id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    produccion_id INTEGER NOT NULL,
-    inventario_id INTEGER NOT NULL,
-    cantidad_usada DECIMAL(10, 2) NOT NULL,
-    cantidad_generada DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (produccion_id) REFERENCES produccion(id),
-    FOREIGN KEY (inventario_id) REFERENCES inventario(id)
+-- TODO: id_insumo ???
+CREATE TABLE detalles_produccion (
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  id_produccion INTEGER NOT NULL,
+  id_insumo INTEGER NOT NULL,
+  cantidad_usada DECIMAL(10, 2) NOT NULL,
+  cantidad_generada DECIMAL(10, 2) NOT NULL,
+
+  FOREIGN KEY (id_produccion) REFERENCES producciones(id),
+  FOREIGN KEY (id_insumo) REFERENCES insumos(id)
 );
 
--- Tabla: Predicciones
-CREATE TABLE prediccion (
-    id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    negocio_id INTEGER NOT NULL,
-    fecha_inicio DATE NOT NULL,
-    fecha_fin DATE NOT NULL,
-    tipo ENUM('producción', 'ventas', 'abastecimiento') NOT NULL,
-    estado ENUM('Activa', 'Archivada') DEFAULT 'Activa',
-    descripcion TEXT,
-    FOREIGN KEY (negocio_id) REFERENCES negocio(id)
+CREATE TABLE predicciones (
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  id_negocio INTEGER NOT NULL,
+  fecha_inicio DATE NOT NULL,
+  fecha_fin DATE NOT NULL,
+  tipo ENUM('Producción', 'Ventas', 'Abastecimiento') NOT NULL,
+  estado ENUM('Activa', 'Archivada') DEFAULT 'Activa',
+  descripcion TEXT,
+
+  FOREIGN KEY (id_negocio) REFERENCES negocios(id)
 );
 
--- Tabla: Detalles de Predicciones
-CREATE TABLE detalle_prediccion (
-    id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    prediccion_id INTEGER NOT NULL,
-    inventario_id INTEGER NOT NULL,
-    cantidad DECIMAL(10, 2) NOT NULL,
-    sugerencia TEXT NOT NULL,
-    FOREIGN KEY (prediccion_id) REFERENCES prediccion(id),
-    FOREIGN KEY (inventario_id) REFERENCES inventario(id)
+-- TODO: inventario_id ???
+CREATE TABLE detalles_prediccion (
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  id_prediccion INTEGER NOT NULL,
+  inventario_id INTEGER NOT NULL,
+  cantidad DECIMAL(10, 2) NOT NULL,
+  sugerencia TEXT NOT NULL,
+
+  FOREIGN KEY (id_prediccion) REFERENCES prediccion(id),
+  FOREIGN KEY (inventario_id) REFERENCES inventario(id)
 );
 
--- Tabla: Sugerencias
 CREATE TABLE sugerencia (
-    id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    prediccion_id INTEGER NOT NULL,
-    descripcion TEXT NOT NULL,
-    estado ENUM('Pendiente', 'Implementado') DEFAULT 'Pendiente',
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (prediccion_id) REFERENCES prediccion(id)
+  id INTEGER AUTO_INCREMENT PRIMARY KEY,
+  id_prediccion INTEGER NOT NULL,
+  descripcion TEXT NOT NULL,
+  estado ENUM('Pendiente', 'Implementado') DEFAULT 'Pendiente',
+  fecha_registro DATETIME NOT NULL,
+
+  FOREIGN KEY (id_prediccion) REFERENCES predicciones(id)
 );
