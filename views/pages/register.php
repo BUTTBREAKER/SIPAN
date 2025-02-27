@@ -4,6 +4,7 @@
     Completa el formulario para registrar tu negocio en nuestra plataforma.
   </p>
 
+  <!-- filepath: /c:/xampp/htdocs/SIPAN/views/pages/register.php -->
   <form action="./registrarse" class="row row-cols-lg-2" method="post">
 
     <!-- 📌 SECCIÓN: INFORMACIÓN DEL NEGOCIO -->
@@ -63,11 +64,11 @@
       </div>
 
       <div>
-        <label for="correo_negocio" class="form-label">Correo Electrónico</label>
+        <label for="correo" class="form-label">Correo Electrónico</label>
         <input
           type="email"
-          id="correo_negocio"
-          name="correo_negocio"
+          id="correo"
+          name="correo"
           class="form-control"
           placeholder="Ejemplo: negocio@correo.com"
           required />
@@ -124,34 +125,23 @@
       </div>
 
       <div>
-        <label for="admin_correo" class="form-label">Correo Electrónico</label>
-        <input
-          type="email"
-          id="admin_correo"
-          name="admin_correo"
-          class="form-control"
-          placeholder="Ejemplo: admin@correo.com"
-          required />
-      </div>
-
-      <div>
-        <label for="admin_clave" class="form-label">Contraseña</label>
+        <label for="clave" class="form-label">Contraseña</label>
         <input
           type="password"
-          id="admin_clave"
-          name="admin_clave"
+          id="clave"
+          name="clave"
           class="form-control"
           placeholder="Tu contraseña segura"
           required
-          onchange="document.querySelector('#admin_clave_confirm').setAttribute('pattern', this.value)" />
+          onchange="document.querySelector('#clave_confirm').setAttribute('pattern', this.value)" />
       </div>
 
       <div>
-        <label for="admin_clave_confirm" class="form-label">Confirma tu Contraseña</label>
+        <label for="clave_confirm" class="form-label">Confirma tu Contraseña</label>
         <input
           type="password"
-          id="admin_clave_confirm"
-          name="admin_clave_confirm"
+          id="clave_confirm"
+          name="clave_confirm"
           class="form-control"
           placeholder="Confirma tu contraseña"
           required
@@ -165,4 +155,21 @@
       <button type="reset" class="btn btn-outline-dark">Limpiar</button>
     </footer>
   </form>
-</div>
+
+  <script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+      let valid = true;
+      this.querySelectorAll('[required]').forEach(function(input) {
+        if (!input.value) {
+          valid = false;
+          input.classList.add('is-invalid');
+        } else {
+          input.classList.remove('is-invalid');
+        }
+      });
+      if (!valid) {
+        event.preventDefault();
+        alert('Por favor, completa todos los campos obligatorios.');
+      }
+    });
+  </script>

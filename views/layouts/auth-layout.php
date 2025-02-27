@@ -137,8 +137,8 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
       <div class="container">
-        <a class="navbar-brand" href="./">
-          <img src="assets/img/logo.png" height="64" alt="SIPAN Logo">
+      <a class="navbar-brand" href="./" data-bs-toggle="tooltip" title="Sistema Integral para Panaderías">
+          <img src="assets/img/logo.png" height="64" />
         </a>
         <div class="d-flex align-items-center gap-3">
           <a href="./ingresar" class="btn btn-outline-dark">Iniciar Sesión</a>
@@ -149,6 +149,8 @@
 
     <!-- Sección de Autenticación -->
     <section class="auth-section">
+    <div class="bg-holder" style="background-image:url(./assets/img/hero/hero-bg.svg);">
+    </div>
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-xl-8 col-lg-10">
