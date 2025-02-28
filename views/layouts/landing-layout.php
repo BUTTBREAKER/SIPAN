@@ -10,7 +10,7 @@
   <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Volkhov:wght@700&amp;display=swap" />
-  <link rel="stylesheet" href="./assets/css/theme.min.css" />
+  <link rel="stylesheet" href="./assets/dist/landing.css" />
   <style>
     .navbar {
       backdrop-filter: blur(1rem);
@@ -207,13 +207,7 @@
     </div>
   </main>
 
-  <script src="./assets/vendors/bootstrap/bootstrap.bundle.min.js"></script>
-  <script src="./assets/vendors/fontawesome/all.min.js"></script>
-  <script>
-    for (const node of document.querySelectorAll('[data-bs-toggle="tooltip"]')) {
-      new bootstrap.Tooltip(node)
-    }
-  </script>
+  <script src="./assets/dist/landing.js"></script>
 </body>
 
 </html>

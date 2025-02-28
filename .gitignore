@@ -3,3 +3,5 @@ vendor
 *.tar
 *.sublime-*
 .phpunit.cache
+node_modules
+dist

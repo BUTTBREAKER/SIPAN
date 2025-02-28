@@ -1,6 +1,7 @@
 <?php
 
 use SIPAN\App;
+use SIPAN\Controllers\DashboardController;
 use SIPAN\Controllers\LandingController;
 use SIPAN\Controllers\ProfileController;
 use SIPAN\Middlewares\EnsureUserIsLoggedMiddleware;
@@ -21,7 +22,8 @@ App::group('/registrarse', static function (): void {
 }, [EnsureUserIsNotLoggedMiddleware::class]);
 
 // 📌 Rutas protegidas con autenticación
-App::group('/app', static function (): void {
+App::group('/administracion', static function (): void {
+  App::route('GET /', [DashboardController::class, 'showDashboard']);
   App::route('POST /salir', [ProfileController::class, 'handleLogout']);
   App::route('GET /perfil', [ProfileController::class, 'showProfile']);
-}, [EnsureUserIsLoggedMiddleware::class]);
+}, [/*EnsureUserIsLoggedMiddleware::class*/]);

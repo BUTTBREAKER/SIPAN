@@ -7,7 +7,7 @@
   <title><?= $title ?? 'SIPAN - Autenticación' ?></title>
   <link rel="icon" href="./assets/img/favicon.png" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Volkhov:wght@700&amp;display=swap">
-  <link rel="stylesheet" href="./assets/css/theme.min.css">
+  <link rel="stylesheet" href="./assets/dist/landing.css">
   <style>
     .auth-section {
       padding: 4rem 0;
@@ -179,8 +179,7 @@
   </main>
 
   <!-- Scripts -->
-  <script src="./assets/vendors/bootstrap/bootstrap.bundle.min.js"></script>
-  <script src="./assets/vendors/fontawesome/all.min.js"></script>
+  <script src="./assets/dist/landing.js"></script>
   <script>
     // Script para alternar visibilidad de contraseña
     document.querySelectorAll('.password-toggle').forEach(toggle => {
@@ -190,11 +189,6 @@
         input.setAttribute('type', type);
         e.target.classList.toggle('fa-eye-slash');
       });
-    });
-
-    // Inicializar tooltips
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(node => {
-      new bootstrap.Tooltip(node);
     });
   </script>
 </body>
