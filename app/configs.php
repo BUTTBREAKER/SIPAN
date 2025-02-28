@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Container\Container;
+use Leaf\Helpers\Password;
 use SIPAN\App;
 
 $envFilePath = __DIR__ . '/../.env.php';
@@ -15,12 +16,51 @@ $_ENV = array_merge(
 session_start();
 date_default_timezone_set($_ENV['TIMEZONE']);
 
-$container = new Container;
+$container = Container::getInstance();
 
 $container->singleton(PDO::class, static fn(): PDO => new PDO(
   $_ENV['PDO']['DSN'],
   $_ENV['PDO']['USER'],
   $_ENV['PDO']['PASSWORD'],
 ));
+
+@db()->connection($container->get(PDO::class));
+auth()->dbConnection($container->get(PDO::class));
+(new ReflectionProperty(auth(), 'db'))->setValue(auth(), db());
+
+auth()->config('id.key', 'id');
+auth()->config('db.table', 'usuarios');
+auth()->config('password.key', 'clave');
+auth()->config('session', true);
+// auth()->config('session.lifetime', '1 hour'); // 1 hour
+// auth()->config('session.lifetime', 60 * 60 * 24 * 7); // 1 week
+auth()->config('session.lifetime', 0); // never expire
+
+$loginParamsError = '¡Correo o contraseña incorrecta!';
+auth()->config('messages.loginParamsError', $loginParamsError);
+auth()->config('messages.loginPasswordError', $loginParamsError);
+auth()->config('hidden', ['clave', 'id', 'correo']);
+auth()->config('unique', ['correo']);
+auth()->config('timestamps', true);
+auth()->config('timestamps.format', 'YYYY-MM-DD HH:MM:SS');
+
+auth()->config(
+  'password.encode',
+  static fn(string $password): string => Password::hash($password)
+);
+
+auth()->config(
+  'password.verify',
+  static fn(string $password, string $hash): bool => Password::verify(
+    $password,
+    $hash
+  )
+);
+
+auth()->config('session.cookie', [
+  'secure' => true,
+  'httponly' => true,
+  'samesite' => 'lax'
+]);
 
 App::registerContainerHandler($container->get(...));

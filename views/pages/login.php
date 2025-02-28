@@ -1,4 +1,4 @@
-<form action="/ingresar" method="POST">
+<form action="./ingresar" method="post">
     <div class="mb-3">
         <label for="correo" class="form-label">Correo Electrónico</label>
         <input type="email" class="form-control" id="correo" name="correo" required>
@@ -11,6 +11,5 @@
 </form>
 
 <p class="text-center mt-3">
-    ¿No tienes cuenta? <a href="/registrarse">Regístrate aquí</a>
+    ¿No tienes cuenta? <a href="./registrarse">Regístrate aquí</a>
 </p>
-
