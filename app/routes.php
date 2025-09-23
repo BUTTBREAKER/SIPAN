@@ -33,7 +33,15 @@ App::group('/registrarse', static function (): void {
 
 // 📌 Rutas protegidas con autenticación
 App::group('/administracion', static function (): void {
-  App::route('GET /', [DashboardController::class, 'showDashboard']);
+  App::route('GET /', DashboardController::showDashboard(...));
   App::route('POST /salir', [ProfileController::class, 'handleLogout']);
   App::route('GET /perfil', [ProfileController::class, 'showProfile']);
+
+  App::group('/productos', static function (): void {
+    App::route('GET /', static function (): void {
+      App::renderPage('products', 'Inventario', 'dashboard-layout', [
+        'products' => db()->select('productos')->all(),
+      ]);
+    });
+  });
 }, [/*EnsureUserIsLoggedMiddleware::class*/]);
