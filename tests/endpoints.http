@@ -11,6 +11,14 @@ Content-Type: application/json
 
 ###
 POST {{api}}/registrarse
+Content-Type: application/json
+
+{
+  "clave": "Fran.0610",
+  "primer_nombre": "Franyer",
+  "primer_apellido": "Sánchez",
+  "correo": "franyeradriansanchez@gmail.com"
+}
 
 ###
 GET {{api}}/productos

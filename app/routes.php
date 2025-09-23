@@ -11,10 +11,7 @@ App::route('GET /', [LandingController::class, 'showLanding']);
 
 App::group('/api', static function (): void {
   App::route('POST /ingresar', [UserApiController::class, 'login']);
-
-  App::route('POST /registrarse', static function (): void {
-    App::halt(409);
-  });
+  App::route('POST /registrarse', [UserApiController::class, 'register']);
 
   App::group('/productos', static function (): void {
     App::route('GET /', static function (): void {
