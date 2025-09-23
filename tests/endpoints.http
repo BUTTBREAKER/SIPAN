@@ -1,0 +1,10 @@
+@base = http://localhost
+@api = http://localhost/api
+
+POST {{api}}/ingresar
+
+###
+POST {{api}}/registrarse
+
+###
+GET {{api}}/productos

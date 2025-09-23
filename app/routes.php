@@ -8,6 +8,22 @@ use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 
 App::route('GET /', [LandingController::class, 'showLanding']);
 
+App::group('/api', static function (): void {
+  App::route('POST /ingresar', static function (): void {
+    App::halt(401);
+  });
+
+  App::route('POST /registrarse', static function (): void {
+    App::halt(409);
+  });
+
+  App::group('/productos', static function (): void {
+    App::route('GET /', static function (): void {
+      App::json([]);
+    });
+  });
+});
+
 // 📌 Rutas de autenticación
 App::group('/ingresar', static function (): void {
   App::route('GET /', [ProfileController::class, 'showLogin']);
