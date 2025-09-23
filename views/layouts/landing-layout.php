@@ -24,8 +24,7 @@
 
 <body>
   <main class="main" id="top">
-    <nav
-      class="navbar navbar-expand-lg navbar-light sticky-top">
+    <nav class="navbar navbar-expand-lg sticky-top">
       <div class="container">
         <a class="navbar-brand" href="./" data-bs-toggle="tooltip" title="Sistema Integral para Panaderías">
           <img src="assets/img/logo.png" height="64" />
@@ -53,46 +52,24 @@
             <li>
               <a class="nav-link" href="#testimonial">Testimonial</a>
             </li>
-            <li>
-              <div class="btn-group">
-                <a
-                  class="btn btn-outline-dark"
-                  href="./ingresar">
-                  Iniciar sesión
-                </a>
-                <a
-                  class="btn btn-outline-dark"
-                  href="./registrarse">
-                  Registrarse
-                </a>
-              </div>
-            </li>
-            <li class="dropdown">
-              <button
-                class="nav-link btn btn-link dropdown-toggle d-flex align-items-center"
-                data-bs-toggle="dropdown">
-                <div
-                  data-bs-toggle="tooltip"
-                  data-bs-placement="left"
-                  title="Cambiar idioma">
-                  <img src="./assets/img/icons/venezuela.svg" class="img-fluid" />
-                </div>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-0 rounded-1 overflow-hidden">
-                <li>
-                  <a class="dropdown-item d-flex align-items-center gap-3" href="javascript:">
-                    <img src="./assets/img/icons/venezuela.svg" />
-                    Español
-                  </a>
-                </li>
-              </ul>
+            <li class="btn-group">
+              <a
+                class="btn btn-outline-dark"
+                href="./ingresar">
+                Iniciar sesión
+              </a>
+              <a
+                class="btn btn-outline-dark"
+                href="./registrarse">
+                Registrarse
+              </a>
             </li>
           </ul>
         </div>
       </div>
     </nav>
     <?= $page ?>
-    <section class="pb-0 pb-lg-4">
+    <footer class="pb-0 pb-lg-4">
       <div class="container">
         <div class="row">
           <div class="col-lg-3 col-md-7 col-12 mb-4 mb-md-6 mb-lg-0 order-0">
@@ -198,9 +175,9 @@
           </div>
         </div>
       </div>
-    </section>
+    </footer>
     <div class="py-5 text-center">
-      <p class="mb-0 text-secondary fs--1 fw-medium">UPTM © <?= date('Y') ?></p>
+      <p class="mb-0 text-secondary fs-1 fw-medium">UPTM © <?= date('Y') ?></p>
     </div>
   </main>
 
