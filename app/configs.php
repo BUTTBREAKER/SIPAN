@@ -23,31 +23,16 @@ $container->singleton(PDO::class, static fn(): PDO => new PDO(
   $_ENV['PDO']['PASSWORD'],
 ));
 
-@db()->connection($container->get(PDO::class));
-auth()->dbConnection($container->get(PDO::class));
+db()->connection($container->get(PDO::class));
 (new ReflectionProperty(auth(), 'db'))->setValue(auth(), db());
 
-auth()->config('id.key', 'id');
+$noExpirationLifetime = 0;
+
 auth()->config('db.table', 'usuarios');
-auth()->config('password.key', 'clave');
 auth()->config('session', true);
-// auth()->config('session.lifetime', '1 hour'); // 1 hour
-// auth()->config('session.lifetime', 60 * 60 * 24 * 7); // 1 week
-auth()->config('session.lifetime', 0); // never expire
-
-$loginParamsError = '¡Correo o contraseña incorrecta!';
-auth()->config('messages.loginParamsError', $loginParamsError);
-auth()->config('messages.loginPasswordError', $loginParamsError);
-auth()->config('hidden', ['clave', 'id', 'correo']);
-auth()->config('unique', ['correo']);
-auth()->config('timestamps', true);
-auth()->config('timestamps.format', 'YYYY-MM-DD HH:MM:SS');
-
-
-auth()->config('session.cookie', [
-  'secure' => true,
-  'httponly' => true,
-  'samesite' => 'lax'
-]);
+auth()->config('password.key', 'clave');
+auth()->config('session.lifetime', $noExpirationLifetime);
+auth()->config('messages.loginParamsError', '¡Correo o contraseña incorrecta!');
+auth()->config('messages.loginPasswordError', auth()->config('messages.loginParamsError'));
 
 App::registerContainerHandler($container->get(...));
