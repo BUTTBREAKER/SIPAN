@@ -12,7 +12,6 @@ $_ENV = array_merge(
     : [],
 );
 
-session_start();
 date_default_timezone_set($_ENV['TIMEZONE']);
 
 $container = Container::getInstance();
