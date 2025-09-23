@@ -1,6 +1,5 @@
 <?php
 
-use Leaf\Helpers\Password;
 use flight\Container;
 use SIPAN\App;
 
@@ -44,18 +43,6 @@ auth()->config('unique', ['correo']);
 auth()->config('timestamps', true);
 auth()->config('timestamps.format', 'YYYY-MM-DD HH:MM:SS');
 
-auth()->config(
-  'password.encode',
-  static fn(string $password): string => Password::hash($password)
-);
-
-auth()->config(
-  'password.verify',
-  static fn(string $password, string $hash): bool => Password::verify(
-    $password,
-    $hash
-  )
-);
 
 auth()->config('session.cookie', [
   'secure' => true,
