@@ -8,18 +8,6 @@
   <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
   <link rel="icon" href="./assets/img/favicon.png" />
   <link rel="stylesheet" href="./assets/dist/landing.css" />
-  <style>
-    .navbar {
-      backdrop-filter: blur(1rem);
-    }
-
-    img[src$=".svg"] {
-      width: 2em;
-      height: 2em;
-      object-fit: cover;
-      object-position: center;
-    }
-  </style>
 </head>
 
 <body>
