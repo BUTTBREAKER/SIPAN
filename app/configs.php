@@ -9,7 +9,7 @@ $_ENV = array_merge(
   require __DIR__ . '/../.env.example.php',
   file_exists($envFilePath)
     ? require $envFilePath
-    : []
+    : [],
 );
 
 session_start();
