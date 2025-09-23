@@ -4,8 +4,23 @@
     Completa el formulario para registrar tu negocio en nuestra plataforma.
   </p>
 
-  <!-- filepath: /c:/xampp/htdocs/SIPAN/views/pages/register.php -->
-  <form action="./registrarse" class="row row-cols-lg-2" method="post">
+  <form x-data @submit.prevent="
+    const formData = new FormData($el);
+
+    fetch('./api/registrarse', { body: formData, method: 'post' })
+      .then(async response => {
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+
+        return response;
+      })
+      .then(() => {
+        location.href = './ingresar';
+      })
+      .catch(error => alert(error.message));
+
+  ">
 
     <!-- 📌 SECCIÓN: INFORMACIÓN DEL NEGOCIO -->
     <section class="col d-grid gap-3">

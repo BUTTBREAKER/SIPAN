@@ -23,9 +23,31 @@ final readonly class UserApiController
 
   static function register(): void
   {
-    $data = App::request()->data->getData();
+    $data = App::request()->data;
 
-    auth()->register($data);
+    db()
+      ->beginTransaction()
+      ->insert('negocios')
+      ->params([
+        'nombre' => $data->nombre_negocio,
+        'telefono' => $data->telefono,
+        'correo' => $data->correo,
+        'es_principal' => filter_var($data->es_principal, FILTER_VALIDATE_BOOL),
+        'created_at' => date('Y-m-d H:i:s'),
+      ])
+      ->execute();
+
+    auth()->register([
+      'primer_nombre' => $data->primer_nombre,
+      'segundo_nombre' => $data->segundo_nombre ?: null,
+      'primer_apellido' => $data->primer_apellido,
+      'segundo_apellido' => $data->segundo_apellido ?: null,
+      'correo' => $data->correo,
+      'clave' => $data->clave,
+      'rol' => 'Administrador',
+    ]);
+
+    db()->commit();
 
     App::halt(201);
   }
