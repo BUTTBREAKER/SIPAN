@@ -7,9 +7,6 @@
   <title>SIPAN</title>
   <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
   <link rel="icon" href="./assets/img/favicon.png" />
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;family=Volkhov:wght@700&amp;display=swap" />
   <link rel="stylesheet" href="./assets/dist/landing.css" />
   <style>
     .navbar {
