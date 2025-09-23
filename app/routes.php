@@ -11,12 +11,12 @@ use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 App::route('GET /', [LandingController::class, 'showLanding']);
 
 App::group('/api', static function (): void {
-  App::route('POST /ingresar', [UserApiController::class, 'login']);
-  App::route('POST /registrarse', [UserApiController::class, 'register']);
-  App::route('/cerrar-sesion', [UserApiController::class, 'logout']);
+  App::route('POST /ingresar', UserApiController::login(...));
+  App::route('POST /registrarse', UserApiController::register(...));
+  App::route('/cerrar-sesion', UserApiController::logout(...));
 
   App::group('/productos', static function (): void {
-    App::route('GET /', [ProductApiController::class, 'index']);
+    App::route('GET /', ProductApiController::index(...));
   });
 });
 
