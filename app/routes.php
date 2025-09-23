@@ -4,10 +4,8 @@ use SIPAN\App;
 use SIPAN\Controllers\DashboardController;
 use SIPAN\Controllers\LandingController;
 use SIPAN\Controllers\ProfileController;
-use SIPAN\Middlewares\EnsureUserIsLoggedMiddleware;
 use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 
-// 📌 Ruta pública (Landing Page)
 App::route('GET /', [LandingController::class, 'showLanding']);
 
 // 📌 Rutas de autenticación
