@@ -1,8 +1,8 @@
-.card{
+.card {
   border: none;
 
-  &.service-card{
-    &:before{
+  &.service-card {
+    &:before {
       content: '';
       position: absolute;
       left: toRem(10);
@@ -13,20 +13,20 @@
       border-radius: toRem(30) 0 toRem(10) 0;
       z-index: -1;
       transition: $transition-base;
-  
-      @include media-breakpoint-down(md){
+
+      @include media-breakpoint-down(md) {
         width: toRem(60);
         height: toRem(60);
         border-radius: toRem(20) 0 toRem(8) 0;
       }
     }
-  
-    &:hover{
-      &:before{
+
+    &:hover {
+      &:before {
         left: toRem(-30);
         bottom: toRem(-35);
-  
-        @include media-breakpoint-down(md){
+
+        @include media-breakpoint-down(md) {
           left: toRem(-15);
           bottom: toRem(-25);
         }
@@ -34,4 +34,3 @@
     }
   }
 }
-

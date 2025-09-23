@@ -1,13 +1,11 @@
 // Tabs
-//
-
-
 .majestic-tabs {
-  border-bottom:0;
+  border-bottom: 0;
 
   .nav-link {
     border: 2px solid transparent;
-    color:$gray-800;
+    color: $gray-800;
+
     &:hover,
     &:focus {
       border-color: transparent;

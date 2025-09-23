@@ -1,24 +1,35 @@
 /*-----------------------------------------------
 |   Object fit and Z-index
 -----------------------------------------------*/
-.fit-cover{ object-fit: cover; }
-.z-index-1{ z-index: 1; }
-.z-index-2{ z-index: 2 !important; }
-.z-index--1{ z-index: -1; }
+.fit-cover {
+  object-fit: cover;
+}
+
+.z-index-1 {
+  z-index: 1;
+}
+
+.z-index-2 {
+  z-index: 2 !important;
+}
+
+.z-index--1 {
+  z-index: -1;
+}
 
 /*-----------------------------------------------
 |   Sidebar
 -----------------------------------------------*/
-.sticky-sidebar{ 
+.sticky-sidebar {
   position: sticky;
   z-index: $zindex-sticky;
-  top: $top-nav-height + 1; 
+  top: $top-nav-height + 1;
 }
 
 /*-----------------------------------------------
 |   Custom circle
 -----------------------------------------------*/
-.circle-dashed{
+.circle-dashed {
   border: 1px dashed $primary;
   display: flex;
   align-items: center;
@@ -26,23 +37,28 @@
   border-radius: 50%;
   width: 3.5rem;
   height: 3.5rem;
+  box-sizing: border-box;
 }
 
 /*-----------------------------------------------
 |   Miscellaneous
 -----------------------------------------------*/
 
-.hover-text-decoration-none{
-  @include hover-focus{
+.hover-text-decoration-none {
+  @include hover-focus {
     text-decoration: none;
   }
 }
-.resize-none{ resize: none; }
+
+.resize-none {
+  resize: none;
+}
 
 .collapsed .collapse-icon {
   transition: $transition-base;
   transform: rotate(0deg);
 }
+
 .collapse-icon {
   transition: $transition-base;
   transform: rotate(90deg);
@@ -52,8 +68,8 @@
 [data-offset-top],
 [data-toggle="collapse"],
 [data-toggle="tooltip"],
-[data-toggle="popover"]{
-  *{
+[data-toggle="popover"] {
+  * {
     pointer-events: none;
   }
 }
@@ -65,6 +81,7 @@
 .outline-none {
   outline: none;
   box-shadow: none;
+
   @include hover-focus {
     outline: none;
     box-shadow: none;
@@ -85,6 +102,7 @@
     top: 50%;
     transform: translateY(-50%);
   }
+
   &.vertical-line-400 {
     &:after {
       background-color: $gray-400;
@@ -95,30 +113,28 @@
 /* -------------------------------------------------------------------------- */
 /*                                 Transition                                 */
 /* -------------------------------------------------------------------------- */
-
 .transition-base {
   transition: $transition-base;
 }
-.transition-none{
+
+.transition-none {
   transition: none;
 }
 
-.fsp-75{
+.fsp-75 {
   font-size: 75%;
 }
 
 /* -------------------------------------------------------------------------- */
 /*                                    Width                                   */
 /* -------------------------------------------------------------------------- */
-
-.min-w-0{ min-width: 0; }
+.min-w-0 {
+  min-width: 0;
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                Terms sidebar                               */
 /* -------------------------------------------------------------------------- */
-
-
-
 .icon {
   padding: map_get($spacers, 3);
   border-radius: 15px;
@@ -135,30 +151,30 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/*        Heading                        Background                               */
+/*        Heading Background                                                  */
 /* -------------------------------------------------------------------------- */
-.footer-heading-color{
+.footer-heading-color {
   color: #080809;
 }
 
-.shadow-social{
+.shadow-social {
   box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.1) !important;
 }
 
 
-.backdrop{
+.backdrop {
   backdrop-filter: blur(4px);
 }
 
-.navbar{
+.navbar {
   transition: padding 0.3s linear;
 }
 
-.padding-transition{
+.padding-transition {
   padding: toRem(20) !important;
 }
 
-.show-onhover{
+.show-onhover {
   &:hover .hideEl {
     visibility: visible;
     opacity: 1;
@@ -171,11 +187,11 @@
   }
 }
 
-.shadow-hover{
+.shadow-hover {
   transition: $transition-base;
   box-shadow: none;
 
-  &:hover{
+  &:hover {
     box-shadow: $box-shadow;
   }
 }

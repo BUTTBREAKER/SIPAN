@@ -3,10 +3,12 @@
 -----------------------------------------------*/
 .icon-group {
   display: flex;
+
   .icon-item:not(:last-child) {
     margin-right: map_get($spacers, 4);
   }
 }
+
 .icon-item {
   border-radius: 50%;
   display: flex;
@@ -19,23 +21,26 @@
   width: 2.5rem;
   border: 0;
   font-size: $font-size-sm;
-  
-  &#facebook{
+
+  &#facebook {
     background: $white;
+
     @include hover-focus {
       background-color: $facebook;
     }
   }
 
-  &#instagram{
+  &#instagram {
     background: $white;
+
     @include hover-focus {
       background-image: $instagram;
     }
   }
 
-  &#twitter{
+  &#twitter {
     background: $white;
+
     @include hover-focus {
       background-color: $twitter;
     }
@@ -49,15 +54,15 @@
     height: 1.875rem;
     width: 1.875rem;
   }
-  
+
   &.icon-item-lg {
     height: 2.75rem;
     width: 2.75rem;
   }
 }
+
 .fontawesome-i2svg-active {
   .icon-indicator {
     opacity: 1;
   }
 }
-

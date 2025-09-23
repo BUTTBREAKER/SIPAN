@@ -4,12 +4,13 @@
 
     &:hover,
     &:focus {
-      @if $color == '900' {
+      @if $color =='900' {
         color: $primary !important;
-      } @else {
+      }
+
+      @else {
         color: lighten($value, 15%) !important;
       }
     }
   }
 }
-

@@ -1,3 +1,8 @@
+import "@fontsource/poppins/latin-400.css";
+import "@fontsource/poppins/latin-500.css";
+import "@fontsource/poppins/latin-600.css";
+import "@fontsource/poppins/latin-700.css";
+import "@fontsource/volkhov/latin-700.css";
 import "../styles/landing.scss";
 
 import "@fortawesome/fontawesome-free/js/all.min";
