@@ -22,14 +22,14 @@ CREATE TABLE negocios (
   -- enviar manualmente con PHP para utilizar la zona horaria configurada por
   -- el desarrollador en las variables de entorno
   -- (por ejemplo: America/Caracas +04:00)
-  fecha_registro DATETIME NOT NULL
+  created_at DATETIME NOT NULL
 );
 
 CREATE TABLE estados (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(255) NOT NULL UNIQUE CHECK (LENGTH(nombre) > 0),
   id_negocio INTEGER NOT NULL,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_negocio) REFERENCES negocios(id)
 );
@@ -38,7 +38,7 @@ CREATE TABLE ciudades (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(255) NOT NULL CHECK (LENGTH(nombre) > 0),
   id_estado INTEGER NOT NULL,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_estado) REFERENCES estados(id),
   UNIQUE (nombre, id_estado)
@@ -48,7 +48,7 @@ CREATE TABLE sectores (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(255) NOT NULL,
   id_ciudad INTEGER NOT NULL,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_ciudad) REFERENCES ciudades(id),
   UNIQUE (nombre, id_ciudad)
@@ -66,14 +66,15 @@ CREATE TABLE usuarios (
   clave VARCHAR(255) NOT NULL CHECK (LENGTH(clave) > 0),
   rol ENUM('Administrador', 'Empleado', 'Cajero') NOT NULL,
   activado BOOLEAN NOT NULL DEFAULT TRUE,
-  fecha_registro DATETIME NOT NULL
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL
 );
 
 CREATE TABLE asignacion_de_negocios (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   id_usuario INTEGER NOT NULL,
   id_negocio INTEGER NOT NULL,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_negocio) REFERENCES negocios(id),
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
@@ -88,7 +89,7 @@ CREATE TABLE productos (
   stock_actual DECIMAL(10, 2) NOT NULL DEFAULT 0,
   stock_minimo DECIMAL(10, 2) NOT NULL,
   precio_actual DECIMAL(10, 2) NOT NULL,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_negocio) REFERENCES negocios(id),
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
@@ -101,7 +102,7 @@ CREATE TABLE insumos (
   nombre VARCHAR(255) NOT NULL,
   stock_actual DECIMAL(10, 2) NOT NULL DEFAULT 0,
   stock_minimo DECIMAL(10, 2) NOT NULL DEFAULT 0,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_negocio) REFERENCES negocios(id),
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
@@ -111,7 +112,7 @@ CREATE TABLE ventas (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   id_usuario INTEGER NOT NULL,
   metodo_pago ENUM('Efectivo', 'Tarjeta', 'Transferencia', 'Crédito') NOT NULL,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
@@ -122,7 +123,7 @@ CREATE TABLE detalles_venta (
   id_producto INTEGER NOT NULL,
   precio_unitario_fijo DECIMAL(10, 2) NOT NULL,
   cantidad DECIMAL(10, 2) NOT NULL,
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_venta) REFERENCES ventas(id),
   FOREIGN KEY (id_producto) REFERENCES productos(id)
@@ -133,7 +134,7 @@ CREATE TABLE producciones (
   id_negocio INTEGER NOT NULL,
   id_usuario INTEGER NOT NULL,
   estado ENUM('En proceso', 'Finalizado') NOT NULL,
-  fecha_registro DATE NOT NULL,
+  created_at DATE NOT NULL,
 
   FOREIGN KEY (id_negocio) REFERENCES negocios(id),
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
@@ -180,7 +181,7 @@ CREATE TABLE sugerencia (
   id_prediccion INTEGER NOT NULL,
   descripcion TEXT NOT NULL,
   estado ENUM('Pendiente', 'Implementado') DEFAULT 'Pendiente',
-  fecha_registro DATETIME NOT NULL,
+  created_at DATETIME NOT NULL,
 
   FOREIGN KEY (id_prediccion) REFERENCES predicciones(id)
 );
