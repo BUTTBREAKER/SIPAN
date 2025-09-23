@@ -2,26 +2,26 @@ CREATE TABLE negocios (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(255) NOT NULL CHECK (LENGTH(nombre) > 0),
 
-  /* registrar un sector, localidad y estado en las tablas correspondientes si
-  no existen previamente con los datos del formulario enviados por el usuario,
-  luego obtener el id del sector, asignarlo a negocios.id_sector y también
-  asignar estados.id_negocio al negocios.id */
+  -- registrar un sector, localidad y estado en las tablas correspondientes si
+  -- no existen previamente con los datos del formulario enviados por el usuario,
+  -- luego obtener el id del sector, asignarlo a negocios.id_sector y también
+  -- asignar estados.id_negocio al negocios.id
   id_sector INTEGER,
 
-  /* el teléfono debe poder repetirse entre negocios del mismo administrador,
-  a otro administrador si debe usar teléfonos diferentes */
+  -- el teléfono debe poder repetirse entre negocios del mismo administrador,
+  -- a otro administrador si debe usar teléfonos diferentes
   telefono VARCHAR(255) NOT NULL CHECK (telefono LIKE '+%'),
 
-  /* mismo caso del teléfono */
+  -- mismo caso del teléfono
   correo VARCHAR(255) NOT NULL CHECK (correo LIKE '%@%'),
 
-  /* de los negocios asignados a un administrador, sólo puede haber un negocio
-  principal */
+  -- de los negocios asignados a un administrador, sólo puede haber un negocio
+  -- principal
   es_principal BOOLEAN NOT NULL DEFAULT FALSE,
 
-  /* enviar manualmente con PHP para utilizar la zona horaria configurada por
-  el desarrollador en las variables de entorno
-  (por ejemplo: America/Caracas +04:00) */
+  -- enviar manualmente con PHP para utilizar la zona horaria configurada por
+  -- el desarrollador en las variables de entorno
+  -- (por ejemplo: America/Caracas +04:00)
   fecha_registro DATETIME NOT NULL
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE usuarios (
   primer_apellido VARCHAR(255) NOT NULL CHECK (LENGTH(primer_apellido) > 0),
   segundo_apellido VARCHAR(255) CHECK (LENGTH(segundo_apellido) > 0),
 
-  /* sólo el administrador puede usar el mismo correo que el negocio */
+  -- sólo el administrador puede usar el mismo correo que el negocio
   correo VARCHAR(255) UNIQUE NOT NULL CHECK (correo LIKE '%@%'),
   clave VARCHAR(255) NOT NULL CHECK (LENGTH(clave) > 0),
   rol ENUM('Administrador', 'Empleado', 'Cajero') NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE asignacion_de_negocios (
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
-/* productos e insumos separados para no vender insumos  */
+-- productos e insumos separados para no vender insumos
 CREATE TABLE productos (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   id_negocio INTEGER NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE productos (
   precio_actual DECIMAL(10, 2) NOT NULL,
   fecha_registro DATETIME NOT NULL,
 
-  FOREIGN KEY (id_negocio) REFERENCES negocios(id).
+  FOREIGN KEY (id_negocio) REFERENCES negocios(id),
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
@@ -103,7 +103,7 @@ CREATE TABLE insumos (
   stock_minimo DECIMAL(10, 2) NOT NULL DEFAULT 0,
   fecha_registro DATETIME NOT NULL,
 
-  FOREIGN KEY (id_negocio) REFERENCES negocios(id).
+  FOREIGN KEY (id_negocio) REFERENCES negocios(id),
   FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
 );
 
@@ -167,12 +167,12 @@ CREATE TABLE predicciones (
 CREATE TABLE detalles_prediccion (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
   id_prediccion INTEGER NOT NULL,
-  inventario_id INTEGER NOT NULL,
+  id_producto INTEGER NOT NULL,
   cantidad DECIMAL(10, 2) NOT NULL,
   sugerencia TEXT NOT NULL,
 
-  FOREIGN KEY (id_prediccion) REFERENCES prediccion(id),
-  FOREIGN KEY (inventario_id) REFERENCES inventario(id)
+  FOREIGN KEY (id_prediccion) REFERENCES predicciones(id),
+  FOREIGN KEY (id_producto) REFERENCES productos(id)
 );
 
 CREATE TABLE sugerencia (
