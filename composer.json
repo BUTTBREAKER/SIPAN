@@ -23,10 +23,7 @@
       "composer setup",
       "php -S localhost:80"
     ],
-    "build": [
-      "composer i --no-dev -o",
-      "composer archive"
-    ],
+    "build": ["composer i --no-dev -o", "composer archive"],
     "setup": "php -r \"if (!file_exists('.env.php')) copy('.env.example.php', '.env.php');\"",
     "test": "phpunit",
     "rector": "rector"
