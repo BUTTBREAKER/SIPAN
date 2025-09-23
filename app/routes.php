@@ -3,6 +3,7 @@
 use SIPAN\App;
 use SIPAN\Controllers\DashboardController;
 use SIPAN\Controllers\LandingController;
+use SIPAN\Controllers\ProductApiController;
 use SIPAN\Controllers\ProfileController;
 use SIPAN\Controllers\UserApiController;
 use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
@@ -14,9 +15,7 @@ App::group('/api', static function (): void {
   App::route('POST /registrarse', [UserApiController::class, 'register']);
 
   App::group('/productos', static function (): void {
-    App::route('GET /', static function (): void {
-      App::json([]);
-    });
+    App::route('GET /', [ProductApiController::class, 'index']);
   });
 });
 
