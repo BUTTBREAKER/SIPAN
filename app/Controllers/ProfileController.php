@@ -133,6 +133,6 @@ final readonly class ProfileController
 
   static function showProfile(): void
   {
-    App::renderPage('perfil', 'Perfil', 'main-layout');
+    App::renderPage('perfil', 'Perfil', 'dashboard-layout');
   }
 }

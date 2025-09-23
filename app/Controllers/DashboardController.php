@@ -10,6 +10,6 @@ final readonly class DashboardController
 {
   static function showDashboard(): void
   {
-    App::renderPage('dashboard', 'Administración', 'main-layout');
+    App::renderPage('dashboard', 'Administración', 'dashboard-layout');
   }
 }
