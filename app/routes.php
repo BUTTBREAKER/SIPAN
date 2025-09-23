@@ -4,14 +4,13 @@ use SIPAN\App;
 use SIPAN\Controllers\DashboardController;
 use SIPAN\Controllers\LandingController;
 use SIPAN\Controllers\ProfileController;
+use SIPAN\Controllers\UserApiController;
 use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 
 App::route('GET /', [LandingController::class, 'showLanding']);
 
 App::group('/api', static function (): void {
-  App::route('POST /ingresar', static function (): void {
-    App::halt(401);
-  });
+  App::route('POST /ingresar', [UserApiController::class, 'login']);
 
   App::route('POST /registrarse', static function (): void {
     App::halt(409);
