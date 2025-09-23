@@ -1,9 +1,0 @@
-{
-  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
-  "files": {
-    "ignore": ["node_modules", ".svelte-kit", "*.svelte", "*.min.*"]
-  },
-  "formatter": {
-    "indentStyle": "space"
-  }
-}
