@@ -1,7 +1,13 @@
-@base = http://localhost
-@api = http://localhost/api
+@base = http://localhost/SIPAN
+@api = http://localhost/SIPAN/api
 
 POST {{api}}/ingresar
+Content-Type: application/json
+
+{
+  "correo": "franyeradriansanchez@gmail.com",
+  "clave": "Fran.0610"
+}
 
 ###
 POST {{api}}/registrarse
