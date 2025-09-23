@@ -12,7 +12,11 @@ final readonly class UserApiController
   {
     $credentials = App::request()->data->getData();
 
-    auth()->login($credentials);
+    if (!auth()->login($credentials)) {
+      $firstError = array_values(auth()->errors())[0];
+
+      App::halt(401, $firstError);
+    }
 
     App::json(auth()->user()->get());
   }
