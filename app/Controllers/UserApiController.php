@@ -25,4 +25,9 @@ final readonly class UserApiController
 
     App::halt(201);
   }
+
+  static function logout(): void
+  {
+    auth()->logout();
+  }
 }
