@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Container\Container;
 use Leaf\Helpers\Password;
+use flight\Container;
 use SIPAN\App;
 
 $envFilePath = __DIR__ . '/../.env.php';
