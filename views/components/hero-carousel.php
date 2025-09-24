@@ -10,7 +10,7 @@ $carouselImages = [
 
 ?>
 
-<div class="carousel slide carousel-fade" data-bs-ride="carousel">
+<div class="carousel slide overflow-x-hidden" data-bs-ride="carousel">
   <div class="carousel-inner">
     <?php foreach ($carouselImages as $index => $imagePath) : ?>
       <div class="carousel-item <?= $index !== 0 ?: 'active' ?>">
