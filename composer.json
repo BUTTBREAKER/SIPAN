@@ -23,7 +23,6 @@
       "composer setup",
       "php -S localhost:80"
     ],
-    "build": ["composer i --no-dev -o", "composer archive"],
     "setup": "php -r \"if (!file_exists('.env.php')) copy('.env.example.php', '.env.php');\"",
     "test": "phpunit",
     "rector": "rector"
@@ -33,17 +32,6 @@
     "phpunit/phpunit": "^11.5",
     "rector/rector": "^2.1",
     "symfony/var-dumper": "^7.3"
-  },
-  "archive": {
-    "name": "SIPAN",
-    "exclude": [
-      ".editorconfig",
-      ".env.example.php",
-      ".gitignore",
-      ".git",
-      "composer.*",
-      "db"
-    ]
   },
   "config": {
     "sort-packages": true
