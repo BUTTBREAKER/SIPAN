@@ -13,10 +13,9 @@ $navLinks = [
 
 ?>
 
-<nav id="<?= $navbarId ?>" class="navbar navbar-expand-lg sticky-top">
+<nav id="<?= $navbarId ?>" class="navbar navbar-expand-xl sticky-top">
   <div class="container">
     <a
-      class="navbar-brand"
       href="./"
       data-bs-toggle="tooltip"
       title="Sistema Integral para Panaderías">
@@ -31,8 +30,8 @@ $navLinks = [
     <div
       class="collapse navbar-collapse"
       id="<?= $navbarCollapseId ?>">
-      <hr class="d-lg-none" />
-      <ul class="navbar-nav ms-auto gap-3 align-items-lg-center">
+      <hr class="d-xl-none" />
+      <ul class="navbar-nav ms-auto gap-5 align-items-xl-center">
         <?php foreach ($navLinks as $link): ?>
           <li class="nav-item">
             <a class="nav-link" href="<?= $link['href'] ?>">
@@ -41,7 +40,7 @@ $navLinks = [
           </li>
         <?php endforeach ?>
 
-        <li class="btn-group">
+        <li class="nav-item btn-group">
           <a
             class="btn btn-outline-dark"
             href="./ingresar">
