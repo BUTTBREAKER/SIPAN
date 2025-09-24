@@ -1,7 +1,5 @@
 <?php
 
-use SIPAN\App;
-
 $navbarCollapseId = uniqid();
 
 $navLinks = [
