@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
-  <title>SIPAN</title>
+  <title><?= $title ?></title>
   <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
   <link rel="icon" href="./assets/img/favicon.png" />
   <link rel="stylesheet" href="./assets/dist/landing.css" />
