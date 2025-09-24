@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 ?>
 
-<div class="d-flex gap-3 align-items-center">
+<nav class="nav gap-5 justify-content-between">
   <a href="#!">
     <img src="./assets/img/play-store.png" />
   </a>
   <a href="#!">
     <img src="./assets/img/apple-store.png" />
   </a>
-</div>
+</nav>

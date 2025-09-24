@@ -33,32 +33,30 @@ $linksLists = [
 
 ?>
 
-<footer class="container">
-  <div class="row row-gap-4">
-    <div class="col-12 col-md-7 col-lg-3 order-first">
-      <img src="./assets/img/logo.png" width="150" class="img-fluid mb-4" />
-      <p class="text-secondary">
+<footer class="container text-center">
+  <div class="row row-gap-5">
+    <div class="col-md-6 col-xl-3 order-first d-flex flex-column justify-content-between gap-5">
+      <img src="./assets/img/logo.png" class="img-fluid px-5" />
+      <p class="m-0">
         Book your trip in minute, get full Control for much longer.
       </p>
     </div>
-    <?php foreach ($linksLists as $linksList): ?>
-      <div class="col-lg-2 col-md-4 order-last">
-        <h4 class="mb-4"><?= $linksList['title'] ?></h4>
-        <ul class="list-unstyled d-grid gap-3 m-0">
-          <?php foreach ($linksList['links'] as $link): ?>
-            <li>
-              <a class="link-900" href="<?= $link['href'] ?>">
-                <?= $link['label'] ?>
-              </a>
-            </li>
+    <?php foreach ($linksLists as $linksList) : ?>
+      <div class="col-6 col-md-4 col-xl-2 order-last d-flex flex-column justify-content-between gap-5">
+        <h2 class="m-0"><?= $linksList['title'] ?></h2>
+        <nav class="nav flex-column">
+          <?php foreach ($linksList['links'] as $link) : ?>
+            <a class="nav-link px-0" href="<?= $link['href'] ?>">
+              <?= $link['label'] ?>
+            </a>
           <?php endforeach ?>
-        </ul>
+        </nav>
       </div>
     <?php endforeach ?>
 
-    <div class="col-12 col-md-5 col-lg-3 order-lg-last order-md-1">
+    <div class="col-md order-xl-last order-md-first d-flex flex-column justify-content-between gap-5">
       <?php App::renderComponent('social-links') ?>
-      <h4 class="my-4">Discover our app</h4>
+      <h2 class="m-0">Discover our app</h2>
       <?php App::renderComponent('apps-links') ?>
     </div>
   </div>
