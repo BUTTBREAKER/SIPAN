@@ -7,15 +7,15 @@ $url = App::request()->url;
 ?>
 
 <!DOCTYPE html>
-<html lang="es">
+<html data-bs-theme="dark">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="color-scheme" content="only dark" />
   <title>SIPAN - Sistema de Gestión de Panadería</title>
   <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/dist/dashboard.css" />
   <style>
     :root {
       --primary-bg: #1a1f2d;
@@ -258,7 +258,7 @@ $url = App::request()->url;
     <?= $page ?>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="./assets/dist/dashboard.js"></script>
   <script>
     // Toggle sidebar
     document.getElementById('sidebarToggle').addEventListener('click', function() {
