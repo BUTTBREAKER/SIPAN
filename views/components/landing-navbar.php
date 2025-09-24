@@ -31,7 +31,7 @@ $navLinks = [
       class="collapse navbar-collapse"
       id="<?= $navbarCollapseId ?>">
       <hr class="d-xl-none" />
-      <ul class="navbar-nav ms-auto gap-5 align-items-xl-center">
+      <ul class="navbar-nav ms-auto gap-3 align-items-xl-center">
         <?php foreach ($navLinks as $link) : ?>
           <li>
             <a class="nav-link" href="<?= $link['href'] ?>">
@@ -42,12 +42,12 @@ $navLinks = [
 
         <li class="btn-group">
           <a
-            class="btn btn-outline-dark"
+            class="btn btn-danger"
             href="./ingresar">
             Iniciar sesión
           </a>
           <a
-            class="btn btn-outline-dark"
+            class="btn btn-danger"
             href="./registrarse">
             Registrarse
           </a>

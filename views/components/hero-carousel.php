@@ -12,10 +12,10 @@ $carouselImages = [
 
 <div class="carousel slide carousel-fade" data-bs-ride="carousel">
   <div class="carousel-inner">
-    <?php foreach ($carouselImages as $index => $imagePath): ?>
+    <?php foreach ($carouselImages as $index => $imagePath) : ?>
       <div class="carousel-item <?= $index !== 0 ?: 'active' ?>">
-        <img src="<?= $imagePath ?>" height="500" width="100%" class="object-fit-contain" />
+        <img src="<?= $imagePath ?>" height="500" class="object-fit-contain w-100" />
       </div>
-    <?php endforeach; ?>
+    <?php endforeach ?>
   </div>
 </div>

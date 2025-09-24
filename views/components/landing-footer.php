@@ -34,15 +34,15 @@ $linksLists = [
 ?>
 
 <footer class="container text-center">
-  <div class="row row-gap-5">
-    <div class="col-md-6 col-xl-3 order-first d-flex flex-column justify-content-between gap-5">
-      <img src="./assets/img/logo.png" class="img-fluid px-5" />
+  <div class="row row-gap-3">
+    <div class="col-md-6 col-xl-3 order-first d-flex flex-column justify-content-between gap-3">
+      <img src="./assets/img/logo.png" class="w-50 m-auto" />
       <p class="m-0">
         Book your trip in minute, get full Control for much longer.
       </p>
     </div>
     <?php foreach ($linksLists as $linksList) : ?>
-      <div class="col-6 col-md-4 col-xl-2 order-last d-flex flex-column justify-content-between gap-5">
+      <div class="col-6 col-md-4 col-xl-2 order-last d-flex flex-column justify-content-between gap-3">
         <h2 class="m-0"><?= $linksList['title'] ?></h2>
         <nav class="nav flex-column">
           <?php foreach ($linksList['links'] as $link) : ?>
@@ -54,7 +54,7 @@ $linksLists = [
       </div>
     <?php endforeach ?>
 
-    <div class="col-md order-xl-last order-md-first d-flex flex-column justify-content-between gap-5">
+    <div class="col-md order-xl-last order-md-first d-flex flex-column justify-content-between gap-3">
       <?php App::renderComponent('social-links') ?>
       <h2 class="m-0">Discover our app</h2>
       <?php App::renderComponent('apps-links') ?>
