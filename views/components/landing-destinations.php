@@ -28,7 +28,7 @@ $benefits = [
 <section class="text-center" id="destination">
   <img src="./assets/img/dest/shape.svg" class="position-absolute bottom-0 end-0" />
   <h2>Beneficios</h2>
-  <h3 class="display-1 font-cursive mb-5">Por qué elegir SIPAN</h3>
+  <h3 class="display-4 font-serif mb-5">Por qué elegir SIPAN</h3>
   <div class="row row-cols-1 row-cols-md-3 row-gap-3">
     <?php foreach ($benefits as $benefit) : ?>
       <div class="col">

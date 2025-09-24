@@ -37,7 +37,7 @@ $linksLists = [
   <div class="row row-gap-3">
     <div class="col-md-6 col-xl-3 order-first d-flex flex-column justify-content-between gap-3">
       <img src="./assets/img/logo.png" class="w-50 m-auto" />
-      <p class="m-0">
+      <p class="m-0 lead">
         Book your trip in minute, get full Control for much longer.
       </p>
     </div>
@@ -46,7 +46,7 @@ $linksLists = [
         <h2 class="m-0"><?= $linksList['title'] ?></h2>
         <nav class="nav flex-column">
           <?php foreach ($linksList['links'] as $link) : ?>
-            <a class="nav-link px-0" href="<?= $link['href'] ?>">
+            <a class="nav-link px-0 link-danger" href="<?= $link['href'] ?>">
               <?= $link['label'] ?>
             </a>
           <?php endforeach ?>

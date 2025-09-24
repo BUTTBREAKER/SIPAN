@@ -13,7 +13,7 @@ $socialLinks = [
 <nav class="nav gap-5 justify-content-between">
   <?php foreach ($socialLinks as $link): ?>
     <a
-      class="nav-link shadow-lg rounded-pill"
+      class="nav-link shadow-lg rounded-pill link-danger"
       href="<?= $link['href'] ?>">
       <i class="<?= $link['icon'] ?>"></i>
     </a>

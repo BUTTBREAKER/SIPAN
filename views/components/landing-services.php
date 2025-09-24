@@ -30,7 +30,7 @@ $services = [
 <section class="text-center" id="service">
   <img src="./assets/img/category/shape.svg" class="position-absolute end-0" />
   <h2>Funcionalidades</h2>
-  <h3 class="display-1 font-cursive mb-5">
+  <h3 class="display-4 font-serif mb-5">
     Soluciones completas para tu panadería
   </h3>
   <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 row-gap-3">

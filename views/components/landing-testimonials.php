@@ -30,19 +30,13 @@ $carouselId = uniqid();
 <section id="testimonial" class="row row-cols-1 row-cols-xl-2 row-gap-3">
   <div class="col">
     <h2>Testimonios</h2>
-    <h3 class="display-1 font-cursive m-0">Lo que dicen nuestros clientes</h3>
+    <h3 class="display-4 font-serif m-0">Lo que dicen nuestros clientes</h3>
   </div>
   <div class="col">
-    <div class="carousel slide overflow-x-hidden card card-body shadow-lg" id="<?= $carouselId ?>" data-bs-ride="carousel">
-      <div class="carousel-indicators">
-        <?php foreach ($testimonials as $index => $testimonial) : ?>
-          <button
-            class="<?= $index !== 0 ?: 'active' ?>"
-            data-bs-target="#<?= $carouselId ?>"
-            data-bs-slide-to="<?= $index ?>">
-          </button>
-        <?php endforeach ?>
-      </div>
+    <div
+      class="carousel slide overflow-x-hidden card card-body shadow-lg"
+      id="<?= $carouselId ?>"
+      data-bs-ride="carousel">
       <div class="carousel-inner">
         <?php foreach ($testimonials as $index => $testimonial) : ?>
           <div class="carousel-item <?= $index !== 0 ?: 'active' ?>">

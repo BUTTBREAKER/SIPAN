@@ -1,5 +1,3 @@
-import { sassPlugin } from "esbuild-sass-plugin";
-
 /** @type {import('esbuild').BuildOptions} */
 export const commonOptions = {
   bundle: true,
@@ -17,15 +15,5 @@ export const commonOptions = {
   },
   outdir: "assets/dist",
   target: ["es2018"],
-  plugins: [
-    sassPlugin({
-      silenceDeprecations: [
-        "import",
-        "global-builtin",
-        "function-units",
-        "color-functions",
-        "mixed-decls",
-      ],
-    }),
-  ],
+  plugins: [],
 };
