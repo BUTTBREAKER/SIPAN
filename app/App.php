@@ -12,7 +12,19 @@ final class App extends Flight
     string $layoutFileName,
     array $pageData = []
   ): void {
-    self::render("pages/$pageFileName", ['title' => $pageTitle] + $pageData, 'page');
+    self::render(
+      "pages/$pageFileName",
+      ['title' => $pageTitle] + $pageData,
+      'page'
+    );
+
     self::render("layouts/$layoutFileName");
+  }
+
+  static function renderComponent(
+    string $componentFileName,
+    array $componentData = []
+  ): void {
+    self::render("components/$componentFileName", $componentData);
   }
 }
