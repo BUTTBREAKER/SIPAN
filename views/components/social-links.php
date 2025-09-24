@@ -3,20 +3,19 @@
 declare(strict_types=1);
 
 $socialLinks = [
-  ['id' => 'facebook', 'icon' => 'fab fa-facebook-f', 'href' => '#!'],
-  ['id' => 'instagram', 'icon' => 'fab fa-instagram', 'href' => '#!'],
-  ['id' => 'twitter', 'icon' => 'fab fa-twitter', 'href' => '#!'],
+  ['icon' => 'fab fa-facebook-f', 'href' => '#!'],
+  ['icon' => 'fab fa-instagram', 'href' => '#!'],
+  ['icon' => 'fab fa-twitter', 'href' => '#!'],
 ];
 
 ?>
 
-<div class="d-flex gap-3">
+<nav class="nav gap-5 justify-content-between">
   <?php foreach ($socialLinks as $link): ?>
     <a
-      class="icon-item shadow-lg"
-      id="<?= $link['id'] ?>"
+      class="nav-link shadow-lg rounded-pill"
       href="<?= $link['href'] ?>">
       <i class="<?= $link['icon'] ?>"></i>
     </a>
   <?php endforeach ?>
-</div>
+</nav>
