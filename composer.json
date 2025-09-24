@@ -5,6 +5,7 @@
     "flightphp/core": "^3.17",
     "leafs/auth": "^4.2",
     "leafs/db": "^4.0",
+    "leafs/form": "^3.2",
     "leafs/leaf": "^4.4"
   },
   "autoload": {

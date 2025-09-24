@@ -12,7 +12,18 @@ final readonly class UserApiController
   {
     $credentials = App::request()->data->getData();
 
-    if (!auth()->login($credentials)) {
+    $validatedCredentials = form()->validate($credentials, [
+      'correo' => 'email',
+      'clave' => 'password',
+    ]);
+
+    if (!$validatedCredentials) {
+      $firstError = array_values(form()->errors())[0];
+
+      App::halt(400, $firstError);
+    }
+
+    if (!auth()->login($validatedCredentials)) {
       $firstError = array_values(auth()->errors())[0];
 
       App::halt(401, $firstError);
@@ -25,25 +36,43 @@ final readonly class UserApiController
   {
     $data = App::request()->data;
 
+    $validatedData = form()->validate($data->getData(), [
+      'nombre_negocio' => 'text',
+      'telefono' => 'phone',
+      'correo' => 'email',
+      'es_principal' => 'boolean',
+      'primer_nombre' => 'text',
+      'segundo_nombre' => 'optional|text',
+      'primer_apellido' => 'text',
+      'segundo_apellido' => 'optional|text',
+      'clave' => 'password',
+    ]);
+
+    if (!$validatedData) {
+      $firstError = array_values(form()->errors())[0];
+
+      App::halt(400, $firstError);
+    }
+
     db()
       ->beginTransaction()
       ->insert('negocios')
       ->params([
-        'nombre' => $data->nombre_negocio,
-        'telefono' => $data->telefono,
-        'correo' => $data->correo,
-        'es_principal' => filter_var($data->es_principal, FILTER_VALIDATE_BOOL),
+        'nombre' => $validatedData['nombre_negocio'],
+        'telefono' => $validatedData['telefono'],
+        'correo' => $validatedData['correo'],
+        'es_principal' => filter_var($validatedData['es_principal'], FILTER_VALIDATE_BOOL),
         'created_at' => date('Y-m-d H:i:s'),
       ])
       ->execute();
 
     auth()->register([
-      'primer_nombre' => $data->primer_nombre,
-      'segundo_nombre' => $data->segundo_nombre ?: null,
-      'primer_apellido' => $data->primer_apellido,
-      'segundo_apellido' => $data->segundo_apellido ?: null,
-      'correo' => $data->correo,
-      'clave' => $data->clave,
+      'primer_nombre' => $validatedData['primer_nombre'],
+      'segundo_nombre' => $validatedData['segundo_nombre'] ?: null,
+      'primer_apellido' => $validatedData['primer_apellido'],
+      'segundo_apellido' => $validatedData['segundo_apellido'] ?: null,
+      'correo' => $validatedData['correo'],
+      'clave' => $validatedData['clave'],
       'rol' => 'Administrador',
     ]);
 
