@@ -16,20 +16,6 @@ $navbarId = uniqid();
   <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
   <link rel="icon" href="./assets/img/favicon.png" />
   <link rel="stylesheet" href="./assets/dist/landing.css" />
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .font-serif {
-      font-family: 'Volkhov', serif;
-      font-weight: bolder;
-    }
-
-    .navbar {
-      backdrop-filter: blur(1em);
-    }
-  </style>
 </head>
 
 <body>

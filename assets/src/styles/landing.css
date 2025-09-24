@@ -1,0 +1,12 @@
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.font-serif {
+  font-family: 'Volkhov', serif;
+  font-weight: bolder;
+}
+
+.navbar {
+  backdrop-filter: blur(1em);
+}

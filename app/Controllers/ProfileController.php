@@ -12,12 +12,12 @@ final readonly class ProfileController
 
   static function showLogin(): void
   {
-    App::renderPage('login', 'Iniciar Sesión', 'auth-layout');
+    App::renderPage('login', 'Iniciar Sesión', 'login-layout');
   }
 
   static function showRegister(): void
   {
-    App::renderPage('register', 'Registro', 'auth-layout');
+    App::renderPage('register', 'Registro', 'login-layout');
   }
 
   function handleRegister(): void
