@@ -32,15 +32,15 @@ $navLinks = [
       id="<?= $navbarCollapseId ?>">
       <hr class="d-xl-none" />
       <ul class="navbar-nav ms-auto gap-5 align-items-xl-center">
-        <?php foreach ($navLinks as $link): ?>
-          <li class="nav-item">
+        <?php foreach ($navLinks as $link) : ?>
+          <li>
             <a class="nav-link" href="<?= $link['href'] ?>">
               <?= $link['label'] ?>
             </a>
           </li>
         <?php endforeach ?>
 
-        <li class="nav-item btn-group">
+        <li class="btn-group">
           <a
             class="btn btn-outline-dark"
             href="./ingresar">
