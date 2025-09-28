@@ -1,7 +1,7 @@
 /** @type {import('esbuild').BuildOptions} */
 export const commonOptions = {
   bundle: true,
-  entryPoints: ["assets/src/layouts/*.ts"],
+  entryPoints: ["assets/src/layouts/*.ts", "assets/src/pages/*.ts"],
   format: "esm",
   loader: {
     ".module.css": "local-css",

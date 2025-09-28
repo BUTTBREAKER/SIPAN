@@ -15,7 +15,7 @@ $navbarId = uniqid();
   <title><?= $title ?></title>
   <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
   <link rel="icon" href="./assets/img/favicon.png" />
-  <link rel="stylesheet" href="./assets/dist/landing.css" />
+  <link rel="stylesheet" href="./assets/dist/layouts/landing.css" />
 </head>
 
 <body>
@@ -25,7 +25,7 @@ $navbarId = uniqid();
   </div>
   <?php App::renderComponent('landing-footer') ?>
 
-  <script src="./assets/dist/landing.js"></script>
+  <script src="./assets/dist/layouts/landing.js"></script>
 </body>
 
 </html>

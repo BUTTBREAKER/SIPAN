@@ -22,7 +22,7 @@ use SIPAN\App;
   <!-- App JS -->
   <script src="./assets/js/app.js"></script>
 
-  <link rel="stylesheet" href="./assets/dist/dashtail-login.css" />
+  <link rel="stylesheet" href="./assets/dist/layouts/dashtail-login.css" />
 </head>
 
 <body
@@ -75,7 +75,7 @@ use SIPAN\App;
     </div>
   </div>
 
-  <script src="./assets/dist/dashtail-login.js"></script>
+  <script src="./assets/dist/layouts/dashtail-login.js"></script>
 </body>
 
 </html>
