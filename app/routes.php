@@ -8,8 +8,6 @@ use SIPAN\Controllers\ProfileController;
 use SIPAN\Controllers\UserApiController;
 use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 
-App::route('GET /', [LandingController::class, 'showLanding']);
-
 App::group('/api', static function (): void {
   App::route('POST /ingresar', UserApiController::login(...));
   App::route('POST /registrarse', UserApiController::register(...));
@@ -20,7 +18,21 @@ App::group('/api', static function (): void {
   });
 });
 
-// 📌 Rutas de autenticación
+////////////////////////////////////
+// 📌 Ruta pública (Landing Page) //
+////////////////////////////////////
+App::route('GET /', [LandingController::class, 'showLanding']);
+
+App::route('GET /*.html', static function (): void {
+  $url = App::request()->url;
+  $page = substr($url, 1, -5);
+
+  App::renderPage($page, ucfirst($page), 'dashtail-layout');
+});
+
+///////////////////////////////
+// 📌 Rutas de autenticación //
+///////////////////////////////
 App::group('/ingresar', static function (): void {
   App::route('GET /', [ProfileController::class, 'showLogin']);
   App::route('POST /', [ProfileController::class, 'handleLogin']);
@@ -31,7 +43,9 @@ App::group('/registrarse', static function (): void {
   App::route('POST /', [ProfileController::class, 'handleRegister']);
 }, [EnsureUserIsNotLoggedMiddleware::class]);
 
-// 📌 Rutas protegidas con autenticación
+///////////////////////////////////////////
+// 📌 Rutas protegidas con autenticación //
+///////////////////////////////////////////
 App::group('/administracion', static function (): void {
   App::route('GET /', DashboardController::showDashboard(...));
   App::route('POST /salir', [ProfileController::class, 'handleLogout']);
