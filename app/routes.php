@@ -27,6 +27,10 @@ App::route('GET /*.html', static function (): void {
   $url = App::request()->url;
   $page = substr($url, 1, -5);
 
+  if ($page === 'login') {
+    App::redirect('/ingresar');
+  }
+
   App::renderPage($page, ucfirst($page), 'dashtail-layout');
 });
 
