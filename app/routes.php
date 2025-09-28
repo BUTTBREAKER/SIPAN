@@ -29,6 +29,14 @@ App::route('GET /*.html', static function (): void {
 
   if ($page === 'login') {
     App::redirect('/ingresar');
+
+    return;
+  }
+
+  if ($page === 'forgot') {
+    App::renderPage($page, 'Forgot Password', 'dashtail-login-layout');
+
+    return;
   }
 
   App::renderPage($page, ucfirst($page), 'dashtail-layout');
