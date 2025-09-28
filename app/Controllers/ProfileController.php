@@ -17,7 +17,7 @@ final readonly class ProfileController
 
   static function showRegister(): void
   {
-    App::renderPage('register', 'Registro', 'dashtail-layout');
+    App::renderPage('register', 'Registro', 'dashtail-login-layout');
   }
 
   function handleRegister(): void

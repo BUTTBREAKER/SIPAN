@@ -39,6 +39,12 @@ App::route('GET /*.html', static function (): void {
     return;
   }
 
+  if ($page === 'register') {
+    App::redirect('/registrarse');
+
+    return;
+  }
+
   App::renderPage($page, ucfirst($page), 'dashtail-layout');
 });
 
