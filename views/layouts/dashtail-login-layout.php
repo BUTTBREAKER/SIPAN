@@ -16,25 +16,13 @@ use SIPAN\App;
   <!-- Favicon CSS -->
   <link rel="icon" href="./assets/img/logo.png" />
 
-  <!-- Fonts CSS -->
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
-
-  <style>
-    [x-cloak] {
-      display: none !important;
-    }
-  </style>
-
-  <!-- App CSS -->
-  <link rel="stylesheet" href="./assets/css/app.css" />
-
   <!-- Alpine JS -->
   <script defer src="./assets/js/alpine.js"></script>
 
   <!-- App JS -->
   <script src="./assets/js/app.js"></script>
+
+  <link rel="stylesheet" href="./assets/dist/dashtail-login.css" />
 </head>
 
 <body
@@ -86,6 +74,8 @@ use SIPAN\App;
       </div>
     </div>
   </div>
+
+  <script src="./assets/dist/dashtail-login.js"></script>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@biomejs/biome": "1.7.2",
+    "@fontsource/inter": "^5.2.8",
     "@fontsource/poppins": "^5.2.7",
     "@fontsource/volkhov": "^5.2.8",
     "@fortawesome/fontawesome-free": "^7.0.1",
