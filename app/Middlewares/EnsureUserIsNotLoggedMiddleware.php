@@ -6,9 +6,11 @@ use SIPAN\App;
 
 final readonly class EnsureUserIsNotLoggedMiddleware
 {
-  static function before(): void
+  static function before()
   {
-    if (auth()->id() !== null) {
+    if (auth()->user() === null) {
+      return true;
+    } else {
       App::redirect('/administracion');
     }
   }

@@ -119,15 +119,14 @@ final readonly class ProfileController
       return;
     }
 
-    $_SESSION['user'] = $user;
+    session()->set('user', $user);
 
     App::json(['success' => 'Inicio de sesión exitoso']);
   }
 
   static function handleLogout(): void
   {
-    session_start();
-    session_destroy();
+    session()->destroy();
     App::redirect('/');
   }
 

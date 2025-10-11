@@ -6,10 +6,12 @@ use SIPAN\App;
 
 final readonly class EnsureUserIsLoggedMiddleware
 {
-  static function before(): void
+  static function before()
   {
-    if (auth()->id() === null) {
+    if (auth()->user() === null) {
       App::redirect('/ingresar');
+    } else {
+      return true;
     }
   }
 }

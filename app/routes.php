@@ -9,6 +9,7 @@ use SIPAN\Controllers\OAuth2Controller;
 use SIPAN\Controllers\ProductApiController;
 use SIPAN\Controllers\ProfileController;
 use SIPAN\Controllers\UserApiController;
+use SIPAN\Middlewares\EnsureUserIsLoggedMiddleware;
 use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 
 App::group('/api', static function (): void {
@@ -26,7 +27,7 @@ App::group('/api', static function (): void {
 ////////////////////////////////////
 // 📌 Ruta pública (Landing Page) //
 ////////////////////////////////////
-App::route('GET /', LandingController::showLanding(...));
+App::route('GET /', LandingController::showLanding(...))->addMiddleware(EnsureUserIsNotLoggedMiddleware::class);
 App::route('GET /*.html', DashtailPagesController::render(...));
 
 ///////////////////////////////
@@ -40,12 +41,12 @@ App::group('/oauth2', static function (): void {
 });
 
 App::group('/ingresar', static function (): void {
-  App::route('GET /', [ProfileController::class, 'showLogin']);
+  App::route('GET /', ProfileController::showLogin(...));
   App::route('POST /', [ProfileController::class, 'handleLogin']);
 }, [EnsureUserIsNotLoggedMiddleware::class]);
 
 App::group('/registrarse', static function (): void {
-  App::route('GET /', [ProfileController::class, 'showRegister']);
+  App::route('GET /', ProfileController::showRegister(...));
   App::route('POST /', [ProfileController::class, 'handleRegister']);
 }, [EnsureUserIsNotLoggedMiddleware::class]);
 
@@ -64,4 +65,4 @@ App::group('/administracion', static function (): void {
       ]);
     });
   });
-}, [/*EnsureUserIsLoggedMiddleware::class*/]);
+}, [EnsureUserIsLoggedMiddleware::class]);
