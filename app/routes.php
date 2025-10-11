@@ -1,5 +1,6 @@
 <?php
 
+use GuzzleHttp\Client;
 use SIPAN\App;
 use SIPAN\Controllers\DashboardController;
 use SIPAN\Controllers\LandingController;
@@ -21,26 +22,16 @@ App::group('/api', static function (): void {
   App::route('/gemini', static function (): void {
     $prompt = (App::request()->data->prompt ?: App::request()->query->prompt) ?: 'Hola';
     $apiKey = $_ENV['GEMINI_API_KEY'];
-    $geminiClient = Gemini::client($apiKey);
 
-    $transporterReflectionProperty = new ReflectionProperty($geminiClient, 'transporter');
-    $transporterReflectionProperty->setAccessible(true);
-    $transporter = $transporterReflectionProperty->getValue($geminiClient);
-
-    $httpClientReflectionProperty = new ReflectionProperty($transporter, 'client');
-    $httpClientReflectionProperty->setAccessible(true);
-    $httpClient = $httpClientReflectionProperty->getValue($transporter);
-
-    $configReflectionProperty = new ReflectionProperty($httpClient, 'config');
-    $configReflectionProperty->setAccessible(true);
-
-    $configReflectionProperty->setValue(
-      $httpClient,
-      ['verify' => false] + $configReflectionProperty->getValue($httpClient)
-    );
+    $geminiClient = Gemini::factory()
+      ->withApiKey($apiKey)
+      ->withHttpClient(new Client([
+        'verify' => false,
+      ]))
+      ->make();
 
     $response = $geminiClient
-      ->generativeModel(model: 'gemini-2.0-flash')
+      ->generativeModel('gemini-2.0-flash')
       ->generateContent($prompt);
 
     // echo $response->text(); // Hello! How can I assist you today?
