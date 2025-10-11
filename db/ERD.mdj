@@ -3357,7 +3357,8 @@
 								"$ref": "AAAAAAGVLbjBrCJsEPg="
 							},
 							"name": "clave",
-							"length": 0
+							"length": 0,
+							"nullable": true
 						},
 						{
 							"_type": "ERDColumn",

@@ -126,9 +126,9 @@ final readonly class ProfileController
 
   static function handleLogout(): void
   {
+    session_start();
     session_destroy();
-
-    App::json(['success' => 'Sesión cerrada']);
+    App::redirect('/');
   }
 
   static function showProfile(): void

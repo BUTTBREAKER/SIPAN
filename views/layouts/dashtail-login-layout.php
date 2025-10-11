@@ -2,6 +2,8 @@
 
 use SIPAN\App;
 
+$errores = (array) flash()->display('errores');
+
 ?>
 
 <!doctype html>
@@ -76,6 +78,9 @@ use SIPAN\App;
   </div>
 
   <script src="./assets/dist/layouts/dashtail-login.js"></script>
+  <?php if ($errores): ?>
+    <script>alert('<?= $errores[0] ?>')</script>
+  <?php endif ?>
 </body>
 
 </html>

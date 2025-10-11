@@ -62,8 +62,8 @@ CREATE TABLE usuarios (
   segundo_apellido VARCHAR(255) CHECK (LENGTH(segundo_apellido) > 0),
 
   -- sólo el administrador puede usar el mismo correo que el negocio
-  correo VARCHAR(255) UNIQUE NOT NULL CHECK (correo LIKE '%@%'),
-  clave VARCHAR(255) NOT NULL CHECK (LENGTH(clave) > 0),
+  email VARCHAR(255) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
+  clave VARCHAR(255) CHECK (LENGTH(clave) > 0),
   rol ENUM('Administrador', 'Empleado', 'Cajero') NOT NULL,
   activado BOOLEAN NOT NULL DEFAULT TRUE,
   created_at DATETIME NOT NULL,
