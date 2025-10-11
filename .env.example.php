@@ -7,7 +7,7 @@ return [
     'PASSWORD' => null,
   ],
   'TIMEZONE' => 'America/Caracas',
-  'TEST_ENDPOINT' => 'http://localhost/sipan',
+  'TEST_ENDPOINT' => 'http://localhost:8080',
 
   # ======================================================================================
   # =           Credenciales de Google (https://console.cloud.google.com/auth)           =
