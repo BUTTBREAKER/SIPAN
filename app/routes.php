@@ -51,6 +51,51 @@ App::route('GET /*.html', static function (): void {
 ///////////////////////////////
 // 📌 Rutas de autenticación //
 ///////////////////////////////
+App::route('GET /oauth2/github', static function (): void {
+  $codigo = App::request()->query->code;
+  $estado = App::request()->query->state;
+
+  if (!$codigo) {
+    $urlDeGithub = auth()->client('github')->getAuthorizationUrl();
+    $estadoDeGithub = auth()->client('github')->getState();
+    session()->set('oauth2state', $estadoDeGithub);
+    App::redirect($urlDeGithub);
+
+    return;
+  }
+
+  if (!$estado || ($estado !== session()->get('oauth2state'))) {
+    session()->remove('oauth2state');
+    flash()->set(['No se pudo iniciar sesión con GitHub.' . ' El estado es inválido'], 'errores');
+    App::redirect('/ingresar');
+
+    return;
+  }
+
+  try {
+    $token = auth()->client('github')->getAccessToken('authorization_code', [
+      'code' => $codigo,
+    ]);
+
+    $usuarioDeGithub = auth()->client('github')->getResourceOwner($token)->toArray();
+
+    auth()->fromOAuth([
+      'token' => $token,
+      'user' => [
+        'email' => $usuarioDeGithub['email'] ?? ($usuarioDeGithub['login'] . '@users.noreply.github.com'),
+        'rol' => 'Administrador',
+      ],
+    ]);
+
+    App::redirect('/administracion');
+  } catch (Throwable $error) {
+    flash()->set(['No se pudo iniciar sesión con GitHub. ' . $error->getMessage()], 'errores');
+    App::redirect('/ingresar');
+
+    return;
+  }
+});
+
 App::route('GET /oauth2/google', static function (): void {
   $error = App::request()->query->error;
   $codigo = App::request()->query->code;

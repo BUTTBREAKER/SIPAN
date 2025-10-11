@@ -56,9 +56,9 @@ CREATE TABLE sectores (
 
 CREATE TABLE usuarios (
   id INTEGER AUTO_INCREMENT PRIMARY KEY,
-  primer_nombre VARCHAR(255) NOT NULL CHECK (LENGTH(primer_nombre) > 0),
+  primer_nombre VARCHAR(255) CHECK (LENGTH(primer_nombre) > 0),
   segundo_nombre VARCHAR(255) CHECK (LENGTH(segundo_nombre) > 0),
-  primer_apellido VARCHAR(255) NOT NULL CHECK (LENGTH(primer_apellido) > 0),
+  primer_apellido VARCHAR(255) CHECK (LENGTH(primer_apellido) > 0),
   segundo_apellido VARCHAR(255) CHECK (LENGTH(segundo_apellido) > 0),
 
   -- sólo el administrador puede usar el mismo correo que el negocio

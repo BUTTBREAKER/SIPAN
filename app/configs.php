@@ -1,6 +1,7 @@
 <?php
 
 use flight\Container;
+use League\OAuth2\Client\Provider\Github;
 use SIPAN\App;
 
 $envFilePath = __DIR__ . '/../.env.php';
@@ -25,6 +26,12 @@ $container->singleton(PDO::class, static fn(): PDO => new PDO(
 db()->connection($container->get(PDO::class));
 (new ReflectionProperty(auth(), 'db'))->setValue(auth(), db());
 
+$github = new Github([
+  'clientId' => $_ENV['GITHUB_AUTH_CLIENT_ID'],
+  'clientSecret' => $_ENV['GITHUB_AUTH_CLIENT_SECRET'],
+  'redirectUri' => $_ENV['GITHUB_AUTH_REDIRECT_URI'],
+]);
+
 $noExpirationLifetime = 0;
 
 auth()->config('db.table', 'usuarios');
@@ -33,6 +40,7 @@ auth()->config('password.key', 'clave');
 auth()->config('session.lifetime', $noExpirationLifetime);
 auth()->config('messages.loginParamsError', '¡Correo o contraseña incorrecta!');
 auth()->config('messages.loginPasswordError', auth()->config('messages.loginParamsError'));
+auth()->withProvider('github', $github);
 
 App::registerContainerHandler($container->get(...));
 

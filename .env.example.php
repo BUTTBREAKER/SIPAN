@@ -14,5 +14,12 @@ return [
   # ======================================================================================
   'GOOGLE_AUTH_CLIENT_ID' => '{google-client-id}',
   'GOOGLE_AUTH_CLIENT_SECRET' => '{google-client-secret}',
-  'GOOGLE_AUTH_REDIRECT_URI' => 'http://localhost/sitcav/oauth2/google',
+  'GOOGLE_AUTH_REDIRECT_URI' => 'http://localhost/SIPAN/oauth2/google',
+
+  # =========================================================================================
+  # =           Credenciales de Github (https://github.com/settings/applications)           =
+  # =========================================================================================
+  'GITHUB_AUTH_CLIENT_ID' => '{github-client-id}',
+  'GITHUB_AUTH_CLIENT_SECRET' => '{github-client-secret}',
+  'GITHUB_AUTH_REDIRECT_URI' => 'http://localhost/SIPAN/oauth2/github',
 ];
