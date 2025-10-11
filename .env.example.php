@@ -36,4 +36,6 @@ return [
   'TWITTER_AUTH_CLIENT_ID' => '{twitter-client-id}',
   'TWITTER_AUTH_CLIENT_SECRET' => '{twitter-client-secret}',
   'TWITTER_AUTH_REDIRECT_URI' => 'http://localhost/SIPAN/oauth2/twitter',
+
+  'GEMINI_API_KEY' => 'YOUR_API_KEY',
 ];

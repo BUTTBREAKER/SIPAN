@@ -17,6 +17,29 @@ App::group('/api', static function (): void {
   App::group('/productos', static function (): void {
     App::route('GET /', ProductApiController::index(...));
   });
+
+  App::route('/gemini', static function (): void {
+    $prompt = App::request()->data->prompt ?: App::request()->query->prompt ?: 'Hola';
+    $apiKey = $_ENV['GEMINI_API_KEY'];
+    $client = Gemini::client($apiKey);
+
+    $respuesta = $client
+      ->generativeModel(model: 'gemini-2.0-flash')
+      ->generateContent($prompt);
+
+    // echo $respuesta->text(); // Hello! How can I assist you today?
+    Flight::halt(200, $respuesta->text());
+
+    // Helper method usage
+    // $respuesta = $client->generativeModel(
+    //     model: GeminiHelper::generateGeminiModel(
+    //         variation: ModelVariation::FLASH,
+    //         generation: 2.5,
+    //         version: "preview-04-17"
+    //     ), // models/gemini-2.5-flash-preview-04-17
+    // );
+    // $respuesta->text(); // Hello! How can I assist you today?
+  });
 });
 
 ////////////////////////////////////
