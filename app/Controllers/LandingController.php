@@ -6,7 +6,7 @@ use SIPAN\App;
 
 final readonly class LandingController
 {
-  function showLanding(): void
+  static function showLanding(): void
   {
     App::renderPage('landing', 'SIPAN', 'landing-layout');
   }
