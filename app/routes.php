@@ -7,6 +7,7 @@ use SIPAN\Controllers\ProductApiController;
 use SIPAN\Controllers\ProfileController;
 use SIPAN\Controllers\UserApiController;
 use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
+use Smolblog\OAuth2\Client\Provider\Twitter;
 
 App::group('/api', static function (): void {
   App::route('POST /ingresar', UserApiController::login(...));
@@ -51,6 +52,137 @@ App::route('GET /*.html', static function (): void {
 ///////////////////////////////
 // 📌 Rutas de autenticación //
 ///////////////////////////////
+App::route('GET /oauth2/facebook', static function (): void {
+  $codigo = App::request()->query->code;
+  $estado = App::request()->query->state;
+
+  if (!$codigo) {
+    $urlDeFacebook = auth()->client('facebook')->getAuthorizationUrl();
+    $estadoDeFacebook = auth()->client('facebook')->getState();
+    session()->set('oauth2state', $estadoDeFacebook);
+    App::redirect($urlDeFacebook);
+
+    return;
+  }
+
+  if (!$estado || ($estado !== session()->get('oauth2state'))) {
+    session()->remove('oauth2state');
+    flash()->set(['No se pudo iniciar sesión con Facebook.' . ' El estado es inválido'], 'errores');
+    App::redirect('/ingresar');
+
+    return;
+  }
+
+  try {
+    $token = auth()->client('facebook')->getAccessToken('authorization_code', [
+      'code' => $codigo,
+    ]);
+
+    $usuarioDeFacebook = auth()->client('facebook')->getResourceOwner($token)->toArray();
+
+    dd($usuarioDeFacebook);
+
+    auth()->fromOAuth([
+      'token' => $token,
+      'user' => [
+        'primer_nombre' => $usuarioDeFacebook['first_name'],
+        'primer_apellido' => $usuarioDeFacebook['last_name'],
+        'email' => $usuarioDeFacebook['email'] ?? ($usuarioDeFacebook['id'] . '@facebook.com'),
+        'rol' => 'Administrador',
+      ],
+    ]);
+
+    App::redirect('/administracion');
+  } catch (Throwable $error) {
+    flash()->set(['No se pudo iniciar sesión con Facebook. ' . $error->getMessage()], 'errores');
+    App::redirect('/ingresar');
+
+    return;
+  }
+});
+
+App::route('GET /oauth2/twitter', static function (): void {
+  $codigo = App::request()->query->code;
+  $estado = App::request()->query->state;
+  $twitter = auth()->client('twitter');
+
+  assert($twitter instanceof Twitter);
+
+  if (!$codigo) {
+    session()->unset('oauth2state');
+    session()->unset('oauth2verifier');
+
+    $urlDeTwitter = auth()->client('twitter')->getAuthorizationUrl(/*[
+      'scope' => [
+        'tweet.read',
+        'tweet.write',
+        'tweet.moderate.write',
+        'users.email',
+        'users.read',
+        'follows.read',
+        'follows.write',
+        'offline.access',
+        'space.read',
+        'mute.read',
+        'mute.write',
+        'like.read',
+        'like.write',
+        'list.read',
+        'list.write',
+        'block.read',
+        'block.write',
+        'bookmark.read',
+        'bookmark.write',
+      ],
+    ]*/);
+
+    $estadoDeTwitter = $twitter->getState();
+    $verificadorDeTwitter = $twitter->getPkceVerifier();
+
+    session()->set('oauth2state', $estadoDeTwitter);
+    session()->set('oauth2verifier', $verificadorDeTwitter);
+
+    App::redirect($urlDeTwitter);
+
+    return;
+  }
+
+  if (!$estado || ($estado !== session()->get('oauth2state'))) {
+    session()->remove('oauth2state');
+    flash()->set(['No se pudo iniciar sesión con Twitter.' . ' El estado es inválido'], 'errores');
+    App::redirect('/ingresar');
+
+    return;
+  }
+
+  try {
+    $token = $twitter->getAccessToken('authorization_code', [
+      'code' => $codigo,
+      'code_verifier' => session()->get('oauth2verifier'),
+    ]);
+
+    $usuarioDeTwitter = $twitter->getResourceOwner($token)->toArray();
+
+    dd($usuarioDeTwitter);
+
+    auth()->fromOAuth([
+      'token' => $token,
+      'user' => [
+        'primer_nombre' => $usuarioDeTwitter['name'],
+        'email' => $usuarioDeTwitter['email'] ?? ($usuarioDeTwitter['id'] . '@twitter.com'),
+        'rol' => 'Administrador',
+      ],
+    ]);
+
+    App::redirect('/administracion');
+  } catch (Throwable $error) {
+    flash()->set(['No se pudo iniciar sesión con Twitter. ' . $error->getMessage()], 'errores');
+    App::redirect('/ingresar');
+
+    return;
+  }
+});
+
 App::route('GET /oauth2/github', static function (): void {
   $codigo = App::request()->query->code;
   $estado = App::request()->query->state;
