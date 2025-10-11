@@ -19,26 +19,42 @@ App::group('/api', static function (): void {
   });
 
   App::route('/gemini', static function (): void {
-    $prompt = App::request()->data->prompt ?: App::request()->query->prompt ?: 'Hola';
+    $prompt = (App::request()->data->prompt ?: App::request()->query->prompt) ?: 'Hola';
     $apiKey = $_ENV['GEMINI_API_KEY'];
-    $client = Gemini::client($apiKey);
+    $geminiClient = Gemini::client($apiKey);
 
-    $respuesta = $client
+    $transporterReflectionProperty = new ReflectionProperty($geminiClient, 'transporter');
+    $transporterReflectionProperty->setAccessible(true);
+    $transporter = $transporterReflectionProperty->getValue($geminiClient);
+
+    $httpClientReflectionProperty = new ReflectionProperty($transporter, 'client');
+    $httpClientReflectionProperty->setAccessible(true);
+    $httpClient = $httpClientReflectionProperty->getValue($transporter);
+
+    $configReflectionProperty = new ReflectionProperty($httpClient, 'config');
+    $configReflectionProperty->setAccessible(true);
+
+    $configReflectionProperty->setValue(
+      $httpClient,
+      ['verify' => false] + $configReflectionProperty->getValue($httpClient)
+    );
+
+    $response = $geminiClient
       ->generativeModel(model: 'gemini-2.0-flash')
       ->generateContent($prompt);
 
-    // echo $respuesta->text(); // Hello! How can I assist you today?
-    Flight::halt(200, $respuesta->text());
+    // echo $response->text(); // Hello! How can I assist you today?
+    Flight::halt(200, $response->text());
 
     // Helper method usage
-    // $respuesta = $client->generativeModel(
+    // $response = $geminiClient->generativeModel(
     //     model: GeminiHelper::generateGeminiModel(
     //         variation: ModelVariation::FLASH,
     //         generation: 2.5,
     //         version: "preview-04-17"
     //     ), // models/gemini-2.5-flash-preview-04-17
     // );
-    // $respuesta->text(); // Hello! How can I assist you today?
+    // $response->text(); // Hello! How can I assist you today?
   });
 });
 
