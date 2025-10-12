@@ -8,8 +8,8 @@ require_once __DIR__ . '/../layouts/sidebar.php';
         <h1><i class="fas fa-store"></i> Detalle de Sucursal</h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="/sucursales">Sucursales</a></li>
+                <li class="breadcrumb-item"><a href="./dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="./sucursales">Sucursales</a></li>
                 <li class="breadcrumb-item active">Detalle</li>
             </ol>
         </nav>
@@ -137,10 +137,10 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <h5><i class="fas fa-cog"></i> Acciones</h5>
                 </div>
                 <div class="card-body">
-                    <a href="/sucursales/edit/<?= $sucursal['id'] ?>" class="btn btn-warning w-100 mb-2">
+                    <a href="./sucursales/edit/<?= $sucursal['id'] ?>" class="btn btn-warning w-100 mb-2">
                         <i class="fas fa-edit"></i> Editar Sucursal
                     </a>
-                    <a href="/sucursales" class="btn btn-secondary w-100 mb-2">
+                    <a href="./sucursales" class="btn btn-secondary w-100 mb-2">
                         <i class="fas fa-arrow-left"></i> Volver al Listado
                     </a>
                     <button onclick="regenerarClave(<?= $sucursal['id'] ?>)" class="btn btn-info w-100">

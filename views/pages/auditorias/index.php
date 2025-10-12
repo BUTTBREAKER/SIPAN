@@ -1,11 +1,11 @@
-<?php 
+<?php
 $pageTitle = 'Auditorías';
 $currentPage = 'auditorias';
 require_once __DIR__ . '/../layouts/header.php';
 
 // Solo administradores
 if ($_SESSION['user_rol'] !== 'administrador') {
-    header('Location: /dashboard');
+    header('Location: ./dashboard');
     exit;
 }
 ?>
@@ -91,7 +91,7 @@ if ($_SESSION['user_rol'] !== 'administrador') {
                 </thead>
                 <tbody>
                     <?php foreach ($auditorias as $auditoria): ?>
-                    <tr data-tabla="<?= $auditoria['tabla'] ?>" 
+                    <tr data-tabla="<?= $auditoria['tabla'] ?>"
                         data-accion="<?= $auditoria['accion'] ?>"
                         data-estado="<?= $auditoria['deshacer'] == 1 ? 'deshecho' : 'activo' ?>">
                         <td><?= $auditoria['id'] ?></td>
@@ -137,14 +137,14 @@ if ($_SESSION['user_rol'] !== 'administrador') {
                         </td>
                         <td>
                             <div class="btn-group">
-                                <button onclick="verDetalle(<?= $auditoria['id'] ?>)" 
-                                        class="btn btn-sm btn-info" 
+                                <button onclick="verDetalle(<?= $auditoria['id'] ?>)"
+                                        class="btn btn-sm btn-info"
                                         title="Ver detalles">
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 <?php if ($auditoria['deshacer'] == 0 && in_array($auditoria['accion'], ['INSERT', 'UPDATE', 'DELETE'])): ?>
-                                <button onclick="verificarYDeshacer(<?= $auditoria['id'] ?>, '<?= $auditoria['accion'] ?>')" 
-                                        class="btn btn-sm btn-warning" 
+                                <button onclick="verificarYDeshacer(<?= $auditoria['id'] ?>, '<?= $auditoria['accion'] ?>')"
+                                        class="btn btn-sm btn-warning"
                                         title="Deshacer cambio">
                                     <i class="fas fa-undo"></i>
                                 </button>
@@ -202,20 +202,20 @@ function aplicarFiltros() {
     const tabla = document.getElementById('filtroTabla').value.toLowerCase();
     const accion = document.getElementById('filtroAccion').value;
     const estado = document.getElementById('filtroEstado').value;
-    
+
     const filas = document.querySelectorAll('#tablaAuditorias tbody tr');
-    
+
     filas.forEach(fila => {
         const filaTabla = fila.dataset.tabla;
         const filaAccion = fila.dataset.accion;
         const filaEstado = fila.dataset.estado;
-        
+
         let mostrar = true;
-        
+
         if (tabla && !filaTabla.includes(tabla)) mostrar = false;
         if (accion && filaAccion !== accion) mostrar = false;
         if (estado && filaEstado !== estado) mostrar = false;
-        
+
         fila.style.display = mostrar ? '' : 'none';
     });
 }
@@ -233,10 +233,10 @@ async function verDetalle(id) {
     try {
         const response = await fetch(`/auditorias/show/${id}`);
         const data = await response.json();
-        
+
         if (data.success) {
             const auditoria = data.auditoria;
-            
+
             let html = `
                 <div class="row">
                     <div class="col-md-6">
@@ -262,7 +262,7 @@ async function verDetalle(id) {
                         </table>
                     </div>
                 </div>
-                
+
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <h6>Datos Anteriores</h6>
@@ -274,7 +274,7 @@ async function verDetalle(id) {
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('contenidoDetalle').innerHTML = html;
             const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
             modal.show();
@@ -302,7 +302,7 @@ async function verificarYDeshacer(id, accion) {
     try {
         const verificacion = await fetch(`/auditorias/verificar-deshacer/${id}`);
         const dataVerif = await verificacion.json();
-        
+
         if (!dataVerif.puede_deshacer) {
             Swal.fire({
                 icon: 'warning',
@@ -312,7 +312,7 @@ async function verificarYDeshacer(id, accion) {
             });
             return;
         }
-        
+
         // Mensajes personalizados según la acción
         let mensaje = '';
         switch(accion) {
@@ -326,7 +326,7 @@ async function verificarYDeshacer(id, accion) {
                 mensaje = 'Se restaurará el registro que fue eliminado';
                 break;
         }
-        
+
         const result = await Swal.fire({
             title: '¿Deshacer esta acción?',
             html: `<p>${mensaje}</p><p class="text-warning"><strong>Esta operación no se puede revertir</strong></p>`,
@@ -337,7 +337,7 @@ async function verificarYDeshacer(id, accion) {
             confirmButtonText: 'Sí, deshacer',
             cancelButtonText: 'Cancelar'
         });
-        
+
         if (result.isConfirmed) {
             await deshacerCambio(id);
         }
@@ -361,9 +361,9 @@ async function deshacerCambio(id) {
             },
             body: JSON.stringify({ auditoria_id: id })
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             Swal.fire({
                 icon: 'success',

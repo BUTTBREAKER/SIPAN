@@ -35,10 +35,10 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <h3 class="card-title">Reporte de Productos</h3>
                 <p class="text-muted">Inventario actual y valor de stock</p>
-                <a href="/reportes/productos" class="btn btn-primary">
+                <a href="./reportes/productos" class="btn btn-primary">
                     <i class="fas fa-eye"></i> Ver Reporte
                 </a>
-                <a href="/reportes/productos?formato=pdf" class="btn btn-secondary">
+                <a href="./reportes/productos?formato=pdf" class="btn btn-secondary">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -54,10 +54,10 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <h3 class="card-title">Reporte de Clientes</h3>
                 <p class="text-muted">Listado de clientes y sus estadísticas</p>
-                <a href="/reportes/clientes" class="btn btn-primary">
+                <a href="./reportes/clientes" class="btn btn-primary">
                     <i class="fas fa-eye"></i> Ver Reporte
                 </a>
-                <a href="/reportes/clientes?formato=pdf" class="btn btn-secondary">
+                <a href="./reportes/clientes?formato=pdf" class="btn btn-secondary">
                     <i class="fas fa-file-pdf"></i> PDF
                 </a>
             </div>
@@ -73,7 +73,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <h3 class="card-title">Reporte de Insumos</h3>
                 <p class="text-muted">Estado actual del inventario de insumos</p>
-                <a href="/insumos" class="btn btn-primary">
+                <a href="./insumos" class="btn btn-primary">
                     <i class="fas fa-eye"></i> Ver Listado
                 </a>
             </div>
@@ -89,7 +89,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <h3 class="card-title">Reporte de Producciones</h3>
                 <p class="text-muted">Historial de producciones y costos</p>
-                <a href="/producciones" class="btn btn-primary">
+                <a href="./producciones" class="btn btn-primary">
                     <i class="fas fa-eye"></i> Ver Historial
                 </a>
             </div>
@@ -105,7 +105,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <h3 class="card-title">Reporte de Pedidos</h3>
                 <p class="text-muted">Estado de pedidos y pagos pendientes</p>
-                <a href="/pedidos" class="btn btn-primary">
+                <a href="./pedidos" class="btn btn-primary">
                     <i class="fas fa-eye"></i> Ver Pedidos
                 </a>
             </div>
@@ -118,7 +118,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <div style="position: relative; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
         <h3 class="mb-4">Reporte de Ventas</h3>
         
-        <form id="formReporteVentas" method="GET" action="/reportes/ventas">
+        <form id="formReporteVentas" method="GET" action="./reportes/ventas">
             <div class="mb-3">
                 <label class="form-label">Fecha Inicio <span class="text-danger">*</span></label>
                 <input type="date" name="fecha_inicio" class="form-control" required value="<?= date('Y-m-01') ?>">

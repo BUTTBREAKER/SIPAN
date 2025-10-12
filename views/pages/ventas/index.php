@@ -9,7 +9,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <h2 class="page-title">Ventas</h2>
         <p class="page-subtitle">Historial de ventas realizadas</p>
     </div>
-    <a href="/ventas/create" class="btn btn-success">
+    <a href="./ventas/create" class="btn btn-success">
         <i class="fas fa-cash-register"></i> Nueva Venta
     </a>
 </div>
@@ -59,10 +59,10 @@ require_once __DIR__ . '/../layouts/header.php';
                         <td><?= htmlspecialchars($venta['usuario_nombre'] ?? '-') ?></td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="/ventas/show/<?= $venta['id'] ?>" class="btn btn-sm btn-info" title="Ver detalle">
+                                <a href="./ventas/show/<?= $venta['id'] ?>" class="btn btn-sm btn-info" title="Ver detalle">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="/ventas/ticket/<?= $venta['id'] ?>" class="btn btn-sm btn-secondary" title="Imprimir ticket" target="_blank">
+                                <a href="./ventas/ticket/<?= $venta['id'] ?>" class="btn btn-sm btn-secondary" title="Imprimir ticket" target="_blank">
                                     <i class="fas fa-print"></i>
                                 </a>
                             </div>

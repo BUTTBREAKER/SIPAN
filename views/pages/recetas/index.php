@@ -9,7 +9,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <h2 class="page-title">Recetas</h2>
         <p class="page-subtitle">Gestión de recetas de producción</p>
     </div>
-    <a href="/recetas/create" class="btn btn-primary">
+    <a href="./recetas/create" class="btn btn-primary">
         <i class="fas fa-plus"></i> Nueva Receta
     </a>
 </div>
@@ -50,7 +50,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="/recetas/edit/<?= $receta['id'] ?>" class="btn btn-sm btn-info" title="Ver/Editar">
+                                <a href="./recetas/edit/<?= $receta['id'] ?>" class="btn btn-sm btn-info" title="Ver/Editar">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <?php if ($_SESSION['user_rol'] === 'administrador'): ?>

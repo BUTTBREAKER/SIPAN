@@ -12,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Información de la Sucursal</h3>
-        <a href="/sucursales" class="btn btn-secondary">
+        <a href="./sucursales" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>

@@ -166,7 +166,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             </span>
                         </td>
                         <td>
-                            <a href="/producciones/create" class="btn btn-sm btn-primary">
+                            <a href="./producciones/create" class="btn btn-sm btn-primary">
                                 <i class="fas fa-plus"></i> Producir
                             </a>
                         </td>

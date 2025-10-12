@@ -9,7 +9,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <h2 class="page-title">Pedidos</h2>
         <p class="page-subtitle">Gestión de pedidos de clientes</p>
     </div>
-    <a href="/pedidos/create" class="btn btn-primary">
+    <a href="./pedidos/create" class="btn btn-primary">
         <i class="fas fa-plus"></i> Nuevo Pedido
     </a>
 </div>
@@ -69,7 +69,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <td><?= date('d/m/Y', strtotime($pedido['fecha_entrega'])) ?></td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="/pedidos/show/<?= $pedido['id'] ?>" class="btn btn-sm btn-info" title="Ver detalle">
+                                <a href="./pedidos/show/<?= $pedido['id'] ?>" class="btn btn-sm btn-info" title="Ver detalle">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </div>

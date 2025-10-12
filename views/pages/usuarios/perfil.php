@@ -36,7 +36,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <h3 class="card-title">Actividad Reciente</h3>
             </div>
             <div class="card-body">
-                <a href="/usuarios/actividad?usuario_id=<?= $usuario['id'] ?>" class="btn btn-primary btn-block">
+                <a href="./usuarios/actividad?usuario_id=<?= $usuario['id'] ?>" class="btn btn-primary btn-block">
                     <i class="fas fa-history"></i> Ver Historial Completo
                 </a>
                 

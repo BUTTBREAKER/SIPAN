@@ -219,7 +219,7 @@ $routes = [
     'POST|/predicciones/generar' => ['PrediccionesController', 'generarSugerenciasAutomaticas'],
 ];
  */
-
+// Autenticación
 App::route('GET /', [AuthController::class, 'showLogin']);
 App::route('GET /login', [AuthController::class, 'showLogin']);
 App::route('POST /login', [AuthController::class, 'login']);

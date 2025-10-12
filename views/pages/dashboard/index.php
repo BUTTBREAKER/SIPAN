@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Dashboard';
 $currentPage = 'dashboard';
 require_once __DIR__ . '/../layouts/header.php';
@@ -20,7 +20,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
         </div>
     </div>
-    
+
     <div class="col-md-3">
         <div class="stat-card info">
             <div class="stat-content">
@@ -30,7 +30,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
         </div>
     </div>
-    
+
     <div class="col-md-3">
         <div class="stat-card warning">
             <div class="stat-content">
@@ -40,7 +40,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
         </div>
     </div>
-    
+
     <div class="stat-card danger">
             <div class="stat-content">
                 <div class="stat-label">Productos Stock Bajo</div>
@@ -59,7 +59,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <h3 class="card-title">
                     <i class="fas fa-box"></i> Productos con Stock Bajo
                 </h3>
-                <a href="/productos" class="btn btn-sm btn-warning">Ver Todos</a>
+                <a href="./productos" class="btn btn-sm btn-warning">Ver Todos</a>
             </div>
             <div class="card-body">
                 <?php if (empty($data['productos_stock_bajo'])): ?>
@@ -78,7 +78,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                 / Mínimo: <?= $producto['stock_minimo'] ?>
                             </small>
                         </div>
-                        <a href="/productos/edit/<?= $producto['id'] ?>" class="btn btn-sm btn-warning">
+                        <a href="./productos/edit/<?= $producto['id'] ?>" class="btn btn-sm btn-warning">
                             <i class="fas fa-edit"></i>
                         </a>
                     </div>
@@ -88,14 +88,14 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="fas fa-cubes"></i> Insumos con Stock Bajo
                 </h3>
-                <a href="/insumos" class="btn btn-sm btn-warning">Ver Todos</a>
+                <a href="./insumos" class="btn btn-sm btn-warning">Ver Todos</a>
             </div>
             <div class="card-body">
                 <?php if (empty($data['insumos_stock_bajo'])): ?>
@@ -114,7 +114,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                 / Mínimo: <?= $insumo['stock_minimo'] ?>
                             </small>
                         </div>
-                        <a href="/insumos/edit/<?= $insumo['id'] ?>" class="btn btn-sm btn-warning">
+                        <a href="./insumos/edit/<?= $insumo['id'] ?>" class="btn btn-sm btn-warning">
                             <i class="fas fa-edit"></i>
                         </a>
                     </div>
@@ -136,42 +136,42 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="card-body">
         <div class="row g-3">
             <div class="col-md-2 col-sm-4 col-6">
-                <a href="/ventas/create" class="btn btn-success w-100 py-3">
+                <a href="./ventas/create" class="btn btn-success w-100 py-3">
                     <i class="fas fa-cash-register fa-2x mb-2"></i>
                     <br>
                     <span>Nueva Venta</span>
                 </a>
             </div>
             <div class="col-md-2 col-sm-4 col-6">
-                <a href="/pedidos/create" class="btn btn-warning w-100 py-3">
+                <a href="./pedidos/create" class="btn btn-warning w-100 py-3">
                     <i class="fas fa-shopping-cart fa-2x mb-2"></i>
                     <br>
                     <span>Nuevo Pedido</span>
                 </a>
             </div>
             <div class="col-md-2 col-sm-4 col-6">
-                <a href="/producciones/create" class="btn btn-primary w-100 py-3">
+                <a href="./producciones/create" class="btn btn-primary w-100 py-3">
                     <i class="fas fa-industry fa-2x mb-2"></i>
                     <br>
                     <span>Nueva Producción</span>
                 </a>
             </div>
             <div class="col-md-2 col-sm-4 col-6">
-                <a href="/clientes/create" class="btn btn-info w-100 py-3">
+                <a href="./clientes/create" class="btn btn-info w-100 py-3">
                     <i class="fas fa-user-plus fa-2x mb-2"></i>
                     <br>
                     <span>Nuevo Cliente</span>
                 </a>
             </div>
             <div class="col-md-2 col-sm-4 col-6">
-                <a href="/sugerencias" class="btn btn-secondary w-100 py-3">
+                <a href="./sugerencias" class="btn btn-secondary w-100 py-3">
                     <i class="fas fa-lightbulb fa-2x mb-2"></i>
                     <br>
                     <span>Sugerencias de Compra</span>
                 </a>
             </div>
             <div class="col-md-2 col-sm-4 col-6">
-                <a href="/reportes" class="btn btn-dark w-100 py-3">
+                <a href="./reportes" class="btn btn-dark w-100 py-3">
                     <i class="fas fa-file-alt fa-2x mb-2"></i>
                     <br>
                     <span>Reportes</span>
@@ -186,7 +186,7 @@ require_once __DIR__ . '/../layouts/header.php';
 document.addEventListener('DOMContentLoaded', () => {
     <?php if (!empty($data['productos_stock_bajo']) || !empty($data['insumos_stock_bajo'])): ?>
     const totalBajo = <?= count($data['productos_stock_bajo'] ?? []) + count($data['insumos_stock_bajo'] ?? []) ?>;
-    
+
     Swal.fire({
         icon: 'warning',
         title: 'Alerta de Stock Bajo',

@@ -9,7 +9,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <h2 class="page-title">Insumos</h2>
         <p class="page-subtitle">Gestión de materias primas e insumos</p>
     </div>
-    <a href="/insumos/create" class="btn btn-primary">
+    <a href="./insumos/create" class="btn btn-primary">
         <i class="fas fa-plus"></i> Nuevo Insumo
     </a>
 </div>
@@ -67,7 +67,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <td><strong>S/ <?= number_format($insumo['precio_unitario'], 2) ?></strong></td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="/insumos/edit/<?= $insumo['id'] ?>" class="btn btn-sm btn-warning">
+                                <a href="./insumos/edit/<?= $insumo['id'] ?>" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <?php if ($_SESSION['user_rol'] === 'administrador'): ?>

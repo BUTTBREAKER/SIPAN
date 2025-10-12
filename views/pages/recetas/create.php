@@ -12,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card" x-data="recetaApp()">
     <div class="card-header">
         <h3 class="card-title">Información de la Receta</h3>
-        <a href="/recetas" class="btn btn-secondary">
+        <a href="./recetas" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>
@@ -128,7 +128,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <button type="submit" class="btn btn-primary" :disabled="insumos_receta.length === 0">
                     <i class="fas fa-save"></i> Guardar Receta
                 </button>
-                <a href="/recetas" class="btn btn-secondary">
+                <a href="./recetas" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
                 </a>
             </div>

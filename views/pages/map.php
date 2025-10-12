@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+    <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="DashTail HTML – Tailwind, Alpine Admin Dashboard Template" />

@@ -2,6 +2,7 @@
 
 namespace SIPAN\Controllers;
 
+use SIPAN\App;
 use SIPAN\Models\Producto;
 use SIPAN\Models\Insumo;
 use SIPAN\Models\Venta;
@@ -43,7 +44,8 @@ class DashboardController {
             'productos_mas_vendidos' => $this->ventaModel->getProductosMasVendidos($sucursal_id, 5)
         ];
 
-        require_once __DIR__ . '/../Views/dashboard/index.php';
+        App::render('pages/dashboard/index.php', $data);
+
     }
 
     public function getNotificaciones() {

@@ -12,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card" x-data="produccionApp()">
     <div class="card-header">
         <h3 class="card-title">Información de la Producción</h3>
-        <a href="/producciones" class="btn btn-secondary">
+        <a href="./producciones" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>
@@ -103,7 +103,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <button type="submit" class="btn btn-warning" :disabled="!puede_producir">
                     <i class="fas fa-industry"></i> Registrar Producción
                 </button>
-                <a href="/producciones" class="btn btn-secondary">
+                <a href="./producciones" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
                 </a>
             </div>

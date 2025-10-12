@@ -201,5 +201,5 @@
 }
 </style>
 
-<script src="/assets/js/calculo-insumos.js"></script>
+<script src="./assets/js/calculo-insumos.js"></script>
 

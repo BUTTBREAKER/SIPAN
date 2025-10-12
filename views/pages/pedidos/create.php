@@ -12,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card" x-data="pedidoApp()">
     <div class="card-header">
         <h3 class="card-title">Información del Pedido</h3>
-        <a href="/pedidos" class="btn btn-secondary">
+        <a href="./pedidos" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>
@@ -172,7 +172,7 @@ require_once __DIR__ . '/../layouts/header.php';
             
             <!-- Botones de Acción -->
             <div class="d-flex justify-content-end gap-2">
-                <a href="/pedidos" class="btn btn-secondary">
+                <a href="./pedidos" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
                 </a>
                 <button type="submit" class="btn btn-primary" :disabled="items.length === 0 || !id_cliente || !fecha_entrega">

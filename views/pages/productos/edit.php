@@ -12,12 +12,12 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Información del Producto</h3>
-        <a href="/productos" class="btn btn-secondary">
+        <a href="./productos" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>
     <div class="card-body">
-        <form id="formProducto" action="/productos/update/<?= $producto['id'] ?>" method="POST" x-data="productoForm()">
+        <form id="formProducto" action="./productos/update/<?= $producto['id'] ?>" method="POST" x-data="productoForm()">
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -79,7 +79,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Actualizar Producto
                 </button>
-                <a href="/productos" class="btn btn-secondary">
+                <a href="./productos" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
                 </a>
             </div>

@@ -62,7 +62,7 @@ if ($_SESSION['user_rol'] !== 'administrador') {
                         <td><?= htmlspecialchars($respaldo['usuario_nombre'] ?? 'N/A') ?></td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="/respaldos/descargar/<?= $respaldo['id'] ?>" class="btn btn-sm btn-info" title="Descargar">
+                                <a href="./respaldos/descargar/<?= $respaldo['id'] ?>" class="btn btn-sm btn-info" title="Descargar">
                                     <i class="fas fa-download"></i>
                                 </a>
                                 <button onclick="restaurarRespaldo(<?= $respaldo['id'] ?>)" class="btn btn-sm btn-warning" title="Restaurar">

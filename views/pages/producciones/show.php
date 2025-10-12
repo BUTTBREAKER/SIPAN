@@ -8,8 +8,8 @@ require_once __DIR__ . '/../layouts/sidebar.php';
         <h1><i class="fas fa-industry"></i> Detalle de Producción #<?= $produccion['id'] ?></h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="/producciones">Producciones</a></li>
+                <li class="breadcrumb-item"><a href="./dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="./producciones">Producciones</a></li>
                 <li class="breadcrumb-item active">Detalle</li>
             </ol>
         </nav>
@@ -143,7 +143,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <h5><i class="fas fa-cog"></i> Acciones</h5>
                 </div>
                 <div class="card-body">
-                    <a href="/producciones" class="btn btn-secondary w-100 mb-2">
+                    <a href="./producciones" class="btn btn-secondary w-100 mb-2">
                         <i class="fas fa-arrow-left"></i> Volver al Listado
                     </a>
                     <button onclick="window.print()" class="btn btn-info w-100">

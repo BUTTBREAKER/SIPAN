@@ -9,7 +9,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <h2 class="page-title">Productos</h2>
         <p class="page-subtitle">Gestión de productos de la panadería</p>
     </div>
-    <a href="/productos/create" class="btn btn-primary">
+    <a href="./productos/create" class="btn btn-primary">
         <i class="fas fa-plus"></i> Nuevo Producto
     </a>
 </div>
@@ -65,7 +65,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <td><strong>S/ <?= number_format($producto['precio_actual'], 2) ?></strong></td>
                         <td>
                             <div class="d-flex gap-1">
-                                <a href="/productos/edit/<?= $producto['id'] ?>" class="btn btn-sm btn-warning">
+                                <a href="./productos/edit/<?= $producto['id'] ?>" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <?php if ($_SESSION['user_rol'] === 'administrador'): ?>

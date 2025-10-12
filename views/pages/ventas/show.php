@@ -93,10 +93,10 @@ require_once __DIR__ . '/../layouts/header.php';
                 <hr>
                 
                 <div class="d-grid gap-2">
-                    <a href="/ventas/ticket/<?= $venta['id'] ?>" class="btn btn-primary" target="_blank">
+                    <a href="./ventas/ticket/<?= $venta['id'] ?>" class="btn btn-primary" target="_blank">
                         <i class="fas fa-print"></i> Imprimir Ticket
                     </a>
-                    <a href="/ventas" class="btn btn-secondary">
+                    <a href="./ventas" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Volver al Listado
                     </a>
                 </div>

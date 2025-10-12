@@ -8,8 +8,8 @@ require_once __DIR__ . '/../layouts/sidebar.php';
         <h1><i class="fas fa-book"></i> Editar Receta</h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="/recetas">Recetas</a></li>
+                <li class="breadcrumb-item"><a href="./dashboard">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="./recetas">Recetas</a></li>
                 <li class="breadcrumb-item active">Editar</li>
             </ol>
         </nav>
@@ -87,7 +87,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Guardar Cambios
                     </button>
-                    <a href="/recetas" class="btn btn-secondary">
+                    <a href="./recetas" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancelar
                     </a>
                 </div>

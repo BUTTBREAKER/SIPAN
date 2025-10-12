@@ -9,7 +9,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <h2 class="page-title">Producciones</h2>
         <p class="page-subtitle">Registro de lotes de producción</p>
     </div>
-    <a href="/producciones/create" class="btn btn-warning">
+    <a href="./producciones/create" class="btn btn-warning">
         <i class="fas fa-industry"></i> Nueva Producción
     </a>
 </div>
@@ -47,7 +47,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <td><strong>S/ <?= number_format($produccion['costo_total'], 2) ?></strong></td>
                         <td><?= htmlspecialchars($produccion['usuario_nombre'] ?? '-') ?></td>
                         <td>
-                            <a href="/producciones/show/<?= $produccion['id'] ?>" class="btn btn-sm btn-info" title="Ver detalle">
+                            <a href="./producciones/show/<?= $produccion['id'] ?>" class="btn btn-sm btn-info" title="Ver detalle">
                                 <i class="fas fa-eye"></i>
                             </a>
                         </td>

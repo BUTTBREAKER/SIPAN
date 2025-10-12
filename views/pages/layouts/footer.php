@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
     
     <!-- Custom JS -->
-    <script src="/assets/js/app.js"></script>
+    <script src="./assets/js/app.js"></script>
     
     <!-- Initialize DataTables -->
     <script>

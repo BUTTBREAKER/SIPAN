@@ -13,7 +13,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="card-header">
         <h3 class="card-title">Listado de Usuarios</h3>
         <div class="d-flex gap-2">
-            <a href="/register" class="btn btn-primary">
+            <a href="./register" class="btn btn-primary">
                 <i class="fas fa-user-plus"></i> Nuevo Usuario
             </a>
         </div>
@@ -68,7 +68,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </td>
                         <td>
                             <div class="btn-group">
-                                <a href="/usuarios/actividad?usuario_id=<?= $usuario['id'] ?>" 
+                                <a href="./usuarios/actividad?usuario_id=<?= $usuario['id'] ?>" 
                                    class="btn btn-sm btn-info" 
                                    title="Ver actividad">
                                     <i class="fas fa-history"></i>

@@ -12,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Listado de Sucursales</h3>
-        <a href="/sucursales/create" class="btn btn-primary">
+        <a href="./sucursales/create" class="btn btn-primary">
             <i class="fas fa-plus"></i> Nueva Sucursal
         </a>
     </div>
@@ -57,12 +57,12 @@ require_once __DIR__ . '/../layouts/header.php';
                         </td>
                         <td>
                             <div class="btn-group">
-                                <a href="/sucursales/show/<?= $sucursal['id'] ?>" 
+                                <a href="./sucursales/show/<?= $sucursal['id'] ?>" 
                                    class="btn btn-sm btn-info" 
                                    title="Ver detalles">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="/sucursales/edit/<?= $sucursal['id'] ?>" 
+                                <a href="./sucursales/edit/<?= $sucursal['id'] ?>" 
                                    class="btn btn-sm btn-warning" 
                                    title="Editar">
                                     <i class="fas fa-edit"></i>
