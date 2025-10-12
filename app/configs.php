@@ -8,12 +8,9 @@ use Smolblog\OAuth2\Client\Provider\Twitter;
 
 $envFilePath = __DIR__ . '/../.env.php';
 
-$_ENV = array_merge(
-  require __DIR__ . '/../.env.example.php',
-  file_exists($envFilePath)
-    ? require $envFilePath
-    : [],
-);
+$_ENV += file_exists($envFilePath)
+  ? require $envFilePath
+  : require __DIR__ . '/../.env.example.php';
 
 date_default_timezone_set($_ENV['TIMEZONE']);
 
