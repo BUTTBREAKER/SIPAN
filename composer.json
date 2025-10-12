@@ -8,6 +8,7 @@
     "leafs/db": "^4.0",
     "leafs/form": "^3.2",
     "leafs/leaf": "^4.4",
+    "leafs/session": "^4.0",
     "league/oauth2-facebook": "^2.2",
     "league/oauth2-github": "^3.1",
     "league/oauth2-google": "^4.0",
@@ -30,13 +31,14 @@
       "php -S localhost:80"
     ],
     "setup": "php -r \"if (!file_exists('.env.php')) copy('.env.example.php', '.env.php');\"",
-    "test": "phpunit",
-    "rector": "rector"
+    "ci": ["phpcs", "phpunit"],
+    "format": ["phpcbf", "rector"]
   },
   "require-dev": {
     "guzzlehttp/guzzle": "^7.9",
     "phpunit/phpunit": "^11.5",
     "rector/rector": "^2.1",
+    "squizlabs/php_codesniffer": "^4.0",
     "symfony/var-dumper": "^7.3"
   },
   "config": {
