@@ -1,3 +1,1 @@
-<body>
-  <?= $page ?>
-</body>
+<?= $page ?>

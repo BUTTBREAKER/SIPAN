@@ -15,7 +15,7 @@ $url = App::request()->url;
   <meta name="color-scheme" content="only dark" />
   <title>SIPAN - Sistema de Gestión de Panadería</title>
   <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>" />
-  <link rel="stylesheet" href="./assets/dist/layouts/dashboard.css" />
+  <link rel="stylesheet" href="./assets/dist/dashboard.css" />
   <style>
     :root {
       --primary-bg: #1a1f2d;
@@ -258,7 +258,7 @@ $url = App::request()->url;
     <?= $page ?>
   </div>
 
-  <script src="./assets/dist/layouts/dashboard.js"></script>
+  <script src="./assets/dist/dashboard.js"></script>
   <script>
     // Toggle sidebar
     document.getElementById('sidebarToggle').addEventListener('click', function() {
