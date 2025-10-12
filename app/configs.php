@@ -56,7 +56,7 @@ auth()->withProvider('github', $github);
 auth()->withProvider('facebook', $facebook);
 auth()->withProvider('twitter', $twitter);
 
-App::registerContainerHandler($container->get(...));
+App::registerContainerHandler($container);
 
 form()->rule('password', '/^.{8,}$/', 'La clave debe tener al menos 8 caracteres.');
 form()->rule('text', '/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/');

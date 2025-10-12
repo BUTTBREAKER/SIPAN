@@ -5,7 +5,6 @@ use SIPAN\Controllers\AuthController;
 use SIPAN\Controllers\DashboardController;
 use SIPAN\Controllers\DashtailPagesController;
 use SIPAN\Controllers\GeminiController;
-use SIPAN\Controllers\LandingController;
 use SIPAN\Controllers\OAuth2Controller;
 use SIPAN\Controllers\ProductApiController;
 use SIPAN\Controllers\ProfileController;

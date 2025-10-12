@@ -15,17 +15,8 @@ final readonly class GeminiController
 
     $geminiClient = Gemini::factory()
       ->withApiKey($apiKey)
-      ->withHttpClient(new Client([
-        'verify' => false,
-      ]))
+      ->withHttpClient(new Client(['verify' => false]))
       ->make();
-
-    $response = $geminiClient
-      ->generativeModel('gemini-2.0-flash')
-      ->generateContent($prompt);
-
-    // echo $response->text(); // Hello! How can I assist you today?
-    App::halt(200, $response->text());
 
     // Helper method usage
     // $response = $geminiClient->generativeModel(
@@ -35,6 +26,11 @@ final readonly class GeminiController
     //         version: "preview-04-17"
     //     ), // models/gemini-2.5-flash-preview-04-17
     // );
-    // $response->text(); // Hello! How can I assist you today?
+
+    $response = $geminiClient
+      ->generativeModel('gemini-2.0-flash')
+      ->generateContent($prompt);
+
+    App::halt(200, $response->text());
   }
 }
