@@ -6,8 +6,10 @@ use SIPAN\App;
 use Smolblog\OAuth2\Client\Provider\Twitter;
 use Throwable;
 
-final readonly class OAuth2Controller {
-  static function loginWithGoogle(): void {
+final readonly class OAuth2Controller
+{
+  static function loginWithGoogle(): void
+  {
     $error = App::request()->query->error;
     $codigo = App::request()->query->code;
     $estado = App::request()->query->state;
@@ -62,7 +64,8 @@ final readonly class OAuth2Controller {
     }
   }
 
-  static function loginWithFacebook(): void {
+  static function loginWithFacebook(): void
+  {
     $codigo = App::request()->query->code;
     $estado = App::request()->query->state;
 
@@ -111,7 +114,8 @@ final readonly class OAuth2Controller {
     }
   }
 
-  static function loginWithGithub(): void {
+  static function loginWithGithub(): void
+  {
     $codigo = App::request()->query->code;
     $estado = App::request()->query->state;
 
@@ -156,7 +160,8 @@ final readonly class OAuth2Controller {
     }
   }
 
-  static function loginWithTwitter(): void {
+  static function loginWithTwitter(): void
+  {
     $codigo = App::request()->query->code;
     $estado = App::request()->query->state;
     $twitter = auth()->client('twitter');

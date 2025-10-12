@@ -75,7 +75,7 @@ final readonly class ProfileController
         ':primer_apellido' => $data->primer_apellido,
         ':segundo_apellido' => $data->segundo_apellido ?? null,
         ':correo' => $data->correo,
-        ':clave' => password_hash($data->clave, PASSWORD_DEFAULT)
+        ':clave' => password_hash((string) $data->clave, PASSWORD_DEFAULT)
       ]);
 
       $user_id = $this->db->lastInsertId();
@@ -113,7 +113,7 @@ final readonly class ProfileController
     $stmt->execute([':correo' => $data->correo]);
     $user = $stmt->fetch();
 
-    if (!$user || !password_verify($data->clave, $user['clave'])) {
+    if (!$user || !password_verify((string) $data->clave, (string) $user['clave'])) {
       App::json(['error' => 'Credenciales incorrectas'], 401);
 
       return;
