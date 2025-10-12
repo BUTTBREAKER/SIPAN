@@ -1,7 +1,7 @@
 /** @type {import('esbuild').BuildOptions} */
 export const commonOptions = {
   bundle: true,
-  entryPoints: ["assets/src/layouts/*.ts", "assets/src/pages/*.ts"],
+  entryPoints: ["./assets/src/layouts/*.ts", "./assets/src/pages/*.ts"],
   format: "esm",
   loader: {
     ".module.css": "local-css",
@@ -13,7 +13,7 @@ export const commonOptions = {
     ".png": "copy",
     ".svg": "dataurl",
   },
-  outdir: "assets/dist",
+  outdir: "./assets/dist",
   target: ["es2018"],
   plugins: [],
 };
