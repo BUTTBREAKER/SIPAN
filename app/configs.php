@@ -31,18 +31,18 @@ $github = new Github([
   'redirectUri' => $_ENV['GITHUB_AUTH_REDIRECT_URI'],
 ]);
 
-$facebook = new Facebook([
-  'clientId' => $_ENV['FACEBOOK_AUTH_CLIENT_ID'],
-  'clientSecret' => $_ENV['FACEBOOK_AUTH_CLIENT_SECRET'],
-  'redirectUri' => $_ENV['FACEBOOK_AUTH_REDIRECT_URI'],
-  'graphApiVersion' => 'v2.10',
-]);
+// $facebook = new Facebook([
+//   'clientId' => $_ENV['FACEBOOK_AUTH_CLIENT_ID'],
+//   'clientSecret' => $_ENV['FACEBOOK_AUTH_CLIENT_SECRET'],
+//   'redirectUri' => $_ENV['FACEBOOK_AUTH_REDIRECT_URI'],
+//   'graphApiVersion' => 'v2.10',
+// ]);
 
-$twitter = new Twitter([
-  'clientId' => $_ENV['TWITTER_AUTH_CLIENT_ID'],
-  'clientSecret' => $_ENV['TWITTER_AUTH_CLIENT_SECRET'],
-  'redirectUri' => $_ENV['TWITTER_AUTH_REDIRECT_URI'],
-]);
+// $twitter = new Twitter([
+//   'clientId' => $_ENV['TWITTER_AUTH_CLIENT_ID'],
+//   'clientSecret' => $_ENV['TWITTER_AUTH_CLIENT_SECRET'],
+//   'redirectUri' => $_ENV['TWITTER_AUTH_REDIRECT_URI'],
+// ]);
 
 $noExpirationLifetime = 0;
 
@@ -53,8 +53,8 @@ auth()->config('session.lifetime', $noExpirationLifetime);
 auth()->config('messages.loginParamsError', '¡Correo o contraseña incorrecta!');
 auth()->config('messages.loginPasswordError', auth()->config('messages.loginParamsError'));
 auth()->withProvider('github', $github);
-auth()->withProvider('facebook', $facebook);
-auth()->withProvider('twitter', $twitter);
+// auth()->withProvider('facebook', $facebook);
+// auth()->withProvider('twitter', $twitter);
 
 App::registerContainerHandler($container);
 

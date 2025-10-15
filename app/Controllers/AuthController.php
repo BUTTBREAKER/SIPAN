@@ -21,7 +21,7 @@ class AuthController
   public function showLogin()
   {
     if (AuthMiddleware::isAuthenticated()) {
-      header('Location: /dashboard');
+      header('Location: ./dashboard');
       exit;
     }
 

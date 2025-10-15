@@ -3,49 +3,49 @@
 namespace SIPAN\Middlewares;
 
 class AuthMiddleware {
-    
+
     public static function check() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         if (!isset($_SESSION['user_id'])) {
             header('Location: /login');
             exit;
         }
-        
+
         return true;
     }
-    
+
     // Alias para checkAuth
     public static function checkAuth() {
         return self::check();
     }
-    
+
     public static function checkRole($roles = []) {
         self::check();
-        
+
         if (!empty($roles) && !in_array($_SESSION['user_rol'], $roles)) {
-            header('Location: /dashboard');
+            header('Location: ./dashboard');
             exit;
         }
-        
+
         return true;
     }
-    
+
     public static function isAuthenticated() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         return isset($_SESSION['user_id']);
     }
-    
+
     public static function getUser() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         return [
             'id' => $_SESSION['user_id'] ?? null,
             'nombre' => $_SESSION['user_nombre'] ?? null,
@@ -55,30 +55,30 @@ class AuthMiddleware {
             'sucursal_nombre' => $_SESSION['sucursal_nombre'] ?? null
         ];
     }
-    
+
     public static function setUser($user) {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         session_regenerate_id(true);
-        
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_nombre'] = $user['primer_nombre'] . ' ' . $user['apellido_paterno'];
         $_SESSION['user_correo'] = $user['correo'];
         $_SESSION['user_rol'] = $user['rol'];
         $_SESSION['sucursal_id'] = $user['id_sucursal'];
     }
-    
+
     public static function logout() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
+
         session_unset();
         session_destroy();
-        
-        header('Location: /login');
+
+        header('Location: ./login');
         exit;
     }
 }
