@@ -27,7 +27,7 @@ class SucursalesController
 
     $sucursales = $this->sucursalModel->getByNegocio($negocio_id);
 
-    require_once __DIR__ . '/../Views/sucursales/index.php';
+    require_once __DIR__ . '/../../views/pages/sucursales/index.php';
   }
 
   public function create()
@@ -37,7 +37,7 @@ class SucursalesController
 
     $negocio = $this->negocioModel->find($negocio_id);
 
-    require_once __DIR__ . '/../Views/sucursales/create.php';
+    require_once __DIR__ . '/../../views/pages/sucursales/create.php';
   }
 
   public function store()

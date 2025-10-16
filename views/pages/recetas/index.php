@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Recetas';
 $currentPage = 'recetas';
 require_once __DIR__ . '/../layouts/header.php';
@@ -43,7 +43,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             <?php
                             // Obtener insumos de la receta
                             require_once __DIR__ . '/../../Models/Receta.php';
-                            $recetaModel = new \App\Models\Receta();
+                            $recetaModel = new \SIPAN\Models\Receta();
                             $insumos = $recetaModel->getInsumos($receta['id']);
                             echo count($insumos) . ' insumo(s)';
                             ?>
@@ -73,14 +73,14 @@ require_once __DIR__ . '/../layouts/header.php';
 async function eliminarReceta(id) {
     const confirmed = await SIPAN.confirm('¿Eliminar esta receta?', '¿Estás seguro?');
     if (!confirmed) return;
-    
+
     try {
         const response = await fetch(`/recetas/delete/${id}`, {
             method: 'POST'
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             SIPAN.success(data.message);
             setTimeout(() => window.location.reload(), 1500);

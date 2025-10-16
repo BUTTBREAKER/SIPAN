@@ -26,14 +26,14 @@ class ProductosController
 
     $productos = $this->productoModel->all($sucursal_id);
 
-    require_once __DIR__ . '/../Views/productos/index.php';
+    require_once __DIR__ . '/../../views/pages/productos/index.php';
   }
 
   public function create()
   {
     AuthMiddleware::checkRole(['administrador', 'empleado']);
 
-    require_once __DIR__ . '/../Views/productos/create.php';
+    require_once __DIR__ . '/../../views/pages/productos/create.php';
   }
 
   public function store()
@@ -84,7 +84,7 @@ class ProductosController
       exit;
     }
 
-    require_once __DIR__ . '/../Views/productos/edit.php';
+    require_once __DIR__ . '/../../views/pages/productos/edit.php';
   }
 
   public function update($id)

@@ -34,7 +34,7 @@ class ReportesController
       'currentPage' => 'reportes'
     ];
 
-    require_once __DIR__ . '/../Views/reportes/index.php';
+    require_once __DIR__ . '/../../views/pages/reportes/index.php';
   }
 
   public function ventas()

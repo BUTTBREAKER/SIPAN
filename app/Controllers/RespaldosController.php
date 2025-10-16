@@ -20,7 +20,7 @@ class RespaldosController
 
     $respaldos = $this->respaldoModel->getAll();
 
-    require_once __DIR__ . '/../Views/respaldos/index.php';
+    require_once __DIR__ . '/../../views/pages/respaldos/index.php';
   }
 
   public function generar()

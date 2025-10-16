@@ -29,7 +29,7 @@ class RecetasController
 
     $recetas = $this->recetaModel->getWithDetails($sucursal_id);
 
-    require_once __DIR__ . '/../Views/recetas/index.php';
+    require_once __DIR__ . '/../../views/pages/recetas/index.php';
   }
 
   public function create()
@@ -42,7 +42,7 @@ class RecetasController
     $productos = $this->productoModel->all($sucursal_id);
     $insumos = $this->insumoModel->all($sucursal_id);
 
-    require_once __DIR__ . '/../Views/recetas/create.php';
+    require_once __DIR__ . '/../../views/pages/recetas/create.php';
   }
 
   public function store()
@@ -90,7 +90,7 @@ class RecetasController
     $receta_insumos = $this->recetaModel->getInsumos($id);
     $insumos_disponibles = $this->insumoModel->all($sucursal_id);
 
-    require_once __DIR__ . '/../Views/recetas/edit.php';
+    require_once __DIR__ . '/../../views/pages/recetas/edit.php';
   }
 
 

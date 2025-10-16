@@ -35,7 +35,7 @@ class ProduccionesController
 
     $producciones = $this->produccionModel->getWithDetails($sucursal_id);
 
-    require_once __DIR__ . '/../Views/producciones/index.php';
+    require_once __DIR__ . '/../../views/pages/producciones/index.php';
   }
 
   public function create()
@@ -47,7 +47,7 @@ class ProduccionesController
 
     $productos = $this->productoModel->getConReceta($sucursal_id);
 
-    require_once __DIR__ . '/../Views/producciones/create.php';
+    require_once __DIR__ . '/../../views/pages/producciones/create.php';
   }
 
   public function store()
@@ -105,6 +105,6 @@ class ProduccionesController
     $producto = $this->productoModel->find($produccion['id_producto']);
     $insumos = $this->produccionModel->getInsumos($id);
 
-    require_once __DIR__ . '/../Views/producciones/show.php';
+    require_once __DIR__ . '/../../views/pages/producciones/show.php';
   }
 }

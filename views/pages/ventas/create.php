@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Nueva Venta';
 $currentPage = 'ventas';
 require_once __DIR__ . '/../layouts/header.php';
@@ -27,7 +27,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             <option value="">Cliente General</option>
                             <?php
                             require_once __DIR__ . '/../../Models/Cliente.php';
-                            $clienteModel = new \App\Models\Cliente();
+                            $clienteModel = new \SIPAN\Models\Cliente();
                             $clientes = $clienteModel->getBySucursal($_SESSION['sucursal_id']);
                             foreach ($clientes as $cliente):
                             ?>
@@ -38,7 +38,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Método de Pago <span class="text-danger">*</span></label>
@@ -53,15 +53,15 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <!-- Búsqueda y Selección de Productos -->
             <div class="row mb-4">
                 <div class="col-md-12">
                     <div class="form-group">
                         <label class="form-label">Buscar Producto</label>
                         <div class="input-group">
-                            <input type="text" 
-                                   class="form-control" 
+                            <input type="text"
+                                   class="form-control"
                                    placeholder="Buscar por nombre..."
                                    x-model="busqueda"
                                    @input.debounce.300ms="buscarProductos()">
@@ -70,21 +70,21 @@ require_once __DIR__ . '/../layouts/header.php';
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Resultados de búsqueda -->
                     <div x-show="resultados.length > 0" class="mt-2" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
                         <template x-for="producto in resultados" :key="producto.id">
-                            <div class="p-2" style="border-bottom: 1px solid #eee; cursor: pointer; hover:background: #f5f5f5;"
+                            <div class="p-2" style="border-bottom: 1px solid #eee; cursor: pointer;" onmouseover="this.style.backgroundColor='#f5f5f5'" onmouseout="this.style.backgroundColor=''"
                                  @click="agregarProducto(producto)">
-                                <strong x-text="producto.nombre"></strong> - 
-                                Stock: <span x-text="producto.stock_actual"></span> - 
+                                <strong x-text="producto.nombre"></strong> -
+                                Stock: <span x-text="producto.stock_actual"></span> -
                                 Precio: <span x-text="'S/ ' + parseFloat(producto.precio_actual).toFixed(2)"></span>
                             </div>
                         </template>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Tabla de Productos Seleccionados -->
             <div class="table-responsive mb-4">
                 <table class="table">
@@ -108,8 +108,8 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <td x-text="item.nombre"></td>
                                 <td x-text="'S/ ' + parseFloat(item.precio).toFixed(2)"></td>
                                 <td>
-                                    <input type="number" 
-                                           class="form-control" 
+                                    <input type="number"
+                                           class="form-control"
                                            style="width: 100px;"
                                            min="1"
                                            :max="item.stock_disponible"
@@ -133,7 +133,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tfoot>
                 </table>
             </div>
-            
+
             <!-- Botones de Acción -->
             <div class="d-flex justify-content-end gap-2">
                 <a href="./ventas" class="btn btn-secondary">
@@ -156,17 +156,17 @@ function ventaApp() {
         resultados: [],
         items: [],
         total: 0,
-        
+
         async buscarProductos() {
             if (this.busqueda.length < 2) {
                 this.resultados = [];
                 return;
             }
-            
+
             try {
                 const response = await fetch(`/productos/search?q=${encodeURIComponent(this.busqueda)}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     this.resultados = data.productos.filter(p => p.stock_actual > 0);
                 }
@@ -174,7 +174,7 @@ function ventaApp() {
                 console.error('Error al buscar productos:', error);
             }
         },
-        
+
         agregarProducto(producto) {
             // Verificar si ya está en la lista
             const existe = this.items.find(item => item.id === producto.id);
@@ -182,7 +182,7 @@ function ventaApp() {
                 SIPAN.warning('Este producto ya está en la lista');
                 return;
             }
-            
+
             this.items.push({
                 id: producto.id,
                 nombre: producto.nombre,
@@ -190,48 +190,48 @@ function ventaApp() {
                 cantidad: 1,
                 stock_disponible: producto.stock_actual
             });
-            
+
             this.busqueda = '';
             this.resultados = [];
             this.calcularTotal();
         },
-        
+
         eliminarItem(index) {
             this.items.splice(index, 1);
             this.calcularTotal();
         },
-        
+
         calcularTotal() {
             this.total = this.items.reduce((sum, item) => {
                 return sum + (item.precio * item.cantidad);
             }, 0);
         },
-        
+
         async procesarVenta() {
             if (this.items.length === 0) {
                 SIPAN.error('Debe agregar al menos un producto');
                 return;
             }
-            
+
             if (!this.metodo_pago) {
                 SIPAN.error('Debe seleccionar un método de pago');
                 return;
             }
-            
+
             const formData = new FormData();
             formData.append('id_cliente', this.id_cliente);
             formData.append('metodo_pago', this.metodo_pago);
             formData.append('total', this.total);
             formData.append('productos', JSON.stringify(this.items));
-            
+
             try {
                 const response = await fetch(App::getUrl('ventas.store'), {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     SIPAN.success(data.message);
                     setTimeout(() => {

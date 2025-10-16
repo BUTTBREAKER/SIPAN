@@ -29,7 +29,7 @@ class VentasController
 
     $ventas = $this->ventaModel->getWithDetails($sucursal_id);
 
-    require_once __DIR__ . '/../Views/ventas/index.php';
+    require_once __DIR__ . '/../../views/pages/ventas/index.php';
   }
 
   public function create()
@@ -41,7 +41,7 @@ class VentasController
 
     $productos = $this->productoModel->all($sucursal_id);
 
-    require_once __DIR__ . '/../Views/ventas/create.php';
+    require_once __DIR__ . '/../../views/pages/ventas/create.php';
   }
 
   public function store()
@@ -98,7 +98,7 @@ class VentasController
 
     $productos = $this->ventaModel->getProductos($id);
 
-    require_once __DIR__ . '/../Views/ventas/show.php';
+    require_once __DIR__ . '/../../views/pages/ventas/show.php';
   }
 
   public function ticket($id)
@@ -114,6 +114,6 @@ class VentasController
 
     $productos = $this->ventaModel->getProductos($id);
 
-    require_once __DIR__ . '/../Views/ventas/ticket.php';
+    require_once __DIR__ . '/../../views/pages/ventas/ticket.php';
   }
 }

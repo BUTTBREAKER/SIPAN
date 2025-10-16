@@ -29,7 +29,7 @@ class PedidosController
 
     $pedidos = $this->pedidoModel->getWithDetails($sucursal_id);
 
-    require_once __DIR__ . '/../Views/pedidos/index.php';
+    require_once __DIR__ . '/../../views/pages/pedidos/index.php';
   }
 
   public function create()
@@ -42,7 +42,7 @@ class PedidosController
     $clientes = $this->clienteModel->all($sucursal_id);
     $productos = $this->productoModel->all($sucursal_id);
 
-    require_once __DIR__ . '/../Views/pedidos/create.php';
+    require_once __DIR__ . '/../../views/pages/pedidos/create.php';
   }
 
   public function store()
@@ -100,7 +100,7 @@ class PedidosController
     $productos = $this->pedidoModel->getProductos($id);
     $pagos = $this->pedidoModel->getPagos($id);
 
-    require_once __DIR__ . '/../Views/pedidos/show.php';
+    require_once __DIR__ . '/../../views/pages/pedidos/show.php';
   }
 
   public function update($id)

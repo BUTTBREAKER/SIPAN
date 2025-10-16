@@ -32,7 +32,7 @@ class UsuariosController
     $sucursal_id = $user['sucursal_id'];
     $usuarios = $this->usuarioModel->getBySucursal($sucursal_id);
 
-    require_once __DIR__ . '/../Views/usuarios/index.php';
+    require_once __DIR__ . '/../../views/pages/usuarios/index.php';
   }
 
   public function perfil()
@@ -43,7 +43,7 @@ class UsuariosController
     // Obtener actividad reciente del usuario
     $actividad = $this->auditoriaModel->getByUsuario($user['id'], 20);
 
-    require_once __DIR__ . '/../Views/usuarios/perfil.php';
+    require_once __DIR__ . '/../../views/pages/usuarios/perfil.php';
   }
 
   public function actividad()
@@ -60,7 +60,7 @@ class UsuariosController
     $usuario = $this->usuarioModel->find($usuario_id);
     $actividad = $this->auditoriaModel->getByUsuario($usuario_id, 100);
 
-    require_once __DIR__ . '/../Views/usuarios/actividad.php';
+    require_once __DIR__ . '/../../views/pages/usuarios/actividad.php';
   }
 
   public function actualizarPerfil()

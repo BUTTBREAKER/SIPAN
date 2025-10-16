@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Nueva Producción';
 $currentPage = 'producciones';
 require_once __DIR__ . '/../layouts/header.php';
@@ -26,8 +26,8 @@ require_once __DIR__ . '/../layouts/header.php';
                             <option value="">Seleccionar producto</option>
                             <?php
                             require_once __DIR__ . '/../../Models/Producto.php';
-                            $productoModel = new \App\Models\Producto();
-                            $productos = $productoModel->getBySucursal($_SESSION['sucursal_id']);
+                            $productoModel = new \SIPAN\Models\Producto();
+                            // $productos = $productoModel->getBySucursal($_SESSION['sucursal_id']);
                             foreach ($productos as $producto):
                             ?>
                             <option value="<?= $producto['id'] ?>">
@@ -37,7 +37,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Cantidad a Producir <span class="text-danger">*</span></label>
@@ -45,15 +45,15 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div x-show="receta_cargada" class="alert alert-info">
                 <strong>Receta encontrada:</strong> Rendimiento de <span x-text="rendimiento"></span> unidades
             </div>
-            
+
             <div x-show="!receta_cargada && id_producto" class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle"></i> Este producto no tiene una receta asociada. La producción se registrará sin consumo de insumos.
             </div>
-            
+
             <!-- Insumos Necesarios -->
             <div x-show="insumos_necesarios.length > 0">
                 <h4 class="mb-3">Insumos Necesarios</h4>
@@ -89,7 +89,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </table>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
@@ -98,7 +98,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="form-group mt-4">
                 <button type="submit" class="btn btn-warning" :disabled="!puede_producir">
                     <i class="fas fa-industry"></i> Registrar Producción
@@ -107,7 +107,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     <i class="fas fa-times"></i> Cancelar
                 </a>
             </div>
-            
+
             <div x-show="!puede_producir && insumos_necesarios.length > 0" class="alert alert-danger mt-3">
                 <i class="fas fa-exclamation-circle"></i> No hay suficientes insumos para esta producción
             </div>
@@ -125,14 +125,14 @@ function produccionApp() {
         rendimiento: 0,
         insumos_necesarios: [],
         puede_producir: true,
-        
+
         async cargarReceta() {
             if (!this.id_producto) return;
-            
+
             try {
                 const response = await fetch(`/recetas/calcular?id_producto=${this.id_producto}`);
                 const data = await response.json();
-                
+
                 if (data.success && data.receta) {
                     this.receta_cargada = true;
                     this.rendimiento = data.receta.rendimiento;
@@ -147,14 +147,14 @@ function produccionApp() {
                 this.receta_cargada = false;
             }
         },
-        
+
         async calcularInsumos() {
             if (!this.receta_cargada || !this.cantidad_producida) return;
-            
+
             try {
                 const response = await fetch(`/recetas/calcular?id_producto=${this.id_producto}&cantidad=${this.cantidad_producida}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     this.insumos_necesarios = data.insumos;
                     this.puede_producir = data.puede_producir;
@@ -163,31 +163,31 @@ function produccionApp() {
                 console.error('Error al calcular insumos:', error);
             }
         },
-        
+
         async guardarProduccion() {
             if (!this.id_producto || !this.cantidad_producida) {
                 SIPAN.error('Debe completar todos los campos requeridos');
                 return;
             }
-            
+
             if (!this.puede_producir && this.insumos_necesarios.length > 0) {
                 SIPAN.error('No hay suficientes insumos para esta producción');
                 return;
             }
-            
+
             const formData = new FormData();
             formData.append('id_producto', this.id_producto);
             formData.append('cantidad_producida', this.cantidad_producida);
             formData.append('observaciones', this.observaciones);
-            
+
             try {
                 const response = await fetch(App::getUrl('producciones.store'), {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     SIPAN.success(data.message);
                     setTimeout(() => {

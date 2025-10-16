@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Editar Insumo';
 $currentPage = 'insumos';
 require_once __DIR__ . '/../layouts/header.php';
@@ -25,7 +25,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <input type="text" name="nombre" class="form-control" required value="<?= htmlspecialchars($insumo['nombre']) ?>">
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Unidad de Medida <span class="text-danger">*</span></label>
@@ -42,7 +42,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
@@ -51,7 +51,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group">
@@ -59,7 +59,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <input type="number" name="precio_unitario" class="form-control" step="0.01" required value="<?= $insumo['precio_unitario'] ?>">
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Stock Actual <span class="text-danger">*</span></label>
@@ -67,7 +67,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <small class="text-muted">Stock actual: <?= $insumo['stock_actual'] ?> <?= $insumo['unidad_medida'] ?></small>
                     </div>
                 </div>
-                
+
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Stock Mínimo <span class="text-danger">*</span></label>
@@ -75,7 +75,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="form-group mt-4">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i> Actualizar Insumo
@@ -91,12 +91,12 @@ require_once __DIR__ . '/../layouts/header.php';
 <script>
 document.getElementById('formInsumo').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     if (!SIPAN.validateForm(this)) {
         SIPAN.error('Por favor complete todos los campos requeridos');
         return;
     }
-    
+
     const data = await SIPAN.submitForm(this, (response) => {
         setTimeout(() => {
             window.location.href = App::getUrl('insumos');

@@ -37,7 +37,7 @@ class PrediccionesController
     $predicciones_produccion = $this->predecirProduccion($sucursal_id);
     $sugerencias_compra = $this->generarSugerenciasCompra($sucursal_id);
 
-    require_once __DIR__ . '/../Views/predicciones/index.php';
+    require_once __DIR__ . '/../../views/pages/predicciones/index.php';
   }
 
   /**
@@ -150,7 +150,7 @@ class PrediccionesController
     // Obtener insumos con stock bajo
     $sql = "SELECT i.*,
                 (i.stock_minimo - i.stock_actual) as cantidad_faltante,
-                CASE 
+                CASE
                     WHEN i.stock_actual <= i.stock_minimo * 0.3 THEN 'alta'
                     WHEN i.stock_actual <= i.stock_minimo * 0.6 THEN 'media'
                     ELSE 'baja'

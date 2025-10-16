@@ -26,14 +26,14 @@ class InsumosController
 
     $insumos = $this->insumoModel->all($sucursal_id);
 
-    require_once __DIR__ . '/../Views/insumos/index.php';
+    require_once __DIR__ . '/../../views/pages/insumos/index.php';
   }
 
   public function create()
   {
     AuthMiddleware::checkRole(['administrador', 'empleado']);
 
-    require_once __DIR__ . '/../Views/insumos/create.php';
+    require_once __DIR__ . '/../../views/pages/insumos/create.php';
   }
 
   public function store()
@@ -84,7 +84,7 @@ class InsumosController
       exit;
     }
 
-    require_once __DIR__ . '/../Views/insumos/edit.php';
+    require_once __DIR__ . '/../../views/pages/insumos/edit.php';
   }
 
   public function update($id)

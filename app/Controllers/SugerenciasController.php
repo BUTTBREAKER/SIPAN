@@ -25,7 +25,7 @@ class SugerenciasController
 
     $sugerencias = $this->sugerenciaModel->getWithDetails($sucursal_id, $estado);
 
-    require_once __DIR__ . '/../Views/sugerencias/index.php';
+    require_once __DIR__ . '/../../views/pages/sugerencias/index.php';
   }
 
   public function generar()
