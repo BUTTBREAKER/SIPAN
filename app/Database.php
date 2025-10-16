@@ -2,25 +2,29 @@
 
 namespace SIPAN;
 
-class Database
+use PDO;
+
+final readonly class Database
 {
-  private static $instance = null;
-  private $connection;
+  private PDO $connection;
 
   private function __construct()
   {
     $this->connection = db()->connection();
   }
 
-  public static function getInstance()
+  public static function getInstance(): self
   {
-    if (self::$instance === null) {
-      self::$instance = new self();
+    static $instance = null;
+
+    if ($instance === null) {
+      $instance = new self;
     }
-    return self::$instance;
+
+    return $instance;
   }
 
-  public function getConnection()
+  public function getConnection(): PDO
   {
     return $this->connection;
   }
@@ -29,6 +33,7 @@ class Database
   {
     $stmt = $this->connection->prepare($sql);
     $stmt->execute($params);
+
     return $stmt;
   }
 

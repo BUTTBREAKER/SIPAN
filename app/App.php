@@ -27,9 +27,4 @@ final class App extends Flight
   ): void {
     self::render("components/$componentFileName", $componentData);
   }
-
-  public static function formatMoney(float $amount): string
-  {
-    return 'S/ ' . number_format($amount, 2);
-  }
 }

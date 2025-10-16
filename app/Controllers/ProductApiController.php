@@ -8,7 +8,8 @@ use SIPAN\App;
 
 final readonly class ProductApiController
 {
-  static function index(): void {
+  static function index(): void
+  {
     $products = db()->select('productos')->all();
 
     App::json($products);
