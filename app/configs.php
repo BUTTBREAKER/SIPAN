@@ -44,12 +44,13 @@ $twitter = new Twitter([
   'redirectUri' => $_ENV['TWITTER_AUTH_REDIRECT_URI'],
 ]);
 
-$noExpirationLifetime = 0;
+const SESSION_LIFETIME_NO_EXPIRATION = 0;
+const SESSION_LIFETIME_1_MIN_EXPIRATION = 60;
 
 auth()->config('db.table', 'usuarios');
 auth()->config('session', true);
 auth()->config('password.key', 'clave');
-auth()->config('session.lifetime', $noExpirationLifetime);
+auth()->config('session.lifetime', SESSION_LIFETIME_1_MIN_EXPIRATION);
 auth()->config('messages.loginParamsError', '¡Correo o contraseña incorrecta!');
 auth()->config('messages.loginPasswordError', auth()->config('messages.loginParamsError'));
 auth()->withProvider('github', $github);

@@ -177,4 +177,3 @@ App::route('GET /recetas/list', [RecetasController::class, 'list']);
 // Predicciones
 App::route('GET /predicciones', [PrediccionesController::class, 'index']);
 App::route('POST /predicciones/generar', [PrediccionesController::class, 'generarSugerenciasAutomaticas']);
-
