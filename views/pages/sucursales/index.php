@@ -115,7 +115,7 @@ async function cambiarEstado(sucursalId, nuevoEstado) {
     
     if (result.isConfirmed) {
         try {
-            const response = await fetch('/sucursales/cambiar-estado', {
+            const response = await fetch(App::getUrl('sucursales.cambiar-estado'), {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({

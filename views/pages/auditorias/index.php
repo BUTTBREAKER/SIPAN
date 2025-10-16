@@ -354,7 +354,7 @@ async function verificarYDeshacer(id, accion) {
 // Deshacer cambio
 async function deshacerCambio(id) {
     try {
-        const response = await fetch('/auditorias/deshacer', {
+        const response = await fetch(App::getUrl('auditorias.deshacer'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

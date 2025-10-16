@@ -36,21 +36,7 @@
                 </div>
 
                 <div class="navbar-right" x-data="notificationsApp()">
-                    <?php if ($_SESSION['user_rol'] === 'administrador'): ?>
-                    <select class="sucursal-selector" onchange="cambiarSucursal(this.value)">
-                        <option value="">Seleccionar Sucursal</option>
-                        <?php
-                        require_once __DIR__ . '/../../Models/Sucursal.php';
-                        $sucursalModel = new \SIPAN\Models\Sucursal();
-                        $sucursales = $sucursalModel->getActivas();
-                        foreach ($sucursales as $sucursal):
-                        ?>
-                        <option value="<?= $sucursal['id'] ?>" <?= $sucursal['id'] == $_SESSION['sucursal_id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($sucursal['nombre']) ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php endif; ?>
+                   
 
                     <!-- Notificaciones -->
                     <div class="notifications-wrapper" style="position: relative; margin-left: 1rem;">

@@ -153,7 +153,7 @@ function editRecetaApp(receta, insumosDisponibles, recetaInsumos) {
                         text: 'Receta actualizada correctamente',
                         confirmButtonColor: '#D4A574'
                     }).then(() => {
-                        window.location.href = '/recetas';
+                        window.location.href = App::getUrl('recetas');
                     });
                 } else {
                     Swal.fire({

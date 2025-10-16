@@ -196,7 +196,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 formData.append('insumos', JSON.stringify(this.insumos_receta));
 
                 try {
-                    const response = await fetch('/recetas/store', {
+                    const response = await fetch(App::getUrl('recetas.store'), {
                         method: 'POST',
                         body: formData
                     });
@@ -206,7 +206,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     if (data.success) {
                         SIPAN.success(data.message);
                         setTimeout(() => {
-                            window.location.href = '/recetas';
+                            window.location.href = App::getUrl('recetas');
                         }, 1500);
                     } else {
                         SIPAN.error(data.message);

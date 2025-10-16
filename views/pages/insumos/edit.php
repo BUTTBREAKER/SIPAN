@@ -99,7 +99,7 @@ document.getElementById('formInsumo').addEventListener('submit', async function(
     
     const data = await SIPAN.submitForm(this, (response) => {
         setTimeout(() => {
-            window.location.href = '/insumos';
+            window.location.href = App::getUrl('insumos');
         }, 1500);
     });
 });

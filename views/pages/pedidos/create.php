@@ -290,7 +290,7 @@ function pedidoApp() {
             formData.append('productos', JSON.stringify(this.items));
             
             try {
-                const response = await fetch('/pedidos/store', {
+                const response = await fetch(App::getUrl('pedidos.store'), {
                     method: 'POST',
                     body: formData
                 });

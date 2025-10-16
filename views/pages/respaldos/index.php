@@ -96,7 +96,7 @@ async function generarRespaldo() {
     SIPAN.loading('Generando respaldo...');
     
     try {
-        const response = await fetch('/respaldos/generar', {
+        const response = await fetch(App::getUrl('respaldos.generar'), {
             method: 'POST'
         });
         
@@ -135,7 +135,7 @@ async function restaurarRespaldo(id) {
     formData.append('id', id);
     
     try {
-        const response = await fetch('/respaldos/restaurar', {
+        const response = await fetch(App::getUrl('respaldos.restaurar'), {
             method: 'POST',
             body: formData
         });

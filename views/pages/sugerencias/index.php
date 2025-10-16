@@ -109,7 +109,7 @@ async function generarSugerencias() {
     if (!confirmed) return;
     
     try {
-        const response = await fetch('/sugerencias/generar', {
+        const response = await fetch(App::getUrl('sugerencias.generar'), {
             method: 'POST'
         });
         
@@ -131,7 +131,7 @@ async function aprobarSugerencia(id) {
     formData.append('id', id);
     
     try {
-        const response = await fetch('/sugerencias/aprobar', {
+        const response = await fetch(App::getUrl('sugerencias.aprobar'), {
             method: 'POST',
             body: formData
         });
@@ -157,7 +157,7 @@ async function rechazarSugerencia(id) {
     formData.append('id', id);
     
     try {
-        const response = await fetch('/sugerencias/rechazar', {
+        const response = await fetch(App::getUrl('sugerencias.rechazar'), {
             method: 'POST',
             body: formData
         });
@@ -183,7 +183,7 @@ async function completarSugerencia(id) {
     formData.append('id', id);
     
     try {
-        const response = await fetch('/sugerencias/completar', {
+        const response = await fetch(App::getUrl('sugerencias.completar'), {
             method: 'POST',
             body: formData
         });

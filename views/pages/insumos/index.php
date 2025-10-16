@@ -111,7 +111,7 @@ function insumosApp() {
         
         async verificarStockBajo() {
             try {
-                const response = await fetch('/insumos/stock-bajo');
+                const response = await fetch(App::getUrl('insumos.stock-bajo'));
                 const data = await response.json();
                 
                 if (data.success) {

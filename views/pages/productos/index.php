@@ -110,7 +110,7 @@ function productosApp() {
         
         async verificarStockBajo() {
             try {
-                const response = await fetch('/productos/stock-bajo');
+                const response = await fetch(App::getUrl('productos.stock-bajo'));
                 const data = await response.json();
                 
                 if (data.success) {

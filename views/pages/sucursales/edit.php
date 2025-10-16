@@ -96,7 +96,7 @@ function editSucursalApp(sucursal) {
                         text: 'Sucursal actualizada correctamente',
                         confirmButtonColor: '#D4A574'
                     }).then(() => {
-                        window.location.href = '/sucursales';
+                        window.location.href = App::getUrl('sucursales');
                     });
                 } else {
                     Swal.fire({

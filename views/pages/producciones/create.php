@@ -181,7 +181,7 @@ function produccionApp() {
             formData.append('observaciones', this.observaciones);
             
             try {
-                const response = await fetch('/producciones/store', {
+                const response = await fetch(App::getUrl('producciones.store'), {
                     method: 'POST',
                     body: formData
                 });
@@ -191,7 +191,7 @@ function produccionApp() {
                 if (data.success) {
                     SIPAN.success(data.message);
                     setTimeout(() => {
-                        window.location.href = '/producciones';
+                        window.location.href = App::getUrl('producciones');
                     }, 1500);
                 } else {
                     SIPAN.error(data.message);

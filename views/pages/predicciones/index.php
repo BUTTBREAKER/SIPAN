@@ -330,7 +330,7 @@ async function actualizarPredicciones() {
     
     if (result.isConfirmed) {
         try {
-            const response = await fetch('/predicciones/generar', {
+            const response = await fetch(App::getUrl('predicciones.generar'), {
                 method: 'POST'
             });
             const data = await response.json();

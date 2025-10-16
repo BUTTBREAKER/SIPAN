@@ -163,7 +163,7 @@ document.getElementById('formPerfil').addEventListener('submit', async (e) => {
     }
     
     try {
-        const response = await fetch('/usuarios/actualizar-perfil', {
+        const response = await fetch(App::getUrl('usuarios.actualizar-perfil'), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)

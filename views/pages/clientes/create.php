@@ -100,7 +100,7 @@ document.getElementById('formCliente').addEventListener('submit', async function
     
     const data = await SIPAN.submitForm(this, (response) => {
         setTimeout(() => {
-            window.location.href = '/clientes';
+            window.location.href = App::getUrl('clientes');
         }, 1500);
     });
 });

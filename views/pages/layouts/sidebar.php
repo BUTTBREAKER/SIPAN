@@ -118,7 +118,7 @@ function cambiarSucursal(sucursalId) {
     const formData = new FormData();
     formData.append('sucursal_id', sucursalId);
     
-    fetch('/auth/cambiar-sucursal', {
+    fetch(App::getUrl('auth.cambiar-sucursal'), {
         method: 'POST',
         body: formData
     })

@@ -109,7 +109,7 @@ function productoForm() {
                 
                 const data = await SIPAN.submitForm(form, (response) => {
                     setTimeout(() => {
-                        window.location.href = '/productos';
+                        window.location.href = App::getUrl('productos');
                     }, 1500);
                 });
             });

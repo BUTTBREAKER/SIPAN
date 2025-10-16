@@ -72,7 +72,7 @@ document.getElementById('formSucursal').addEventListener('submit', async (e) => 
     const data = Object.fromEntries(formData);
     
     try {
-        const response = await fetch('/sucursales/store', {
+        const response = await fetch(App::getUrl('sucursales.store'), {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
@@ -96,7 +96,7 @@ document.getElementById('formSucursal').addEventListener('submit', async (e) => 
             }).then((res) => {
                 if (res.isConfirmed) {
                     navigator.clipboard.writeText(result.clave_sucursal);
-                    window.location.href = '/sucursales';
+                    window.location.href = App::getUrl('sucursales');
                 }
             });
         } else {

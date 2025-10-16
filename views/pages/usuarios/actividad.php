@@ -12,7 +12,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Historial de Actividad</h3>
-        <a href="<?= $_SESSION['user_rol'] === 'administrador' ? '/usuarios' : '/usuarios/perfil' ?>" class="btn btn-secondary">
+        <a href="<?= $_SESSION['user_rol'] === 'administrador' ? App::getUrl('usuarios') : App::getUrl('usuarios.perfil') ?>" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>

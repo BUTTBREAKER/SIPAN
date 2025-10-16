@@ -225,7 +225,7 @@ function ventaApp() {
             formData.append('productos', JSON.stringify(this.items));
             
             try {
-                const response = await fetch('/ventas/store', {
+                const response = await fetch(App::getUrl('ventas.store'), {
                     method: 'POST',
                     body: formData
                 });

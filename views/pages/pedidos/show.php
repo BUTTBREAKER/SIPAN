@@ -283,7 +283,7 @@ function pedidoDetailApp() {
             formData.append('metodo_pago', this.pago.metodo);
             
             try {
-                const response = await fetch('/pedidos/registrar-pago', {
+                const response = await fetch(App::getUrl('pedidos.registrar-pago'), {
                     method: 'POST',
                     body: formData
                 });
