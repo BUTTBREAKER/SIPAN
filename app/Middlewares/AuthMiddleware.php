@@ -2,6 +2,9 @@
 
 namespace SIPAN\Middlewares;
 
+use SIPAN\App;
+
+/** @deprecated */
 class AuthMiddleware
 {
   public static function check()
@@ -30,7 +33,7 @@ class AuthMiddleware
     self::check();
 
     if (!empty($roles) && !in_array($_SESSION['user_rol'], $roles)) {
-      header('Location: ./dashboard');
+      App::redirect(App::getUrl('dashboard'));
 
       exit;
     }

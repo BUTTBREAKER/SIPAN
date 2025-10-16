@@ -7,65 +7,62 @@ use SIPAN\Models\Usuario;
 use SIPAN\Models\Sucursal;
 use SIPAN\Middlewares\AuthMiddleware;
 
-class AuthController
+final readonly class AuthController
 {
-  private $usuarioModel;
-  private $sucursalModel;
-
-  public function __construct()
-  {
-    $this->usuarioModel = new Usuario();
-    $this->sucursalModel = new Sucursal();
+  public function __construct(
+    private Usuario $usuarioModel,
+    private Sucursal $sucursalModel,
+  ) {
+    // ...
   }
 
   public function showLogin()
   {
-    if (AuthMiddleware::isAuthenticated()) {
-      header('Location: ./dashboard');
-      exit;
-    }
-
     App::render('pages/auth/login');
   }
 
-  public function login()
+  public function login(): void
   {
-    header('Content-Type: application/json');
+    $validatedCredentials = form()->validate(App::request()->data->getData(), [
+      'correo' => 'email',
+      'clave' => 'password',
+    ]);
 
-    $correo = $_POST['correo'] ?? '';
-    $clave = $_POST['clave'] ?? '';
+    if (!$validatedCredentials) {
+      App::json(['success' => false, 'message' => 'Correo y contraseña no son válidos']);
 
-    if (empty($correo) || empty($clave)) {
-      echo json_encode(['success' => false, 'message' => 'Correo y contraseña son requeridos']);
-      exit;
+      return;
     }
 
-    $user = $this->usuarioModel->authenticate($correo, $clave);
+    auth()->login($validatedCredentials);
+    $user = auth()->user();
 
-    if ($user) {
-      if ($user['estado'] !== 'activo') {
-        echo json_encode(['success' => false, 'message' => 'Usuario inactivo']);
-        exit;
-      }
+    if (!$user) {
+      App::json(['success' => false, 'message' => 'Credenciales incorrectas']);
 
-      AuthMiddleware::setUser($user);
-
-      // Obtener nombre de sucursal
-      if ($user['id_sucursal']) {
-        $sucursal = $this->sucursalModel->find($user['id_sucursal']);
-        $_SESSION['sucursal_nombre'] = $sucursal['nombre'] ?? '';
-      }
-
-      echo json_encode(['success' => true, 'message' => 'Inicio de sesión exitoso']);
-    } else {
-      echo json_encode(['success' => false, 'message' => 'Credenciales incorrectas']);
+      return;
     }
-    exit;
+
+    if ($user->estado !== 'activo') {
+      auth()->logout();
+
+      App::json(['success' => false, 'message' => 'Usuario inactivo']);
+
+      return;
+    }
+    // Obtener nombre de sucursal
+    if ($user->id_sucursal) {
+      $sucursal = $this->sucursalModel->find($user->id_sucursal);
+      session()->set('sucursal_nombre', $sucursal['nombre'] ?? '');
+    }
+
+    App::json(['success' => true, 'message' => 'Inicio de sesión exitoso']);
   }
 
   public function logout()
   {
-    AuthMiddleware::logout();
+    auth()->logout();
+    App::redirect(App::getUrl('login.get'));
   }
 
   public function cambiarSucursal()

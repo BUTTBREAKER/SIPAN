@@ -5,8 +5,6 @@ use SIPAN\Controllers\AuthController;
 use SIPAN\Controllers\DashboardController;
 use SIPAN\Controllers\GeminiController;
 use SIPAN\Controllers\OAuth2Controller;
-use SIPAN\Controllers\ProductApiController;
-use SIPAN\Controllers\UserApiController;
 use SIPAN\Controllers\ProductosController;
 use SIPAN\Controllers\InsumosController;
 use SIPAN\Controllers\RecetasController;
@@ -23,16 +21,10 @@ use SIPAN\Controllers\SucursalesController;
 use SIPAN\Controllers\CalculoInsumosController;
 use SIPAN\Controllers\PrediccionesController;
 use SIPAN\Controllers\NotificacionesController;
+use SIPAN\Middlewares\EnsureUserIsLoggedMiddleware;
+use SIPAN\Middlewares\EnsureUserIsNotLoggedMiddleware;
 
 App::group('/api', static function (): void {
-  App::route('POST /ingresar', UserApiController::login(...));
-  App::route('POST /registrarse', UserApiController::register(...));
-  App::route('/cerrar-sesion', UserApiController::logout(...));
-
-  App::group('/productos', static function (): void {
-    App::route('GET /', ProductApiController::index(...));
-  });
-
   App::route('/gemini', GeminiController::simplePrompt(...));
 });
 
@@ -47,13 +39,21 @@ App::group('/oauth2', static function (): void {
 });
 
 // Autenticación
-App::route('GET /', [AuthController::class, 'showLogin']);
-App::route('GET /login', [AuthController::class, 'showLogin']);
-App::route('POST /login', [AuthController::class, 'login']);
-App::route('GET /logout', [AuthController::class, 'logout']);
-App::route('GET /register', [AuthController::class, 'showRegister']);
-App::route('POST /auth/register', [AuthController::class, 'register']);
+App::route('GET /', static function (): void {
+  App::redirect('/dashboard');
+})->addMiddleware(EnsureUserIsLoggedMiddleware::class);
+
+App::group('/login', static function (): void {
+  App::route('GET /', [AuthController::class, 'showLogin'], alias: 'login.get');
+  App::route('POST /', [AuthController::class, 'login'], alias: 'login.post');
+}, [EnsureUserIsNotLoggedMiddleware::class]);
+
+App::route('/logout', [AuthController::class, 'logout'], alias: 'logout');
+
+App::route('GET /register', [AuthController::class, 'showRegister'], alias: 'register.get');
+App::route('POST /auth/register', [AuthController::class, 'register'], alias: 'register.post');
 App::route('POST /auth/verificar-clave-sucursal', [AuthController::class, 'verificarClaveSucursal']);
+
 App::route('GET /notificaciones/no-leidas', [NotificacionesController::class, 'getNoLeidas']);
 App::route('POST /notificaciones/marcar-leida/{id}', [NotificacionesController::class, 'marcarLeida']);
 App::route('POST /notificaciones/marcar-todas-leidas', [NotificacionesController::class, 'marcarTodasLeidas']);
@@ -61,7 +61,7 @@ App::route('POST /auth/verificar-sucursal', [AuthController::class, 'verificarSu
 App::route('POST /auth/cambiar-sucursal', [AuthController::class, 'cambiarSucursal']);
 
 // Dashboard
-App::route('GET /dashboard', [DashboardController::class, 'index']);
+App::route('GET /dashboard', [DashboardController::class, 'index'], alias: 'dashboard');
 App::route('GET /dashboard/notificaciones', [DashboardController::class, 'getNotificaciones']);
 App::route('POST /dashboard/notificacion/leida', [DashboardController::class, 'marcarNotificacionLeida']);
 
