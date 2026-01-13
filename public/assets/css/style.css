@@ -1,0 +1,1138 @@
+/* SIPAN - Sistema Integral para Panaderías v2.8 */
+/* Theme: Pan Dorado (Warm, Appetizing & Accessible) */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+:root {
+    /* --- Light Theme (Base) --- */
+
+    /* Primary: Marrón saddle - Elementos clave */
+    --primary: #8B4513;
+    --primary-light: #A0522D;
+    --primary-dark: #5C3317;
+
+    /* Secondary: Naranja chocolate - Acentos y Acción */
+    --secondary: #D2691E;
+    --secondary-light: #CD853F;
+    --secondary-dark: #A0522D;
+
+    /* Semantic Colors (Cálidos pero funcionales) */
+    --success: #228B22;
+    /* Verde forest */
+    --danger: #FF4500;
+    /* Naranja rojizo fuerte */
+    --warning: #D2691E;
+    /* Mismo tono que secundario */
+    --info: #8B4513;
+    /* Primary */
+
+    /* Backgrounds */
+    --bg-body: #FFF8E7;
+    /* Crema clara */
+    --bg-card: #FFFFFF;
+    --bg-sidebar: #3E2723;
+    /* Marrón muy oscuro */
+    --bg-header: #FFFFFF;
+
+    /* Text */
+    --text-main: #2F1B0A;
+    /* Marrón casi negro - Alto contraste */
+    --text-muted: #6B4C3A;
+    /* Marrón medio */
+    --text-light: #FFF8E7;
+    /* Crema para textos sobre fondo oscuro */
+    --text-on-accent: #FFFFFF;
+
+    /* Borders & Decors */
+    --border-color: #D7CCC8;
+    /* Beige */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+    /* Dimensions */
+    --sidebar-width: 260px;
+    --navbar-height: 74px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+[data-theme="dark"] {
+    /* --- Dark Theme (Intense Chocolate) --- */
+
+    /* Backgrounds */
+    --bg-body: #3E2723;
+    /* Marrón chocolate oscuro */
+    --bg-card: #5D4037;
+    /* Marrón medio */
+    --bg-sidebar: #2F1B0A;
+    /* Marrón casi negro */
+    --bg-header: #5D4037;
+
+    /* Primary: Beige Tan - Elementos clave */
+    --primary: #D2B48C;
+    --primary-light: #DEB887;
+    --primary-dark: #CD853F;
+
+    /* Secondary: Naranja Peru - Acentos */
+    --secondary: #CD853F;
+    --secondary-light: #DEB887;
+    --secondary-dark: #A0522D;
+
+    /* Text */
+    --text-main: #FFF8E7;
+    /* Crema clara - Alto contraste */
+    --text-muted: #D7CCC8;
+    /* Beige grisáceo */
+    --text-light: #FFF8E7;
+}
+
+/* --- Base --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.page-title,
+.brand-font {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.01em;
+    color: var(--primary);
+    /* En dark mode es beige, en light mode es marrón */
+}
+
+/* Force titles to act correctly if primary fails context */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] .page-title {
+    color: var(--primary);
+    /* Keep intended primary color */
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+ul {
+    list-style: none;
+}
+
+/* --- Layout --- */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    /* Sidebar width + Left Margin + Gap */
+    margin-left: calc(var(--sidebar-width) + 3rem);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Slightly rounded container for the main content area? Optional */
+}
+
+.content {
+    padding: 2.5rem;
+    flex: 1;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* --- Sidebar Styles --- */
+/* --- Sidebar: Glass Modular Slim --- */
+:root {
+    --sidebar-collapsed: 74px;
+    --sidebar-expanded: 280px;
+    --glass-blur: 15px;
+    --sidebar-bg: rgba(62, 39, 35, 0.95);
+    /* Chocolate fallback */
+    --sidebar-bg-glass: rgba(62, 39, 35, 0.85);
+    --group-bg: rgba(255, 255, 255, 0.05);
+    /* Subtle bubble */
+}
+
+.sidebar {
+    width: var(--sidebar-collapsed);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background: var(--sidebar-bg);
+    /* Fallback */
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    /* Hide overflow initially */
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Glass Effect only on Hover/Expanded for Performance */
+.sidebar:hover,
+.sidebar.expanded {
+    width: var(--sidebar-expanded);
+    background: var(--sidebar-bg-glass);
+    backdrop-filter: blur(var(--glass-blur));
+    overflow-y: auto;
+    /* Scroll only when expanded */
+    overflow-x: hidden;
+    box-shadow: 10px 0 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    height: var(--navbar-height);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    color: var(--text-light);
+    text-decoration: none;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    gap: 1rem;
+    width: 100%;
+}
+
+.sidebar-logo .logo-icon {
+    min-width: 40px;
+    /* Center with collapsed width */
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.sidebar-logo .logo-text {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.sidebar:hover .logo-text,
+.sidebar.expanded .logo-text {
+    opacity: 1;
+}
+
+/* Sidebar Content */
+.sidebar-content {
+    padding: 1rem 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Navigation Groups (Cards) */
+.nav-group {
+    margin: 0 0.5rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    padding-bottom: 0.5rem;
+}
+
+.sidebar:hover .nav-group,
+.sidebar.expanded .nav-group {
+    background: var(--group-bg);
+}
+
+/* Group Headers */
+.nav-group-header {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    cursor: default;
+    position: relative;
+    height: 40px;
+}
+
+.group-icon-anchor {
+    font-size: 1.2rem;
+    min-width: 30px;
+    /* Center align */
+    text-align: center;
+    color: var(--secondary);
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+.group-title {
+    margin-left: 1rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.sidebar:hover .group-title,
+.sidebar.expanded .group-title {
+    opacity: 1;
+}
+
+/* Hide anchor icons when expanded to avoid duplication if desired, 
+   OR keep them as group indicators. User asked for anchors in collapsed mode.
+   Let's keep them but maybe dim them or style them as headers. */
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Links */
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.2s;
+    border-radius: 8px;
+    margin: 0 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.nav-link i {
+    min-width: 30px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.nav-link span {
+    margin-left: 1rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.sidebar:hover .nav-link span,
+.sidebar.expanded .nav-link span {
+    opacity: 1;
+}
+
+/* Hover States & Active */
+.nav-link:hover {
+    color: var(--text-light);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background: var(--secondary);
+    color: #fff;
+    /* Contrast on Secondary */
+    box-shadow: 0 4px 10px rgba(210, 105, 30, 0.3);
+}
+
+/* Collapse behavior: Hide group contents and anchors logic */
+/* In collapsed mode, we want to see Group Anchors or just plain list items?
+   User asked: "Assign a main icon to each .nav-group... This acts as visual anchor".
+   Complexity: If I show group header icon, where do the child links go?
+   Typical pattern: Collapsed shows icons of LINKS. 
+   User pattern variant: Group icon represents the block. Hovering it might show tooltip.
+   BUT if I hide links in collapsed, how do I click 'Dashboard'? 
+   
+   Solution:
+   Collapsed: Show list of ALL link icons. Group Headers are hidden or minimized to dividers.
+   Expanded: Show Group Headers + Links.
+   
+   Re-reading user request: "Assign Icon to .nav-group... (e.g. box for Inventory)... visible in collapsed mode acts as visual anchor".
+   This implies the group itself might be the collapsed representation? No, that would require 2 clicks.
+   Let's stick to Standard Slim:
+   Collapsed = List of icons. Group headers are hidden or minimal dividers.
+   
+   However, user explicitly asked for "Iconos Representativos por Grupo: visible en modo colapsado".
+   I will style `.group-icon-anchor` to be visible ONLY when collapsed if links are hidden?
+   No, usually you want 1-click access. 
+   Let's assume standard behavior: Collapsed = 70px width. Icons of links are centered.
+   Group headers might clutter. Let's hide Group Headers in collapsed to keep it "Slim".
+   WAIT, User said: "Assign Icon to .nav-group... acts as visual anchor".
+   Maybe they want the Group Header Icon to be visible, and the links to be hidden until expanded?
+   No, that's an Accordion.
+   
+   Let's interpret as: When collapsed, show the Group Header Icon as a separator/indicator?
+   Or simpler: Just show the link icons. The Group Icon might be confusing if not clickable.
+   
+   DECISION for Usability: Hide Group Headers when collapsed, show Link Icons. 
+   If user strictly wants Group Icons, I'd need to know if they link to a page.
+   I will hide `.nav-group-header` contents when collapsed to avoid double icons, unless they are really distinct separators.
+   Actually, `display: none` for group header when collapsed is cleaner.
+*/
+
+.sidebar:not(:hover):not(.expanded) .nav-group-header {
+    display: none;
+    /* Hide headers in slim mode to save space */
+}
+
+/* Tooltips for Collapsed Mode */
+.sidebar:not(:hover):not(.expanded) .nav-link {
+    position: relative;
+    justify-content: center;
+    /* Center icon */
+}
+
+.sidebar:not(:hover):not(.expanded) .nav-link span {
+    display: none;
+    /* Completely remove from flow */
+}
+
+.sidebar:not(:hover):not(.expanded) .nav-link i {
+    margin: 0;
+}
+
+/* Tooltip on Hover (CSS only fallback, though JS preferred for positioning) */
+.sidebar:not(:hover):not(.expanded) .nav-link:hover::after {
+    content: attr(href);
+    /* Ideally text, need data attribute */
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #333;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 1002;
+    margin-left: 10px;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+/* Note: href is ugly, we need aria-label or title. JS will handle tooltips better. */
+
+/* Main Content Adjust */
+.main-content {
+    margin-left: var(--sidebar-collapsed);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-body);
+}
+
+@media (max-width: 991px) {
+    :root {
+        --sidebar-collapsed: 0px;
+    }
+
+    .sidebar {
+        width: 280px !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        visibility: hidden !important;
+        z-index: 10001 !important;
+        /* Sidebar must be on top of everything */
+    }
+
+    .sidebar.expanded,
+    .sidebar.active {
+        transform: translateX(0) !important;
+        visibility: visible !important;
+        box-shadow: 15px 0 50px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 10000 !important;
+        /* Overlay just below sidebar */
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .navbar {
+        padding: 0 0.5rem !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Fixed header elements on mobile */
+    #sidebarToggleHeader {
+        width: 42px;
+        height: 42px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        flex-shrink: 0;
+        color: var(--primary);
+    }
+
+    .navbar-right {
+        gap: 0.5rem !important;
+        margin-left: auto;
+        /* Push to right */
+    }
+}
+
+display: flex !important;
+align-items: center;
+justify-content: center;
+background: rgba(0, 0, 0, 0.05);
+border-radius: 8px;
+margin-right: 0.5rem;
+color: var(--primary);
+}
+
+/* Page title adjustment */
+.page-title {
+    font-size: 1.1rem !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+}
+
+@media (max-width: 576px) {
+    .navbar-right {
+        gap: 0.5rem !important;
+        /* Minimal gap */
+    }
+
+    .navbar-right .position-relative select {
+        min-width: 100px !important;
+        /* Allow smaller sucursal select */
+        font-size: 0.8rem !important;
+    }
+
+    /* Hide tour and user name on very small screens */
+    #btn-tour-guide,
+    .navbar-right .d-flex .text-end.d-none.d-lg-block {
+        display: none !important;
+    }
+
+    .page-title {
+        font-size: 1rem !important;
+    }
+}
+
+/* --- Main Content Layout --- */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+
+/* --- Header/Navbar Styles --- */
+.navbar {
+    height: var(--navbar-height);
+    background-color: var(--bg-header);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    /* Standard header elevation */
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+
+/* Dark mode navbar glass */
+[data-theme="dark"] .navbar {
+    background: rgba(93, 64, 55, 0.85);
+    /* Dark chocolate glass */
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* --- Components --- */
+
+/* Cards */
+.card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.card-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+}
+
+/* Stats Cards */
+.stat-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    /* Forzamos el uso de colores solidos definidos en dashboard.css, aqui solo la estructura base */
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    font-family: 'Playfair Display', serif;
+    /* Toque gourmet solicitado */
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.stat-icon {
+    font-size: 2.2rem;
+    opacity: 0.8;
+    color: var(--secondary);
+}
+
+/* Buttons */
+.btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--text-on-accent);
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.25);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.btn-secondary:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-warning {
+    background-color: var(--warning);
+    color: white;
+}
+
+/* Tables */
+.table-responsive {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.table th {
+    background-color: var(--bg-body);
+    /* Secondary bg usually */
+    color: var(--primary);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-weight: 500;
+    /* Solicitud: texto más bold */
+}
+
+.table tr:hover td {
+    background-color: rgba(210, 105, 30, 0.05);
+    /* Highlight cálido */
+}
+
+/* Badges */
+.badge {
+    padding: 0.4em 0.8em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 999px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+/* Light Mode Badges */
+.badge-success {
+    background-color: #DCFCE7;
+    color: #14532D;
+}
+
+.badge-danger {
+    background-color: #FEE2E2;
+    color: #7F1D1D;
+}
+
+.badge-warning {
+    background-color: #FEF3C7;
+    color: #78350F;
+}
+
+/* Dark Mode Badges (With Transparency) */
+[data-theme="dark"] .badge-success {
+    background-color: rgba(34, 197, 94, 0.2);
+    color: #86EFAC;
+}
+
+[data-theme="dark"] .badge-danger {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #FCA5A5;
+}
+
+[data-theme="dark"] .badge-warning {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #FDE047;
+}
+
+
+/* Forms */
+.form-control,
+.form-select {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--bg-card);
+    color: var(--text-main);
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.2);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+
+
+/* Filters Panel */
+.filters-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-item {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* Loader */
+#page-loader {
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-body);
+    z-index: 9999;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+
+.loader-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--text-muted);
+    border-top-color: var(--secondary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Pagination Shared */
+.pagination-btn {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-main);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--secondary);
+    color: var(--text-on-accent);
+    border-color: var(--secondary);
+}
+
+/* Utilities & Responsive */
+.text-center {
+    text-align: center;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+
+/* --- Card Grids (Modules) --- */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+.product-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--secondary);
+}
+
+.product-card-header {
+    height: 160px;
+    background: radial-gradient(circle at center, var(--bg-body), transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.product-icon {
+    font-size: 5rem;
+    color: var(--secondary);
+    opacity: 0.15;
+    transition: transform 0.3s;
+}
+
+.product-card:hover .product-icon {
+    transform: scale(1.1) rotate(5deg);
+    opacity: 0.25;
+}
+
+.product-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    backdrop-filter: blur(4px);
+    box-shadow: var(--shadow-sm);
+}
+
+.product-card-body {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.product-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    flex: 1;
+    /* Pushes footer down */
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: auto;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
+}
+
+.product-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.product-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: var(--bg-body);
+    color: var(--text-muted);
+    border: 1px solid transparent;
+}
+
+.btn-icon:hover {
+    background: var(--secondary);
+    color: white;
+    transform: rotate(15deg);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Floating Action Button (FAB) for Help/Tour */
+.fab-help-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fab-help {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(210, 105, 30, 0.4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.fab-help:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(210, 105, 30, 0.6);
+    background: linear-gradient(135deg, var(--secondary-light), var(--secondary));
+}
+
+.fab-help:active {
+    transform: scale(0.95);
+}
+
+/* Tooltip for FAB */
+.fab-tooltip {
+    background-color: var(--text-main);
+    color: var(--bg-body);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s;
+    box-shadow: var(--shadow-md);
+    white-space: nowrap;
+}
+
+.fab-help-container:hover .fab-tooltip {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Ring pulse animation for visibility */
+.fab-help::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid white;
+    opacity: 0;
+    animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}

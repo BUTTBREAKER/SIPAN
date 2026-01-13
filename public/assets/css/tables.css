@@ -1,0 +1,169 @@
+/* --- Grid.js Custom Theme "Pan Dorado" --- */
+/* Wrapper */
+.gridjs-container {
+    font-family: 'Outfit', sans-serif !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.gridjs-wrapper {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow-x: auto !important;
+    /* Force horizontal scroll */
+}
+
+/* Base Responsive Container if not Grid.js */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+}
+
+/* Header (Search area) */
+.gridjs-head {
+    padding: 0 0 1.5rem 0 !important;
+}
+
+.gridjs-search {
+    float: left !important;
+    width: 100%;
+    max-width: 300px;
+}
+
+.gridjs-search-input {
+    width: 100% !important;
+    padding: 0.7rem 1rem !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease;
+}
+
+.gridjs-search-input:focus {
+    outline: none !important;
+    border-color: var(--secondary) !important;
+    box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.2) !important;
+}
+
+/* Table Header */
+th.gridjs-th {
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid var(--primary) !important;
+    /* Visual anchor */
+    color: var(--primary) !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    padding: 1rem !important;
+    text-align: left !important;
+}
+
+th.gridjs-th-sort .gridjs-th-content {
+    float: none !important;
+    display: inline-block;
+}
+
+button.gridjs-sort {
+    float: none !important;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+/* Rows & Cells */
+td.gridjs-td {
+    background-color: var(--bg-card) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    padding: 1rem !important;
+    font-size: 0.95rem;
+}
+
+/* First and Last cell rounded corners for "Card" look per row if desired, 
+   but user asked for table modernization. Let's keep distinct rows. */
+tr.gridjs-tr {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+tr.gridjs-tr:hover td.gridjs-td {
+    background-color: rgba(210, 105, 30, 0.05) !important;
+    cursor: default;
+}
+
+/* Footer (Pagination) */
+.gridjs-footer {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 1.5rem 0 0 0 !important;
+    box-shadow: none !important;
+}
+
+.gridjs-pagination .gridjs-pages button {
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    margin: 0 2px !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.gridjs-pagination .gridjs-pages button:hover {
+    background-color: var(--primary-light) !important;
+    color: #fff !important;
+    border-color: var(--primary-light) !important;
+}
+
+.gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+    background-color: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+    font-weight: bold;
+}
+
+/* Loading Bar */
+.gridjs-loading-bar {
+    background-color: var(--secondary) !important;
+}
+
+/* Actions Button overrides inside grid */
+.grid-btn-action {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-right: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: transform 0.2s;
+}
+
+.grid-btn-action:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.grid-btn-edit {
+    background: var(--warning);
+    color: #fff;
+}
+
+.grid-btn-delete {
+    background: var(--danger);
+    color: #fff;
+}
+
+.grid-btn-view {
+    background: var(--info);
+    color: #fff;
+}

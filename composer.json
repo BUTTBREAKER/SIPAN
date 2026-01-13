@@ -1,0 +1,17 @@
+{
+    "name": "sipan/sistema-panaderia",
+    "description": "Sistema Integral para Panaderías",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "firebase/php-jwt": "^6.0",
+        "mpdf/mpdf": "^8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}
