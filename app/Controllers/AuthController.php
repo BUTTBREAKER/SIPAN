@@ -150,6 +150,13 @@ class AuthController
 
         $input = json_decode(file_get_contents('php://input'), true);
 
+        // Validar CSRF para peticiones JSON (desde header X-CSRF-Token o input oculto)
+        require_once __DIR__ . '/../Helpers/CSRF.php';
+        if (!\App\Helpers\CSRF::validateRequest()) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido. Recarga la página.']);
+            exit;
+        }
+
         if (!$input) {
             echo json_encode(['success' => false, 'message' => 'No se recibieron datos']);
             exit;

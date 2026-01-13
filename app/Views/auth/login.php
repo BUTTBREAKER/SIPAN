@@ -393,13 +393,59 @@
                 </button>
             </form>
             
-            <div class="register-link">
-                <p class="mb-0">¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
-            </div>
-        </div>
+    <div class="fab-container">
+        <button class="fab-btn" onclick="startLoginTour()" title="Guía de Inicio">
+            <i class="fas fa-magic"></i>
+        </button>
     </div>
+
+    <style>
+        /* Floating Help Button */
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+
+        .fab-btn {
+            width: 60px;
+            height: 60px;
+            background: var(--color-accent);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 10px 30px rgba(212, 167, 143, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .fab-btn:hover {
+            transform: scale(1.1) rotate(15deg);
+            background: var(--color-dark);
+        }
+    </style>
+
+    <script src="/assets/js/driver.js.iife.js"></script>
+    <link rel="stylesheet" href="/assets/css/driver.css">
     
     <script>
+        function startLoginTour() {
+            const driver = window.driver.js.driver;
+            const driverObj = driver({
+                showProgress: true,
+                steps: [
+                    { popover: { title: '👋 ¡Bienvenido!', description: 'Esta es la puerta de entrada a SIPAN. Aquí podrás acceder a tu panel de control.' } },
+                    { element: 'input[name="correo"]', popover: { title: 'Correo', description: 'Usa tu correo institucional registrado.', side: "bottom" } },
+                    { element: 'input[name="clave"]', popover: { title: 'Contraseña', description: 'Ingresa tu clave de acceso segura.', side: "bottom" } },
+                    { element: '.register-link', popover: { title: '¿Eres nuevo?', description: 'Si aún no tienes cuenta, puedes registrarte vinculándote a una sucursal.', side: "top" } }
+                ]
+            });
+            driverObj.drive();
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
