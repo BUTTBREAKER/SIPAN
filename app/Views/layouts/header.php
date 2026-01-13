@@ -184,8 +184,18 @@
             
             <div class="content">
                 <?php if (isset($_SESSION['flash_message'])): ?>
-                <div class="alert alert-<?= $_SESSION['flash_type'] ?? 'info' ?>">
-                    <?= $_SESSION['flash_message'] ?>
+                <?php 
+                    $flashMessage = $_SESSION['flash_message'];
+                    $flashType = $_SESSION['flash_type'] ?? 'info';
+                    
+                    if (is_array($flashMessage)) {
+                        $flashType = $flashMessage['type'] ?? $flashType;
+                        $flashMessage = $flashMessage['content'] ?? '';
+                    }
+                ?>
+                <div class="alert alert-<?= $flashType ?> alert-dismissible fade show border-0 shadow-sm mb-4 mx-4" role="alert">
+                    <?= $flashMessage ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 <?php 
                 unset($_SESSION['flash_message']);

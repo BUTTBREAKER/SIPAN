@@ -10,7 +10,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <p class="page-subtitle">Bienvenido al Sistema Integral para Panaderías</p>
     </div>
     <div class="text-end">
-        <h5 class="m-0 brand-font" style="font-weight:700;"><?= date('d \d\e F \d\e Y') ?></h5>
+        <h5 class="m-0 brand-font" style="font-weight:700;"><?= SIPAN::formatDate(date('Y-m-d')) ?></h5>
         <small class="text-muted" id="reloj">--:--:--</small>
     </div>
 </div>
@@ -321,6 +321,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     <?php endif; ?>
 });
+
+// Reloj en tiempo real
+function actualizarReloj() {
+    const ahora = new Date();
+    const horas = String(ahora.getHours()).padStart(2, '0');
+    const minutos = String(ahora.getMinutes()).padStart(2, '0');
+    const segundos = String(ahora.getSeconds()).padStart(2, '0');
+    document.getElementById('reloj').textContent = `${horas}:${minutos}:${segundos}`;
+}
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>

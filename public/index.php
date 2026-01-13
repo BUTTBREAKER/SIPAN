@@ -85,6 +85,25 @@ if (!class_exists('SIPAN')) {
         {
             return '$ ' . number_format($amount, 2);
         }
+
+        public static function formatDateTime($datetime)
+        {
+            if (!$datetime) return '---';
+            $date = strtotime($datetime);
+            $days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            $months = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            return $days[date('w', $date)] . ', ' . date('d', $date) . ' de ' . $months[date('n', $date)] . ' - ' . date('H:i', $date);
+        }
+
+        public static function formatDate($datetime)
+        {
+            if (!$datetime) return '---';
+            $date = strtotime($datetime);
+            $months = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            return date('d', $date) . ' de ' . $months[date('n', $date)] . ' de ' . date('Y', $date);
+        }
     }
 }
 
@@ -139,6 +158,15 @@ $routes = [
     'POST|/notificaciones/marcar-todas-leidas' => ['NotificacionesController', 'marcarTodasLeidas'],
     'POST|/auth/verificar-sucursal' => ['AuthController', 'verificarSucursal'],
     'POST|/auth/cambiar-sucursal' => ['AuthController', 'cambiarSucursal'],
+
+    // Caja Chica
+    'GET|/cajas' => ['CajaController', 'index'],
+    'GET|/cajas/aprir' => ['CajaController', 'abrirPanel'],
+    'POST|/cajas/abrir' => ['CajaController', 'abrir'],
+    'GET|/cajas/cerrar' => ['CajaController', 'cerrarPanel'],
+    'POST|/cajas/cerrar' => ['CajaController', 'cerrar'],
+    'GET|/cajas/movimientos' => ['CajaController', 'movimientos'],
+    'POST|/cajas/movimientos' => ['CajaController', 'addMovimiento'],
 
     // Dashboard
     'GET|/dashboard' => ['DashboardController', 'index'],

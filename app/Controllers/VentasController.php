@@ -141,6 +141,20 @@ class VentasController
             // Crear venta con productos y pagos
             $venta_id = $this->ventaModel->createWithProducts($venta_data, $productos, $pagos);
 
+            // INTEGRACIÓN CAJA CHICA: Registrar ingreso si hay caja abierta
+            $cajaModel = new \App\Models\Caja();
+            $cajaActiva = $cajaModel->getActiva($sucursal_id);
+            if ($cajaActiva) {
+                $cajaModel->addMovimiento(
+                    $cajaActiva['id'], 
+                    'ingreso', 
+                    $total, 
+                    "Venta #$venta_id", 
+                    $metodo_pago, 
+                    $venta_id
+                );
+            }
+
             echo json_encode([
                 'success' => true,
                 'message' => 'Venta registrada correctamente',

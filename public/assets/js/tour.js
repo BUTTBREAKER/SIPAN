@@ -21,6 +21,7 @@ function startContextualTour(pageKey) {
     if (path.includes('/auditorias')) contextKey = 'auditorias';
     if (path.includes('/predicciones')) contextKey = 'predicciones';
     if (path.includes('/sugerencias')) contextKey = 'sugerencias';
+    if (path.includes('/cajas')) contextKey = 'cajas';
 
     const steps = tourSteps[contextKey] || tourSteps[pageKey] || tourSteps['dashboard'];
 
@@ -265,6 +266,38 @@ const tourSteps = {
             popover: {
                 title: '📊 Centro de Reportes',
                 description: 'Genera PDFs detallados para contabilidad y gerencia.'
+            }
+        }
+    ],
+    'cajas': [
+        {
+            popover: {
+                title: '💰 Control de Caja Chica',
+                description: 'Gestiona la apertura, movimientos y cierre del efectivo diario.'
+            }
+        },
+        {
+            element: '.card-apertura',
+            popover: {
+                title: '🔓 Apertura de Turno',
+                description: 'Aquí verás el monto inicial ($ y Bs) con el que comenzó el día.',
+                side: "bottom"
+            }
+        },
+        {
+            element: 'a[href="/cajas/movimientos"]',
+            popover: {
+                title: '💸 Movimientos Manuales',
+                description: 'Registra entradas o salidas de efectivo que no sean ventas directas (ej: pago de servicios).',
+                side: "bottom"
+            }
+        },
+        {
+            element: 'a[href="/cajas/cerrarPanel"]',
+            popover: {
+                title: '🔒 Cierre de Caja',
+                description: 'Al finalizar el turno, realiza el cuadre físico comparando el sistema con tu efectivo real.',
+                side: "top"
             }
         }
     ]

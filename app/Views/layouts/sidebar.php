@@ -1,4 +1,5 @@
 <nav class="sidebar" id="appSidebar" aria-label="Navegación principal">
+    <?php $currentPage = $currentPage ?? ''; ?>
     <div class="sidebar-header">
         <a href="/dashboard" class="sidebar-logo">
             <i class="fas fa-bread-slice logo-icon"></i>
@@ -77,6 +78,12 @@
                     <a href="/producciones" class="nav-link <?= $currentPage === 'producciones' ? 'active' : '' ?>">
                         <i class="fas fa-industry"></i>
                         <span>Producción</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/cajas" class="nav-link <?= ($currentPage ?? '') === 'cajas' ? 'active' : '' ?>">
+                        <i class="fas fa-cash-register"></i>
+                        <span>Caja Chica</span>
                     </a>
                 </li>
             </ul>
