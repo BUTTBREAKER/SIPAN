@@ -1,50 +1,50 @@
 /* SIPAN - Sistema Integral para Panaderías v2.8 */
 /* Theme: Pan Dorado (Warm, Appetizing & Accessible) */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap");
 
 :root {
     /* --- Light Theme (Base) --- */
 
     /* Primary: Marrón saddle - Elementos clave */
-    --primary: #8B4513;
-    --primary-light: #A0522D;
-    --primary-dark: #5C3317;
+    --primary: #8b4513;
+    --primary-light: #a0522d;
+    --primary-dark: #5c3317;
 
     /* Secondary: Naranja chocolate - Acentos y Acción */
-    --secondary: #D2691E;
-    --secondary-light: #CD853F;
-    --secondary-dark: #A0522D;
+    --secondary: #d2691e;
+    --secondary-light: #cd853f;
+    --secondary-dark: #a0522d;
 
     /* Semantic Colors (Cálidos pero funcionales) */
-    --success: #228B22;
+    --success: #228b22;
     /* Verde forest */
-    --danger: #FF4500;
+    --danger: #ff4500;
     /* Naranja rojizo fuerte */
-    --warning: #D2691E;
+    --warning: #d2691e;
     /* Mismo tono que secundario */
-    --info: #8B4513;
+    --info: #8b4513;
     /* Primary */
 
     /* Backgrounds */
-    --bg-body: #FFF8E7;
+    --bg-body: #fff8e7;
     /* Crema clara */
-    --bg-card: #FFFFFF;
-    --bg-sidebar: #3E2723;
+    --bg-card: #ffffff;
+    --bg-sidebar: #3e2723;
     /* Marrón muy oscuro */
-    --bg-header: #FFFFFF;
+    --bg-header: #ffffff;
 
     /* Text */
-    --text-main: #2F1B0A;
+    --text-main: #2f1b0a;
     /* Marrón casi negro - Alto contraste */
-    --text-muted: #6B4C3A;
+    --text-muted: #6b4c3a;
     /* Marrón medio */
-    --text-light: #FFF8E7;
+    --text-light: #fff8e7;
     /* Crema para textos sobre fondo oscuro */
-    --text-on-accent: #FFFFFF;
+    --text-on-accent: #ffffff;
 
     /* Borders & Decors */
-    --border-color: #D7CCC8;
+    --border-color: #d7ccc8;
     /* Beige */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -61,30 +61,30 @@
     /* --- Dark Theme (Intense Chocolate) --- */
 
     /* Backgrounds */
-    --bg-body: #3E2723;
+    --bg-body: #3e2723;
     /* Marrón chocolate oscuro */
-    --bg-card: #5D4037;
+    --bg-card: #5d4037;
     /* Marrón medio */
-    --bg-sidebar: #2F1B0A;
+    --bg-sidebar: #2f1b0a;
     /* Marrón casi negro */
-    --bg-header: #5D4037;
+    --bg-header: #5d4037;
 
     /* Primary: Beige Tan - Elementos clave */
-    --primary: #D2B48C;
-    --primary-light: #DEB887;
-    --primary-dark: #CD853F;
+    --primary: #d2b48c;
+    --primary-light: #deb887;
+    --primary-dark: #cd853f;
 
     /* Secondary: Naranja Peru - Acentos */
-    --secondary: #CD853F;
-    --secondary-light: #DEB887;
-    --secondary-dark: #A0522D;
+    --secondary: #cd853f;
+    --secondary-light: #deb887;
+    --secondary-dark: #a0522d;
 
     /* Text */
-    --text-main: #FFF8E7;
+    --text-main: #fff8e7;
     /* Crema clara - Alto contraste */
-    --text-muted: #D7CCC8;
+    --text-muted: #d7ccc8;
     /* Beige grisáceo */
-    --text-light: #FFF8E7;
+    --text-light: #fff8e7;
 }
 
 /* --- Base --- */
@@ -95,11 +95,13 @@
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
+    font-family: "Outfit", sans-serif;
     background-color: var(--bg-body);
     color: var(--text-main);
     line-height: 1.6;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
 }
 
 h1,
@@ -110,7 +112,7 @@ h5,
 h6,
 .page-title,
 .brand-font {
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", serif;
     letter-spacing: -0.01em;
     color: var(--primary);
     /* En dark mode es beige, en light mode es marrón */
@@ -220,7 +222,7 @@ ul {
     align-items: center;
     color: var(--text-light);
     text-decoration: none;
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", serif;
     font-size: 1.5rem;
     gap: 1rem;
     width: 100%;
@@ -510,14 +512,14 @@ ul {
     }
 }
 
-display: flex !important;
+/*display: flex !important;
 align-items: center;
 justify-content: center;
 background: rgba(0, 0, 0, 0.05);
 border-radius: 8px;
 margin-right: 0.5rem;
 color: var(--primary);
-}
+}*/
 
 /* Page title adjustment */
 .page-title {
@@ -526,7 +528,7 @@ color: var(--primary);
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-}
+/*}*/
 
 @media (max-width: 576px) {
     .navbar-right {
@@ -556,8 +558,6 @@ color: var(--primary);
     display: flex;
     min-height: 100vh;
 }
-
-
 
 /* --- Header/Navbar Styles --- */
 .navbar {
@@ -604,7 +604,9 @@ color: var(--primary);
     margin-bottom: 2rem;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease;
 }
 
 .card-header {
@@ -640,7 +642,7 @@ color: var(--primary);
     font-size: 2rem;
     font-weight: 700;
     color: var(--text-main);
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", serif;
     /* Toque gourmet solicitado */
 }
 
@@ -761,36 +763,35 @@ color: var(--primary);
 
 /* Light Mode Badges */
 .badge-success {
-    background-color: #DCFCE7;
-    color: #14532D;
+    background-color: #dcfce7;
+    color: #14532d;
 }
 
 .badge-danger {
-    background-color: #FEE2E2;
-    color: #7F1D1D;
+    background-color: #fee2e2;
+    color: #7f1d1d;
 }
 
 .badge-warning {
-    background-color: #FEF3C7;
-    color: #78350F;
+    background-color: #fef3c7;
+    color: #78350f;
 }
 
 /* Dark Mode Badges (With Transparency) */
 [data-theme="dark"] .badge-success {
     background-color: rgba(34, 197, 94, 0.2);
-    color: #86EFAC;
+    color: #86efac;
 }
 
 [data-theme="dark"] .badge-danger {
     background-color: rgba(239, 68, 68, 0.2);
-    color: #FCA5A5;
+    color: #fca5a5;
 }
 
 [data-theme="dark"] .badge-warning {
     background-color: rgba(245, 158, 11, 0.2);
-    color: #FDE047;
+    color: #fde047;
 }
-
 
 /* Forms */
 .form-control,
@@ -813,8 +814,6 @@ color: var(--primary);
 .form-control::placeholder {
     color: var(--text-muted);
 }
-
-
 
 /* Filters Panel */
 .filters-panel {
@@ -847,7 +846,9 @@ color: var(--primary);
     justify-content: center;
     background-color: var(--bg-body);
     z-index: 9999;
-    transition: opacity 0.5s, visibility 0.5s;
+    transition:
+        opacity 0.5s,
+        visibility 0.5s;
 }
 
 .loader-hidden {
@@ -908,7 +909,6 @@ color: var(--primary);
 .gap-2 {
     gap: 0.5rem;
 }
-
 
 /* --- Card Grids (Modules) --- */
 .card-grid {
@@ -977,7 +977,7 @@ color: var(--primary);
 }
 
 .product-title {
-    font-family: 'Playfair Display', serif;
+    font-family: "Playfair Display", serif;
     font-size: 1.35rem;
     font-weight: 700;
     color: var(--primary);
@@ -1036,7 +1036,6 @@ color: var(--primary);
     color: var(--text-muted) !important;
 }
 
-
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -1064,7 +1063,11 @@ color: var(--primary);
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+    background: linear-gradient(
+        135deg,
+        var(--secondary),
+        var(--secondary-dark)
+    );
     color: white;
     border: none;
     box-shadow: 0 4px 15px rgba(210, 105, 30, 0.4);
@@ -1081,7 +1084,11 @@ color: var(--primary);
 .fab-help:hover {
     transform: translateY(-4px) scale(1.05);
     box-shadow: 0 8px 25px rgba(210, 105, 30, 0.6);
-    background: linear-gradient(135deg, var(--secondary-light), var(--secondary));
+    background: linear-gradient(
+        135deg,
+        var(--secondary-light),
+        var(--secondary)
+    );
 }
 
 .fab-help:active {
@@ -1111,7 +1118,7 @@ color: var(--primary);
 
 /* Ring pulse animation for visibility */
 .fab-help::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 100%;
     height: 100%;

@@ -1,7 +1,7 @@
 /* --- Grid.js Custom Theme "Pan Dorado" --- */
 /* Wrapper */
 .gridjs-container {
-    font-family: 'Outfit', sans-serif !important;
+    font-family: "Outfit", sans-serif !important;
     background: transparent !important;
     box-shadow: none !important;
     border-radius: 0 !important;
@@ -58,7 +58,7 @@ th.gridjs-th {
     border-bottom: 2px solid var(--primary) !important;
     /* Visual anchor */
     color: var(--primary) !important;
-    font-family: 'Playfair Display', serif !important;
+    font-family: "Playfair Display", serif !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     padding: 1rem !important;
@@ -90,7 +90,9 @@ td.gridjs-td {
 /* First and Last cell rounded corners for "Card" look per row if desired, 
    but user asked for table modernization. Let's keep distinct rows. */
 tr.gridjs-tr {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 tr.gridjs-tr:hover td.gridjs-td {

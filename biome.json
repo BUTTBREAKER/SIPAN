@@ -4,6 +4,6 @@
         "useEditorconfig": true
     },
     "files": {
-        "includes": ["**/*"]
+        "includes": ["**/*", "!public/assets/js/driver.js.iife.js"]
     }
 }

@@ -24,7 +24,9 @@
 body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
 }
 
 .sidebar {
@@ -44,7 +46,9 @@ body {
     background: var(--bg-card);
     border-color: var(--border-color);
     box-shadow: 0 2px 8px var(--shadow);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        border-color 0.3s ease;
 }
 
 .card-header {
@@ -71,14 +75,18 @@ body {
     background: var(--bg-secondary);
 }
 
-.form-control, .form-select {
+.form-control,
+.form-select {
     background: var(--bg-card);
     color: var(--text-primary);
     border-color: var(--border-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
     background: var(--bg-card);
     color: var(--text-primary);
 }
@@ -99,7 +107,7 @@ body {
 }
 
 .theme-toggle.active {
-    background: #D4A574;
+    background: #d4a574;
 }
 
 .theme-toggle-slider {
@@ -141,9 +149,9 @@ body {
 }
 
 .pagination-btn:hover:not(:disabled) {
-    background: #D4A574;
+    background: #d4a574;
     color: white;
-    border-color: #D4A574;
+    border-color: #d4a574;
 }
 
 .pagination-btn:disabled {
@@ -152,9 +160,9 @@ body {
 }
 
 .pagination-btn.active {
-    background: #D4A574;
+    background: #d4a574;
     color: white;
-    border-color: #D4A574;
+    border-color: #d4a574;
 }
 
 .pagination-info {
@@ -196,19 +204,19 @@ body {
 }
 
 .sortable::after {
-    content: '⇅';
+    content: "⇅";
     position: absolute;
     right: 5px;
     opacity: 0.3;
 }
 
 .sortable.asc::after {
-    content: '↑';
+    content: "↑";
     opacity: 1;
 }
 
 .sortable.desc::after {
-    content: '↓';
+    content: "↓";
     opacity: 1;
 }
 
@@ -219,12 +227,14 @@ body {
     height: 20px;
     border: 3px solid rgba(212, 165, 116, 0.3);
     border-radius: 50%;
-    border-top-color: #D4A574;
+    border-top-color: #d4a574;
     animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Tooltips */
@@ -277,11 +287,11 @@ body {
     .filter-group {
         flex-direction: column;
     }
-    
+
     .filter-item {
         width: 100%;
     }
-    
+
     .pagination {
         flex-wrap: wrap;
     }

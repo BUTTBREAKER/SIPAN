@@ -84,7 +84,7 @@
     -webkit-backdrop-filter: blur(10px) !important;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
     border: 1px solid rgba(212, 165, 116, 0.4) !important;
-    color: #2D2D2D !important;
+    color: #2d2d2d !important;
     pointer-events: auto;
 }
 
@@ -97,19 +97,19 @@
 
 /* Premium Styling for Content */
 .driver-popover-title {
-    font-family: 'Playfair Display', serif !important;
+    font-family: "Playfair Display", serif !important;
     font-size: 20px !important;
     font-weight: 700 !important;
-    color: #8B4513 !important;
+    color: #8b4513 !important;
     margin-bottom: 8px !important;
     display: block;
 }
 
 .driver-popover-description {
-    font-family: 'Outfit', sans-serif !important;
+    font-family: "Outfit", sans-serif !important;
     font-size: 15px !important;
     line-height: 1.5 !important;
-    color: #6B4C3A !important;
+    color: #6b4c3a !important;
 }
 
 .driver-popover-footer {
@@ -122,7 +122,7 @@
 /* Footer Buttons */
 .driver-popover-footer button {
     all: unset !important;
-    font-family: 'Outfit', sans-serif !important;
+    font-family: "Outfit", sans-serif !important;
     font-size: 13px !important;
     font-weight: 700 !important;
     padding: 8px 16px !important;
@@ -133,24 +133,24 @@
 
 .driver-popover-next-btn,
 .driver-popover-done-btn {
-    background-color: #8B4513 !important;
+    background-color: #8b4513 !important;
     color: #fff !important;
 }
 
 .driver-popover-next-btn:hover,
 .driver-popover-done-btn:hover {
-    background-color: #A0522D !important;
+    background-color: #a0522d !important;
 }
 
 .driver-popover-prev-btn {
     background-color: #f5f5f5 !important;
-    color: #6B4C3A !important;
+    color: #6b4c3a !important;
     border: 1px solid #ddd !important;
 }
 
 .driver-popover-progress-text {
-    font-family: 'Outfit', sans-serif !important;
+    font-family: "Outfit", sans-serif !important;
     font-size: 13px !important;
-    color: #D2691E !important;
+    color: #d2691e !important;
     font-weight: 600;
 }

@@ -3,16 +3,16 @@
  * Centralized configuration for all app tables
  */
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
     initDataTables();
 });
 
 function initDataTables() {
-    const tables = document.querySelectorAll('.datatable');
+    const tables = document.querySelectorAll(".datatable");
 
-    tables.forEach(table => {
+    tables.forEach((table) => {
         // Prevent double init
-        if (table.classList.contains('dataTable-table')) return;
+        if (table.classList.contains("dataTable-table")) return;
 
         new simpleDatatables.DataTable(table, {
             searchable: true,
@@ -25,7 +25,7 @@ function initDataTables() {
                 noRows: "No se encontraron registros",
                 info: "Mostrando {start} a {end} de {rows} registros",
                 loading: "Cargando...",
-                infoFiltered: " (filtrado de {max} registros)"
+                infoFiltered: " (filtrado de {max} registros)",
             },
             classes: {
                 active: "datatable-active",
@@ -51,8 +51,8 @@ function initDataTables() {
                 sorter: "datatable-sorter",
                 table: "datatable-table",
                 top: "datatable-top",
-                wrapper: "datatable-wrapper"
-            }
+                wrapper: "datatable-wrapper",
+            },
         });
     });
 }

@@ -83,7 +83,9 @@
     box-shadow: var(--shadow-sm);
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
     height: 100%;
     /* Fill grid cell */
     position: relative;
@@ -124,25 +126,25 @@
 
 .stat-card.success {
     background-color: var(--success);
-    color: #FFF;
+    color: #fff;
     border-color: transparent;
 }
 
 .stat-card.info {
     background-color: var(--info);
-    color: #FFF;
+    color: #fff;
     border-color: transparent;
 }
 
 .stat-card.warning {
     background-color: var(--warning);
-    color: #FFF;
+    color: #fff;
     border-color: transparent;
 }
 
 .stat-card.danger {
     background-color: var(--danger);
-    color: #FFF;
+    color: #fff;
     border-color: transparent;
 }
 
@@ -178,7 +180,7 @@
     transition: all 0.2s;
     text-align: center;
     color: var(--text-main);
-    aspect-ratio: 1/1;
+    aspect-ratio: 1 / 1;
     /* Square buttons */
 }
 

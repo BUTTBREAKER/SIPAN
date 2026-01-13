@@ -9,32 +9,33 @@ function startContextualTour(pageKey) {
     let contextKey = pageKey;
 
     // Refine context based on path for sub-pages
-    if (path.includes('/create')) {
+    if (path.includes("/create")) {
         contextKey = `${pageKey}_create`;
-    } else if (path.includes('/edit')) {
+    } else if (path.includes("/edit")) {
         contextKey = `${pageKey}_edit`;
-    } else if (path.includes('/show')) {
+    } else if (path.includes("/show")) {
         contextKey = `${pageKey}_show`;
     }
 
     // Special cases for ambiguous keys or routes
-    if (path.includes('/auditorias')) contextKey = 'auditorias';
-    if (path.includes('/predicciones')) contextKey = 'predicciones';
-    if (path.includes('/sugerencias')) contextKey = 'sugerencias';
-    if (path.includes('/cajas')) contextKey = 'cajas';
+    if (path.includes("/auditorias")) contextKey = "auditorias";
+    if (path.includes("/predicciones")) contextKey = "predicciones";
+    if (path.includes("/sugerencias")) contextKey = "sugerencias";
+    if (path.includes("/cajas")) contextKey = "cajas";
 
-    const steps = tourSteps[contextKey] || tourSteps[pageKey] || tourSteps['dashboard'];
+    const steps =
+        tourSteps[contextKey] || tourSteps[pageKey] || tourSteps["dashboard"];
 
     const driverObj = driver({
         showProgress: true,
         animate: true,
         allowClose: true,
         stagePadding: 5,
-        overlayColor: 'rgba(0, 0, 0, 0.75)',
-        nextBtnText: 'Siguiente',
-        prevBtnText: 'Anterior',
-        doneBtnText: 'Finalizar',
-        steps: steps
+        overlayColor: "rgba(0, 0, 0, 0.75)",
+        nextBtnText: "Siguiente",
+        prevBtnText: "Anterior",
+        doneBtnText: "Finalizar",
+        steps: steps,
     });
 
     driverObj.drive();
@@ -44,261 +45,298 @@ function startContextualTour(pageKey) {
  * Detailed steps for every module and sub-page
  */
 const tourSteps = {
-    'dashboard': [
+    dashboard: [
         {
             popover: {
-                title: '🚀 Bienvenido a SIPAN',
-                description: 'Este es el centro de mando de tu panadería. Aquí tienes una visión 360° de tu operación en tiempo real.',
-                side: "left", align: 'start'
-            }
+                title: "🚀 Bienvenido a SIPAN",
+                description:
+                    "Este es el centro de mando de tu panadería. Aquí tienes una visión 360° de tu operación en tiempo real.",
+                side: "left",
+                align: "start",
+            },
         },
         {
-            element: '#header-tasa',
+            element: "#header-tasa",
             popover: {
-                title: '💵 Tasa BCV Actualizada',
-                description: 'Aquí ves el tipo de cambio oficial. Úsalo para ventas en Bolívares. El botón de refrescar te asegura tener siempre el dato legal del día.',
-                side: "bottom", align: 'center'
-            }
+                title: "💵 Tasa BCV Actualizada",
+                description:
+                    "Aquí ves el tipo de cambio oficial. Úsalo para ventas en Bolívares. El botón de refrescar te asegura tener siempre el dato legal del día.",
+                side: "bottom",
+                align: "center",
+            },
         },
         {
-            element: '.notifications-wrapper',
+            element: ".notifications-wrapper",
             popover: {
-                title: '🔔 Alertas Críticas',
-                description: 'Recibirás notificaciones si un producto tiene poco stock o si un insumo está por vencer.',
-                side: "bottom", align: 'center'
-            }
+                title: "🔔 Alertas Críticas",
+                description:
+                    "Recibirás notificaciones si un producto tiene poco stock o si un insumo está por vencer.",
+                side: "bottom",
+                align: "center",
+            },
         },
         {
-            element: '.sidebar',
+            element: ".sidebar",
             popover: {
-                title: '📂 Navegación Inteligente',
-                description: 'Desde aquí accedes a todos los módulos. Pasa el cursor para expandirlo.',
-                side: "right", align: 'start'
-            }
-        }
+                title: "📂 Navegación Inteligente",
+                description:
+                    "Desde aquí accedes a todos los módulos. Pasa el cursor para expandirlo.",
+                side: "right",
+                align: "start",
+            },
+        },
     ],
-    'ventas': [
+    ventas: [
         {
             popover: {
-                title: '💰 Gestión de Ventas',
-                description: 'Revisa tu historial de facturacion y el estado de tus ingresos diarios.'
-            }
+                title: "💰 Gestión de Ventas",
+                description:
+                    "Revisa tu historial de facturacion y el estado de tus ingresos diarios.",
+            },
         },
         {
             element: 'a[href="/ventas/create"]',
             popover: {
-                title: '🛒 Nueva Transacción',
-                description: 'Inicia una venta rápida desde aquí.',
-                side: "bottom"
-            }
+                title: "🛒 Nueva Transacción",
+                description: "Inicia una venta rápida desde aquí.",
+                side: "bottom",
+            },
         },
         {
-            element: '#grid-ventas',
+            element: "#grid-ventas",
             popover: {
-                title: '📋 Historial de Tickets',
-                description: 'Consulta todas las ventas pasadas y reimprime comprobantes.',
-                side: "top"
-            }
-        }
+                title: "📋 Historial de Tickets",
+                description:
+                    "Consulta todas las ventas pasadas y reimprime comprobantes.",
+                side: "top",
+            },
+        },
     ],
-    'ventas_create': [
+    ventas_create: [
         {
             popover: {
-                title: '🛒 Punto de Venta (POS)',
-                description: 'Interfaz de facturación rápida optimizada para panaderías.'
-            }
+                title: "🛒 Punto de Venta (POS)",
+                description:
+                    "Interfaz de facturación rápida optimizada para panaderías.",
+            },
         },
         {
-            element: '#selectCliente',
+            element: "#selectCliente",
             popover: {
-                title: '👥 Cliente',
-                description: 'Selecciona un cliente o usa el botón azul (+) para registrar uno nuevo al instante.',
-                side: "bottom"
-            }
+                title: "👥 Cliente",
+                description:
+                    "Selecciona un cliente o usa el botón azul (+) para registrar uno nuevo al instante.",
+                side: "bottom",
+            },
         },
         {
-            element: '#btnNuevoCliente',
+            element: "#btnNuevoCliente",
             popover: {
-                title: '➕ Nuevo Cliente',
-                description: '¿El cliente no está en la lista? Regístralo rápidamente sin salir de esta pantalla.',
-                side: "bottom"
-            }
+                title: "➕ Nuevo Cliente",
+                description:
+                    "¿El cliente no está en la lista? Regístralo rápidamente sin salir de esta pantalla.",
+                side: "bottom",
+            },
         },
         {
-            element: '#inputBusqueda',
+            element: "#inputBusqueda",
             popover: {
-                title: '🔍 Buscar Producto',
-                description: 'Escribe el nombre o código del pan/dulce. El stock se descuenta automáticamente al facturar.',
-                side: "top"
-            }
+                title: "🔍 Buscar Producto",
+                description:
+                    "Escribe el nombre o código del pan/dulce. El stock se descuenta automáticamente al facturar.",
+                side: "top",
+            },
         },
         {
-            element: '#panel-pagos',
+            element: "#panel-pagos",
             popover: {
-                title: '💳 Pagos Multi-Moneda',
-                description: 'Carga pagos en Efectivo $, Bs, Zelle o Mixto. El sistema detecta si falta cubrir el total.',
-                side: "left"
-            }
+                title: "💳 Pagos Multi-Moneda",
+                description:
+                    "Carga pagos en Efectivo $, Bs, Zelle o Mixto. El sistema detecta si falta cubrir el total.",
+                side: "left",
+            },
         },
         {
             element: 'button[type="submit"]',
             popover: {
-                title: '✅ Finalizar',
-                description: 'Procesa la venta cuando el saldo esté cubierto.',
-                side: "top"
-            }
-        }
+                title: "✅ Finalizar",
+                description: "Procesa la venta cuando el saldo esté cubierto.",
+                side: "top",
+            },
+        },
     ],
-    'productos': [
+    productos: [
         {
             popover: {
-                title: '🥖 Catálogo de Productos',
-                description: 'Administra tus panes, tortas y productos finales.'
-            }
+                title: "🥖 Catálogo de Productos",
+                description:
+                    "Administra tus panes, tortas y productos finales.",
+            },
         },
         {
             element: 'a[href="/productos/create"]',
             popover: {
-                title: '➕ Nuevo Producto',
-                description: 'Agrega nuevas creaciones a tu inventario.',
-                side: "bottom"
-            }
-        }
+                title: "➕ Nuevo Producto",
+                description: "Agrega nuevas creaciones a tu inventario.",
+                side: "bottom",
+            },
+        },
     ],
-    'productos_create': [
+    productos_create: [
         {
             popover: {
-                title: '📝 Registro de Producto',
-                description: 'Define los parámetros básicos para tu nuevo producto.'
-            }
+                title: "📝 Registro de Producto",
+                description:
+                    "Define los parámetros básicos para tu nuevo producto.",
+            },
         },
         {
             element: 'input[name="nombre"]',
-            popover: { title: '🏷️ Nombre', description: 'Nombre comercial del producto.', side: "bottom" }
+            popover: {
+                title: "🏷️ Nombre",
+                description: "Nombre comercial del producto.",
+                side: "bottom",
+            },
         },
         {
             element: 'input[name="precio_actual"]',
-            popover: { title: '💰 Precio $', description: 'Precio de venta al público en USD.', side: "bottom" }
-        }
+            popover: {
+                title: "💰 Precio $",
+                description: "Precio de venta al público en USD.",
+                side: "bottom",
+            },
+        },
     ],
-    'insumos': [
+    insumos: [
         {
             popover: {
-                title: '📦 Almacén de Insumos',
-                description: 'Control de materia prima (harina, azúcar, etc.)'
-            }
-        }
+                title: "📦 Almacén de Insumos",
+                description: "Control de materia prima (harina, azúcar, etc.)",
+            },
+        },
     ],
-    'recetas': [
+    recetas: [
         {
             popover: {
-                title: '📖 Recetario Maestro',
-                description: 'Define la composición de tus productos para calcular costos exactos.'
-            }
-        }
+                title: "📖 Recetario Maestro",
+                description:
+                    "Define la composición de tus productos para calcular costos exactos.",
+            },
+        },
     ],
-    'producciones': [
+    producciones: [
         {
             popover: {
-                title: '🏭 Producción Diaria',
-                description: 'Registra qué se horneó hoy y descuenta insumos automáticamente.'
-            }
-        }
+                title: "🏭 Producción Diaria",
+                description:
+                    "Registra qué se horneó hoy y descuenta insumos automáticamente.",
+            },
+        },
     ],
-    'auditorias': [
+    auditorias: [
         {
             popover: {
-                title: '🛡️ Seguridad y Auditoría',
-                description: 'Registro estricto de cada acción realizada por los usuarios.'
-            }
+                title: "🛡️ Seguridad y Auditoría",
+                description:
+                    "Registro estricto de cada acción realizada por los usuarios.",
+            },
         },
         {
-            element: '#panelFiltros',
+            element: "#panelFiltros",
             popover: {
-                title: '🔍 Búsqueda Selectiva',
-                description: 'Filtra por usuario, tabla o tipo de cambio.',
-                side: "bottom"
-            }
+                title: "🔍 Búsqueda Selectiva",
+                description: "Filtra por usuario, tabla o tipo de cambio.",
+                side: "bottom",
+            },
         },
         {
-            element: '#timelineAuditorias',
+            element: "#timelineAuditorias",
             popover: {
-                title: '⏳ Línea de Tiempo',
-                description: 'Secuencia de eventos con colores según gravedad: Verde (Registro), Amarillo (Edición), Rojo (Borrado).',
-                side: "top"
-            }
-        }
+                title: "⏳ Línea de Tiempo",
+                description:
+                    "Secuencia de eventos con colores según gravedad: Verde (Registro), Amarillo (Edición), Rojo (Borrado).",
+                side: "top",
+            },
+        },
     ],
-    'predicciones': [
+    predicciones: [
         {
             popover: {
-                title: '🔮 Inteligencia de Negocios',
-                description: 'Predicciones de demanda generadas por el sistema.'
-            }
+                title: "🔮 Inteligencia de Negocios",
+                description:
+                    "Predicciones de demanda generadas por el sistema.",
+            },
         },
         {
-            element: '#prediccionChart',
+            element: "#prediccionChart",
             popover: {
-                title: '📈 Gráfico de Tendencia',
-                description: 'Compara ventas históricas con proyecciones futuras para anticipar pedidos.',
-                side: "top"
-            }
-        }
+                title: "📈 Gráfico de Tendencia",
+                description:
+                    "Compara ventas históricas con proyecciones futuras para anticipar pedidos.",
+                side: "top",
+            },
+        },
     ],
-    'sugerencias': [
+    sugerencias: [
         {
             popover: {
-                title: '📝 Sugerencias de Abastecimiento',
-                description: 'Lo que el sistema recomienda comprar basado en predicciones.'
-            }
+                title: "📝 Sugerencias de Abastecimiento",
+                description:
+                    "Lo que el sistema recomienda comprar basado en predicciones.",
+            },
         },
         {
-            element: '#btnGenerar',
+            element: "#btnGenerar",
             popover: {
-                title: '⚙️ Motor de Cálculo',
-                description: 'Analiza nuevamente el stock y las proyecciones.',
-                side: "bottom"
-            }
-        }
+                title: "⚙️ Motor de Cálculo",
+                description: "Analiza nuevamente el stock y las proyecciones.",
+                side: "bottom",
+            },
+        },
     ],
-    'reportes': [
+    reportes: [
         {
             popover: {
-                title: '📊 Centro de Reportes',
-                description: 'Genera PDFs detallados para contabilidad y gerencia.'
-            }
-        }
+                title: "📊 Centro de Reportes",
+                description:
+                    "Genera PDFs detallados para contabilidad y gerencia.",
+            },
+        },
     ],
-    'cajas': [
+    cajas: [
         {
             popover: {
-                title: '💰 Control de Caja Chica',
-                description: 'Gestiona la apertura, movimientos y cierre del efectivo diario.'
-            }
+                title: "💰 Control de Caja Chica",
+                description:
+                    "Gestiona la apertura, movimientos y cierre del efectivo diario.",
+            },
         },
         {
-            element: '.card-apertura',
+            element: ".card-apertura",
             popover: {
-                title: '🔓 Apertura de Turno',
-                description: 'Aquí verás el monto inicial ($ y Bs) con el que comenzó el día.',
-                side: "bottom"
-            }
+                title: "🔓 Apertura de Turno",
+                description:
+                    "Aquí verás el monto inicial ($ y Bs) con el que comenzó el día.",
+                side: "bottom",
+            },
         },
         {
             element: 'a[href="/cajas/movimientos"]',
             popover: {
-                title: '💸 Movimientos Manuales',
-                description: 'Registra entradas o salidas de efectivo que no sean ventas directas (ej: pago de servicios).',
-                side: "bottom"
-            }
+                title: "💸 Movimientos Manuales",
+                description:
+                    "Registra entradas o salidas de efectivo que no sean ventas directas (ej: pago de servicios).",
+                side: "bottom",
+            },
         },
         {
             element: 'a[href="/cajas/cerrarPanel"]',
             popover: {
-                title: '🔒 Cierre de Caja',
-                description: 'Al finalizar el turno, realiza el cuadre físico comparando el sistema con tu efectivo real.',
-                side: "top"
-            }
-        }
-    ]
+                title: "🔒 Cierre de Caja",
+                description:
+                    "Al finalizar el turno, realiza el cuadre físico comparando el sistema con tu efectivo real.",
+                side: "top",
+            },
+        },
+    ],
 };
