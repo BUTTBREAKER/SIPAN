@@ -14,7 +14,7 @@
         "psr-4": {
             "App\\": "app"
         },
-        "files": ["config/database.php", "app/SIPAN.php", "app/helpers.php"]
+        "files": ["app/Database.php", "app/SIPAN.php", "app/helpers.php"]
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^4.0",
