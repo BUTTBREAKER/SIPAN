@@ -27,12 +27,7 @@ if ($config['app_env'] === 'production') {
 }
 
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
-$isSecure = false;
-if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-    $isSecure = true;
-} elseif (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
-    $isSecure = true;
-}
+$isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
 
 // Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
 $sessionParams = session_get_cookie_params();
