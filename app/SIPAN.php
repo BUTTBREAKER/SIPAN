@@ -1,5 +1,7 @@
 <?php
 
+namespace App;
+
 class SIPAN
 {
     public static function formatMoney($amount)

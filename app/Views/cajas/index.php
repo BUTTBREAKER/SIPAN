@@ -1,4 +1,10 @@
-<?php require_once __DIR__ . '/../layouts/header.php'; ?>
+<?php
+
+use App\SIPAN;
+
+require_once __DIR__ . '/../layouts/header.php';
+
+?>
 
 <div class="container-fluid py-4">
     <div class="row mb-4">
@@ -34,10 +40,16 @@
                     </div>
                     <h3 class="mb-0 fw-bold"><?php echo SIPAN::formatMoney($cajaActiva['monto_apertura']); ?></h3>
                     <div class="d-flex justify-content-between mt-1 mb-2">
-                        <small class="text-muted">$ <?php echo number_format($cajaActiva['monto_apertura_usd'] ?? 0, 2); ?></small>
-                        <small class="text-muted">Bs <?php echo number_format($cajaActiva['monto_apertura_bs'] ?? 0, 2); ?></small>
+                        <small class="text-muted">
+                            $ <?= number_format($cajaActiva['monto_apertura_usd'] ?? 0, 2); ?>
+                        </small>
+                        <small class="text-muted">
+                            Bs <?= number_format($cajaActiva['monto_apertura_bs'] ?? 0, 2) ?>
+                        </small>
                     </div>
-                    <small class="text-muted d-block border-top pt-1"><?php echo SIPAN::formatDateTime($cajaActiva['fecha_apertura']); ?></small>
+                    <small class="text-muted d-block border-top pt-1">
+                        <?= SIPAN::formatDateTime($cajaActiva['fecha_apertura']) ?>
+                    </small>
                 </div>
             </div>
         </div>
@@ -110,14 +122,20 @@
                                 <tr>
                                     <td class="px-4 py-3 border-0">
                                         <div class="d-flex flex-column">
-                                            <span class="fw-medium text-capitalize"><?php echo SIPAN::formatDateTime($h['fecha_apertura']); ?></span>
+                                            <span class="fw-medium text-capitalize">
+                                                <?= SIPAN::formatDateTime($h['fecha_apertura']) ?>
+                                            </span>
                                         </div>
                                     </td>
                                     <td class="py-3 border-0">
                                         <div class="d-flex flex-column">
                                             <span><?php echo SIPAN::formatMoney($h['monto_apertura']); ?></span>
                                             <small class="text-muted" style="font-size: 0.75rem;">
-                                                $<?php echo number_format($h['monto_apertura_usd'] ?? 0, 2); ?> | Bs<?php echo number_format($h['monto_apertura_bs'] ?? 0, 2); ?>
+                                                $
+                                                <?= number_format($h['monto_apertura_usd'] ?? 0, 2) ?>
+                                                |
+                                                Bs
+                                                <?= number_format($h['monto_apertura_bs'] ?? 0, 2) ?>
                                             </small>
                                         </div>
                                     </td>
@@ -126,7 +144,11 @@
                                             <div class="d-flex flex-column">
                                                 <span><?php echo SIPAN::formatMoney($h['monto_cierre']); ?></span>
                                                 <small class="text-muted" style="font-size: 0.75rem;">
-                                                    $<?php echo number_format($h['monto_cierre_usd'] ?? 0, 2); ?> | Bs<?php echo number_format($h['monto_cierre_bs'] ?? 0, 2); ?>
+                                                    $
+                                                    <?= number_format($h['monto_cierre_usd'] ?? 0, 2) ?>
+                                                    |
+                                                    Bs
+                                                    <?= number_format($h['monto_cierre_bs'] ?? 0, 2) ?>
                                                 </small>
                                             </div>
                                         <?php else : ?>
@@ -134,13 +156,15 @@
                                         <?php endif; ?>
                                     </td>
                                     <td class="py-3 border-0">
-                                        <?php echo $h['monto_esperado'] !== null ? SIPAN::formatMoney($h['monto_esperado']) : '---'; ?>
+                                        <?= $h['monto_esperado'] !== null ? SIPAN::formatMoney($h['monto_esperado']) : '---' ?>
                                     </td>
                                     <td class="py-3 border-0">
                                         <?php if ($h['estado'] === 'abierta') : ?>
                                             <span class="badge bg-soft-success text-success px-3 py-2">ABIERTA</span>
                                         <?php else : ?>
-                                            <span class="badge bg-soft-secondary text-secondary px-3 py-2">CERRADA</span>
+                                            <span class="badge bg-soft-secondary text-secondary px-3 py-2">
+                                                CERRADA
+                                            </span>
                                         <?php endif; ?>
                                     </td>
                                     <td class="px-4 py-3 border-0 text-end">

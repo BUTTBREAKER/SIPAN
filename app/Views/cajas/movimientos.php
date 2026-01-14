@@ -1,4 +1,10 @@
-<?php require_once __DIR__ . '/../layouts/header.php'; ?>
+<?php
+
+use App\SIPAN;
+
+require_once __DIR__ . '/../layouts/header.php';
+
+?>
 
 <div class="container-fluid py-4">
     <div class="row mb-4">
@@ -12,8 +18,12 @@
                 </nav>
                 <h2 class="h4 mb-0 text-dark fw-bold">Movimientos de Caja</h2>
             </div>
-            <button class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#movimientoModal">
-                <i class="fas fa-plus me-2"></i> Registrar Movimiento
+            <button
+                class="btn btn-primary d-flex align-items-center"
+                data-bs-toggle="modal"
+                data-bs-target="#movimientoModal">
+                <i class="fas fa-plus me-2"></i>
+                Registrar Movimiento
             </button>
         </div>
     </div>
@@ -60,9 +70,11 @@
                                         <?php endif; ?>
                                     </td>
                                     <td class="py-3 border-0 fw-medium"><?php echo $m['descripcion']; ?></td>
-                                    <td class="py-3 border-0 text-muted text-capitalize"><?php echo $m['metodo_pago']; ?></td>
-                                    <td class="py-3 border-0 fw-bold <?php echo $m['tipo'] === 'ingreso' ? 'text-success' : 'text-danger'; ?>">
-                                        <?php echo ($m['tipo'] === 'ingreso' ? '+' : '-') . ' ' . SIPAN::formatMoney($m['monto']); ?>
+                                    <td class="py-3 border-0 text-muted text-capitalize">
+                                        <?php echo $m['metodo_pago']; ?>
+                                    </td>
+                                    <td class="py-3 border-0 fw-bold <?= $m['tipo'] === 'ingreso' ? 'text-success' : 'text-danger' ?>">
+                                        <?= ($m['tipo'] === 'ingreso' ? '+' : '-') . ' ' . SIPAN::formatMoney($m['monto']) ?>
                                     </td>
                                     <td class="px-4 py-3 border-0 text-end">
                                         <?php if ($m['id_venta']) : ?>
@@ -110,7 +122,12 @@
 
                     <div class="mb-4">
                         <label class="form-label text-muted fw-medium">Concepto / Descripción</label>
-                        <input type="text" name="descripcion" class="form-control bg-light border-0" placeholder="Ej: Pago de propina, Vuelto..." required>
+                        <input
+                            type="text"
+                            name="descripcion"
+                            class="form-control bg-light border-0"
+                            placeholder="Ej: Pago de propina, Vuelto..."
+                            required />
                     </div>
 
                     <div class="row mb-4">
@@ -118,7 +135,13 @@
                             <label class="form-label text-muted fw-medium">Monto</label>
                             <div class="input-group border rounded-2 overflow-hidden">
                                 <span class="input-group-text bg-light border-0">$</span>
-                                <input type="number" step="0.01" name="monto" class="form-control border-0 bg-light" placeholder="0.00" required>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="monto"
+                                    class="form-control border-0 bg-light"
+                                    placeholder="0.00"
+                                    required />
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -131,7 +154,12 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 p-4">
-                    <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+                    <button
+                        type="button"
+                        class="btn btn-link text-muted fw-bold text-decoration-none"
+                        data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
                     <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Registrar Movimiento</button>
                 </div>
             </form>

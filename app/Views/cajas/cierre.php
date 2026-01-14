@@ -1,4 +1,10 @@
-<?php require_once __DIR__ . '/../layouts/header.php'; ?>
+<?php
+
+use App\SIPAN;
+
+require_once __DIR__ . '/../layouts/header.php';
+
+?>
 
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -19,11 +25,15 @@
                         </div>
                         <div class="col-md-4 border-start border-end">
                             <small class="text-muted d-block mb-1">Ventas/Ingresos</small>
-                            <h5 class="fw-bold text-success">+ <?php echo SIPAN::formatMoney($resumen['ingresos']); ?></h5>
+                            <h5 class="fw-bold text-success">
+                                + <?= SIPAN::formatMoney($resumen['ingresos']) ?>
+                            </h5>
                         </div>
                         <div class="col-md-4">
                             <small class="text-muted d-block mb-1">Egresos/Gastos</small>
-                            <h5 class="fw-bold text-danger">- <?php echo SIPAN::formatMoney($resumen['egresos']); ?></h5>
+                            <h5 class="fw-bold text-danger">
+                                - <?= SIPAN::formatMoney($resumen['egresos']) ?>
+                            </h5>
                         </div>
                     </div>
 
@@ -38,22 +48,43 @@
                         <div class="mb-4">
                             <label class="form-label text-muted fw-medium">Efectivo Real en Dólares ($)</label>
                             <div class="input-group input-group-lg border rounded-3 overflow-hidden">
-                                <span class="input-group-text bg-light border-0"><i class="fas fa-dollar-sign text-danger"></i></span>
-                                <input type="number" step="0.01" name="monto_usd" class="form-control border-0 bg-light" placeholder="0.00" required autofocus>
+                                <span class="input-group-text bg-light border-0">
+                                    <i class="fas fa-dollar-sign text-danger"></i>
+                                </span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="monto_usd"
+                                    class="form-control border-0 bg-light"
+                                    placeholder="0.00"
+                                    required
+                                    autofocus />
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label text-muted fw-medium">Efectivo Real en Bolívares (Bs)</label>
                             <div class="input-group input-group-lg border rounded-3 overflow-hidden">
-                                <span class="input-group-text bg-light border-0"><span class="fw-bold text-danger">Bs</span></span>
-                                <input type="number" step="0.01" name="monto_bs" class="form-control border-0 bg-light" placeholder="0.00" required>
+                                <span class="input-group-text bg-light border-0">
+                                    <span class="fw-bold text-danger">Bs</span>
+                                </span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    name="monto_bs"
+                                    class="form-control border-0 bg-light"
+                                    placeholder="0.00"
+                                    required />
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label text-muted fw-medium">Observaciones / Novedades</label>
-                            <textarea name="observaciones" class="form-control bg-light border-0 rounded-3" rows="3" placeholder="Ej: Faltó sencillo, se pagó propina..."></textarea>
+                            <textarea
+                                name="observaciones"
+                                class="form-control bg-light border-0 rounded-3"
+                                rows="3"
+                                placeholder="Ej: Faltó sencillo, se pagó propina..."></textarea>
                         </div>
 
                         <div class="d-grid gap-3">

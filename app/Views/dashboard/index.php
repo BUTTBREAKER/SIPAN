@@ -1,4 +1,7 @@
 <?php
+
+use App\SIPAN;
+
 $pageTitle = 'Dashboard';
 $currentPage = 'dashboard';
 require_once __DIR__ . '/../layouts/header.php';
@@ -70,7 +73,11 @@ require_once __DIR__ . '/../layouts/header.php';
             <i class="fas fa-exclamation-circle fa-2x me-3"></i>
             <div>
                 <h5 class="alert-heading fw-bold">¡Atención! Insumos/Productos por vencer</h5>
-                <p class="mb-0">Hay <strong><?= count($data['lotes_por_vencer']) ?></strong> lote(s) que vencen en los próximos 30 días.</p>
+                <p class="mb-0">
+                    Hay
+                    <strong><?= count($data['lotes_por_vencer']) ?></strong>
+                    lote(s) que vencen en los próximos 30 días.
+                </p>
             </div>
              <a href="/reportes/vencimientos" class="btn btn-sm btn-danger ms-auto">Ver Detalle</a>
         </div>
@@ -84,7 +91,12 @@ require_once __DIR__ . '/../layouts/header.php';
                 <i class="fas fa-chart-area"></i> Tendencia de Ventas
             </h3>
             <div class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-outline-secondary active" onclick="updateChart(7, this)">7 D</button>
+                <button
+                    type="button"
+                    class="btn btn-outline-secondary active"
+                    onclick="updateChart(7, this)">
+                    7 D
+                </button>
                 <button type="button" class="btn btn-outline-secondary" onclick="updateChart(15, this)">15 D</button>
                 <button type="button" class="btn btn-outline-secondary" onclick="updateChart(30, this)">30 D</button>
             </div>
@@ -127,7 +139,11 @@ require_once __DIR__ . '/../layouts/header.php';
                         <div class="small text-muted">Mín: <?= $producto['stock_minimo'] ?></div>
                     </div>
                     <span class="badge badge-danger"><?= $producto['stock_actual'] ?></span>
-                    <a href="/productos/edit/<?= $producto['id'] ?>" class="text-warning"><i class="fas fa-edit"></i></a>
+                    <a
+                        href="/productos/edit/<?= $producto['id'] ?>"
+                        class="text-warning">
+                        <i class="fas fa-edit"></i>
+                    </a>
                 </div>
                 <?php endforeach; ?>
             </div>
