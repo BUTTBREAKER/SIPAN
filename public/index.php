@@ -51,39 +51,6 @@ ini_set('log_errors', true);
 $log_message = "{$_SERVER['REQUEST_METHOD']} | {$_SERVER['REQUEST_URI']}";
 error_log($log_message);
 
-// Cargar configuración
-require_once __DIR__ . '/../config/database.php';
-
-// Función helper para formatear dinero (disponible globalmente)
-if (!class_exists('SIPAN')) {
-    class SIPAN
-    {
-        public static function formatMoney($amount)
-        {
-            return '$ ' . number_format($amount, 2);
-        }
-
-        public static function formatDateTime($datetime)
-        {
-            if (!$datetime) return '---';
-            $date = strtotime($datetime);
-            $days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-            $months = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-            return $days[date('w', $date)] . ', ' . date('d', $date) . ' de ' . $months[date('n', $date)] . ' - ' . date('H:i', $date);
-        }
-
-        public static function formatDate($datetime)
-        {
-            if (!$datetime) return '---';
-            $date = strtotime($datetime);
-            $months = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-            return date('d', $date) . ' de ' . $months[date('n', $date)] . ' de ' . date('Y', $date);
-        }
-    }
-}
-
 // Obtener la ruta solicitada
 $request_uri = $_SERVER['REQUEST_URI'];
 $path = parse_url($request_uri, PHP_URL_PATH);
@@ -105,20 +72,6 @@ if (empty($path)) $path = '/';
 
 // Método HTTP
 $method = $_SERVER['REQUEST_METHOD'];
-
-// Función auxiliar para extraer parámetros de la ruta
-function matchRoute($pattern, $path)
-{
-    $pattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9_-]+)', $pattern);
-    $pattern = '#^' . $pattern . '$#';
-
-    if (preg_match($pattern, $path, $matches)) {
-        array_shift($matches);
-        return $matches;
-    }
-
-    return false;
-}
 
 // Enrutador
 $routes = [
