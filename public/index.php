@@ -29,8 +29,9 @@ $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] =
 
 // Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
 $sessionParams = session_get_cookie_params();
+
 session_set_cookie_params([
-    'lifetime' => $config['session_lifetime'] ?? 86400,
+    'lifetime' => $config['session_lifetime'] ?? 86400 /* 1 day */,
     'path' => $sessionParams['path'],
     'domain' => $sessionParams['domain'],
     'secure' => $isSecure,
@@ -47,26 +48,8 @@ if (session_status() === PHP_SESSION_NONE) {
 ini_set('log_errors', true);
 
 // Log todas las peticiones
-$log_message = date('Y-m-d H:i:s') . " | " . $_SERVER['REQUEST_METHOD'] . " | " . $_SERVER['REQUEST_URI'] . "\n";
-file_put_contents(__DIR__ . '/../logs/sipan-debug.log', $log_message, FILE_APPEND);
-
-// Autoload de clases
-spl_autoload_register(function ($class) {
-    $prefix = 'App\\';
-    $base_dir = __DIR__ . '/../app/';
-
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-
-    $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-
-    if (file_exists($file)) {
-        require $file;
-    }
-});
+$log_message = "{$_SERVER['REQUEST_METHOD']} | {$_SERVER['REQUEST_URI']}";
+error_log($log_message);
 
 // Cargar configuración
 require_once __DIR__ . '/../config/database.php';
@@ -86,7 +69,7 @@ if (!class_exists('SIPAN')) {
             $date = strtotime($datetime);
             $days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
             $months = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            
+
             return $days[date('w', $date)] . ', ' . date('d', $date) . ' de ' . $months[date('n', $date)] . ' - ' . date('H:i', $date);
         }
 
@@ -95,7 +78,7 @@ if (!class_exists('SIPAN')) {
             if (!$datetime) return '---';
             $date = strtotime($datetime);
             $months = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            
+
             return date('d', $date) . ' de ' . $months[date('n', $date)] . ' de ' . date('Y', $date);
         }
     }
