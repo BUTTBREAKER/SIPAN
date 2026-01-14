@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Editar Insumo';
 $currentPage = 'insumos';
 require_once __DIR__ . '/../layouts/header.php';
@@ -49,7 +49,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <label class="form-label">Proveedor Principal</label>
                         <select name="id_proveedor" class="form-control">
                             <option value="">-- Seleccionar Proveedor --</option>
-                            <?php foreach ($proveedores as $prov): ?>
+                            <?php foreach ($proveedores as $prov) : ?>
                             <option value="<?= $prov['id'] ?>" <?= ($insumo['id_proveedor'] ?? '') == $prov['id'] ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($prov['nombre']) ?>
                             </option>

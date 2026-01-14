@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Nueva Sucursal';
 $currentPage = 'sucursales';
 require_once __DIR__ . '/../layouts/header.php';

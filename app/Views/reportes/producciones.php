@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Reporte de Producciones';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
@@ -36,7 +36,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($producciones as $p): ?>
+                    <?php foreach ($producciones as $p) : ?>
                     <tr>
                         <td><?= date('d/m/Y H:i', strtotime($p['fecha_produccion'])) ?></td>
                         <td><?= htmlspecialchars($p['producto_nombre']) ?></td>

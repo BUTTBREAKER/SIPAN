@@ -5,14 +5,14 @@
         <div class="col-12 d-flex justify-content-between align-items-center">
             <h2 class="h4 mb-0 text-dark fw-bold">Gestión de Caja Chica</h2>
             <div class="d-flex gap-2">
-                <?php if ($cajaActiva): ?>
+                <?php if ($cajaActiva) : ?>
                     <a href="/cajas/movimientos" class="btn btn-primary d-flex align-items-center">
                         <i class="fas fa-exchange-alt me-2"></i> Nuevo Movimiento
                     </a>
                     <a href="/cajas/cerrar" class="btn btn-danger d-flex align-items-center">
                         <i class="fas fa-lock me-2"></i> Cerrar Caja
                     </a>
-                <?php else: ?>
+                <?php else : ?>
                     <a href="/cajas/aprir" class="btn btn-success d-flex align-items-center">
                         <i class="fas fa-unlock me-2"></i> Abrir Caja
                     </a>
@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <?php if ($cajaActiva): ?>
+    <?php if ($cajaActiva) : ?>
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm overflow-hidden h-100">
@@ -50,7 +50,7 @@
                         </div>
                         <h6 class="mb-0 text-muted">Ingresos</h6>
                     </div>
-                    <?php 
+                    <?php
                         $resumen = (new \App\Models\Caja())->getResumen($cajaActiva['id']);
                     ?>
                     <h3 class="mb-0 fw-bold text-success">+ <?php echo SIPAN::formatMoney($resumen['ingresos']); ?></h3>
@@ -106,7 +106,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($historial as $h): ?>
+                                <?php foreach ($historial as $h) : ?>
                                 <tr>
                                     <td class="px-4 py-3 border-0">
                                         <div class="d-flex flex-column">
@@ -122,14 +122,14 @@
                                         </div>
                                     </td>
                                     <td class="py-3 border-0">
-                                        <?php if ($h['monto_cierre'] !== null): ?>
+                                        <?php if ($h['monto_cierre'] !== null) : ?>
                                             <div class="d-flex flex-column">
                                                 <span><?php echo SIPAN::formatMoney($h['monto_cierre']); ?></span>
                                                 <small class="text-muted" style="font-size: 0.75rem;">
                                                     $<?php echo number_format($h['monto_cierre_usd'] ?? 0, 2); ?> | Bs<?php echo number_format($h['monto_cierre_bs'] ?? 0, 2); ?>
                                                 </small>
                                             </div>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             ---
                                         <?php endif; ?>
                                     </td>
@@ -137,9 +137,9 @@
                                         <?php echo $h['monto_esperado'] !== null ? SIPAN::formatMoney($h['monto_esperado']) : '---'; ?>
                                     </td>
                                     <td class="py-3 border-0">
-                                        <?php if ($h['estado'] === 'abierta'): ?>
+                                        <?php if ($h['estado'] === 'abierta') : ?>
                                             <span class="badge bg-soft-success text-success px-3 py-2">ABIERTA</span>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             <span class="badge bg-soft-secondary text-secondary px-3 py-2">CERRADA</span>
                                         <?php endif; ?>
                                     </td>

@@ -32,11 +32,11 @@ class ComprasController
     {
         AuthMiddleware::checkRole(['administrador', 'empleado']); // Cajero no compra
         $user = AuthMiddleware::getUser();
-        
+
         $proveedores = $this->proveedorModel->getAllBySucursal($user['sucursal_id']);
         // Cargamos insumos para el autocompletado/selección
         $insumos = $this->insumoModel->all($user['sucursal_id']);
-        
+
         require_once __DIR__ . '/../Views/compras/create.php';
     }
 
@@ -46,7 +46,7 @@ class ComprasController
         header('Content-Type: application/json');
 
         $user = AuthMiddleware::getUser();
-        
+
         // Validación básica
         if (empty($_POST['detalles']) || empty($_POST['id_proveedor'])) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
@@ -54,7 +54,7 @@ class ComprasController
         }
 
         $detalles = json_decode($_POST['detalles'], true);
-        
+
         $compraData = [
             'id_sucursal' => $user['sucursal_id'],
             'id_usuario' => $user['id'],
@@ -77,16 +77,16 @@ class ComprasController
     {
         AuthMiddleware::check();
         $user = AuthMiddleware::getUser();
-        
+
         $compra = $this->compraModel->getById($id);
-        
+
         if (!$compra || $compra['id_sucursal'] != $user['sucursal_id']) {
             header('Location: /compras');
             exit;
         }
-        
+
         $detalles = $this->compraModel->getDetalles($id);
-        
+
         require_once __DIR__ . '/../Views/compras/show.php';
     }
 }

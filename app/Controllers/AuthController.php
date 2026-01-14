@@ -30,7 +30,9 @@ class AuthController
     public function login()
     {
         // Limpiar cualquier salida previa para asegurar un JSON válido
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length()) {
+            ob_clean();
+        }
         header('Content-Type: application/json');
 
         // Cargar configuración
@@ -57,16 +59,16 @@ class AuthController
         require_once __DIR__ . '/../Helpers/RateLimiter.php';
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $rateLimitKey = 'login:' . $ip;
-        
+
         $maxAttempts = $config['rate_limit_login_max_attempts'];
         $window = $config['rate_limit_login_window'];
-        
+
         if (!\App\Helpers\RateLimiter::attempt($rateLimitKey, $maxAttempts, $window)) {
             $availableIn = \App\Helpers\RateLimiter::availableIn($rateLimitKey, $window);
             $minutes = ceil($availableIn / 60);
-            
+
             echo json_encode([
-                'success' => false, 
+                'success' => false,
                 'message' => "Demasiados intentos fallidos. Intenta nuevamente en $minutes minuto(s).",
                 'retry_after' => $availableIn
             ]);
@@ -97,9 +99,9 @@ class AuthController
         } else {
             // Credenciales incorrectas
             $remaining = \App\Helpers\RateLimiter::remaining($rateLimitKey, $maxAttempts, $window);
-            
+
             echo json_encode([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Credenciales incorrectas',
                 'attempts_remaining' => $remaining
             ]);
@@ -116,7 +118,9 @@ class AuthController
     {
         AuthMiddleware::checkRole(['administrador']);
 
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length()) {
+            ob_clean();
+        }
         header('Content-Type: application/json');
 
         $sucursal_id = $_POST['sucursal_id'] ?? null;
@@ -145,7 +149,9 @@ class AuthController
 
     public function register()
     {
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length()) {
+            ob_clean();
+        }
         header('Content-Type: application/json');
 
         $input = json_decode(file_get_contents('php://input'), true);
@@ -226,7 +232,6 @@ class AuthController
                 'usuario_id' => $usuario_id
             ]);
         } catch (\Exception $e) {
-
             error_log("REGISTER ERROR: " . $e->getMessage());
 
             echo json_encode([
@@ -241,7 +246,9 @@ class AuthController
 
     public function verificarSucursal()
     {
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length()) {
+            ob_clean();
+        }
         header('Content-Type: application/json');
 
         $input = json_decode(file_get_contents('php://input'), true);
@@ -285,7 +292,9 @@ class AuthController
 
     public function verificarClaveSucursal()
     {
-        if (ob_get_length()) ob_clean();
+        if (ob_get_length()) {
+            ob_clean();
+        }
         header('Content-Type: application/json');
 
         $data = json_decode(file_get_contents('php://input'), true);

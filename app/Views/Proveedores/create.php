@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Nuevo Proveedor';
 $currentPage = 'proveedores';
 require_once __DIR__ . '/../layouts/header.php';
@@ -71,7 +71,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </thead>
 
                     <tbody>
-                        <?php foreach ($insumos as $i): ?>
+                        <?php foreach ($insumos as $i) : ?>
                             <tr x-show="filtrar('<?= strtolower($i['nombre']) ?>')">
                                 <td><?= htmlspecialchars($i['nombre']) ?></td>
                                 <td><input type="number" min="0" step="0.01" x-model="precios[<?= $i['id'] ?>]" class="form-control"></td>

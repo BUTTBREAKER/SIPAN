@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Sucursales';
 $currentPage = 'sucursales';
 require_once __DIR__ . '/../layouts/header.php';
@@ -31,12 +31,12 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($sucursales)): ?>
+                    <?php if (empty($sucursales)) : ?>
                     <tr>
                         <td colspan="7" class="text-center">No hay sucursales registradas</td>
                     </tr>
-                    <?php else: ?>
-                    <?php foreach ($sucursales as $sucursal): ?>
+                    <?php else : ?>
+                        <?php foreach ($sucursales as $sucursal) : ?>
                     <tr>
                         <td>#<?= $sucursal['id'] ?></td>
                         <td><strong><?= htmlspecialchars($sucursal['nombre']) ?></strong></td>
@@ -80,7 +80,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             </div>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>

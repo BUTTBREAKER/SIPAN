@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Nuevo Cliente';
 $currentPage = 'clientes';
 require_once __DIR__ . '/../layouts/header.php';

@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Dashboard';
 $currentPage = 'dashboard';
 require_once __DIR__ . '/../layouts/header.php';
@@ -19,7 +19,7 @@ require_once __DIR__ . '/../layouts/header.php';
 <div class="bento-grid">
     
     <!-- 1. Estadísticas (Top Row) -->
-    <?php if($user_rol !== 'cajero'): ?>
+    <?php if ($user_rol !== 'cajero') : ?>
         <div class="stat-card success span-1">
             <div class="stat-content">
                 <div class="stat-label">Ventas Hoy</div>
@@ -53,7 +53,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
         </div>
-    <?php else: ?>
+    <?php else : ?>
         <div class="stat-card success span-4">
             <div class="stat-content">
                 <div class="stat-label">Ventas del Día (Caja)</div>
@@ -64,7 +64,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <?php endif; ?>
 
     <!-- 2. Alertas Críticas (Full Width if any) -->
-    <?php if (!empty($data['lotes_por_vencer'])): ?>
+    <?php if (!empty($data['lotes_por_vencer'])) : ?>
     <div class="bento-widget span-4" style="background: #FEE2E2; border-color: #EF4444;">
         <div class="d-flex align-items-center text-danger">
             <i class="fas fa-exclamation-circle fa-2x me-3"></i>
@@ -113,14 +113,14 @@ require_once __DIR__ . '/../layouts/header.php';
             <a href="/productos" class="btn btn-sm btn-secondary">Ver Todos</a>
         </div>
         
-        <?php if (empty($data['productos_stock_bajo'])): ?>
+        <?php if (empty($data['productos_stock_bajo'])) : ?>
             <div class="text-center text-muted py-4">
                 <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
                 <p>Todo en orden</p>
             </div>
-        <?php else: ?>
+        <?php else : ?>
             <div class="bento-list">
-                <?php foreach (array_slice($data['productos_stock_bajo'], 0, 5) as $producto): ?>
+                <?php foreach (array_slice($data['productos_stock_bajo'], 0, 5) as $producto) : ?>
                 <div class="bento-list-item">
                     <div>
                         <strong><?= htmlspecialchars($producto['nombre']) ?></strong>
@@ -140,14 +140,14 @@ require_once __DIR__ . '/../layouts/header.php';
             <a href="/insumos" class="btn btn-sm btn-secondary">Ver Todos</a>
         </div>
         
-        <?php if (empty($data['insumos_stock_bajo'])): ?>
+        <?php if (empty($data['insumos_stock_bajo'])) : ?>
             <div class="text-center text-muted py-4">
                 <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
                 <p>Todo en orden</p>
             </div>
-        <?php else: ?>
+        <?php else : ?>
             <div class="bento-list">
-                <?php foreach (array_slice($data['insumos_stock_bajo'], 0, 5) as $insumo): ?>
+                <?php foreach (array_slice($data['insumos_stock_bajo'], 0, 5) as $insumo) : ?>
                 <div class="bento-list-item">
                     <div>
                         <strong><?= htmlspecialchars($insumo['nombre']) ?></strong>
@@ -307,7 +307,7 @@ function updateChart(dias, btn) {
 
 // Alertas Stock
 document.addEventListener('DOMContentLoaded', () => {
-    <?php if (!empty($data['productos_stock_bajo']) || !empty($data['insumos_stock_bajo'])): ?>
+    <?php if (!empty($data['productos_stock_bajo']) || !empty($data['insumos_stock_bajo'])) : ?>
     const totalBajo = <?= count($data['productos_stock_bajo'] ?? []) + count($data['insumos_stock_bajo'] ?? []) ?>;
     Swal.fire({
         icon: 'warning',

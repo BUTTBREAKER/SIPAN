@@ -26,7 +26,7 @@
     <script src="/assets/js/app.js"></script>
     <script src="/assets/js/tables.js"></script>
     
-    <?php if (isset($additionalScripts)): ?>
+    <?php if (isset($additionalScripts)) : ?>
         <?= $additionalScripts ?>
     <?php endif; ?>
 </body>

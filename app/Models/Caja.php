@@ -5,13 +5,15 @@ namespace App\Models;
 use App\Models\BaseModel;
 use PDO;
 
-class Caja extends BaseModel {
+class Caja extends BaseModel
+{
     protected $table = 'cajas';
 
     /**
      * Obtiene la caja activa para una sucursal
      */
-    public function getActiva($id_sucursal) {
+    public function getActiva($id_sucursal)
+    {
         $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
         return $this->db->fetchOne($sql, [$id_sucursal]);
     }
@@ -19,9 +21,10 @@ class Caja extends BaseModel {
     /**
      * Abre una nueva caja con soporte multimoneda
      */
-    public function abrir($id_sucursal, $id_usuario, $monto_usd, $monto_bs, $tasa) {
+    public function abrir($id_sucursal, $id_usuario, $monto_usd, $monto_bs, $tasa)
+    {
         $total_usd = $monto_usd + ($monto_bs / $tasa);
-        
+
         return $this->create([
             'id_sucursal' => $id_sucursal,
             'id_usuario_apertura' => $id_usuario,
@@ -36,17 +39,18 @@ class Caja extends BaseModel {
     /**
      * Obtiene el resumen de una caja (totales de ingresos y egresos)
      */
-    public function getResumen($id_caja) {
+    public function getResumen($id_caja)
+    {
         $sql = "SELECT 
                     SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) as ingresos,
                     SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) as egresos
                 FROM caja_movimientos 
                 WHERE id_caja = ?";
         $res = $this->db->fetchOne($sql, [$id_caja]);
-        
+
         $caja = $this->find($id_caja);
         $monto_apertura = $caja['monto_apertura'] ?? 0;
-        
+
         $resumen = [
             'apertura' => $monto_apertura,
             'ingresos' => $res['ingresos'] ?? 0,
@@ -60,10 +64,11 @@ class Caja extends BaseModel {
     /**
      * Cierra una caja con soporte multimoneda
      */
-    public function cerrar($id_caja, $id_usuario, $monto_usd, $monto_bs, $tasa, $observaciones = '') {
+    public function cerrar($id_caja, $id_usuario, $monto_usd, $monto_bs, $tasa, $observaciones = '')
+    {
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
-        
+
         return $this->update($id_caja, [
             'id_usuario_cierre' => $id_usuario,
             'monto_cierre' => $total_cierre_usd,
@@ -79,7 +84,8 @@ class Caja extends BaseModel {
     /**
      * Registra un movimiento en la caja
      */
-    public function addMovimiento($id_caja, $tipo, $monto, $descripcion, $metodo_pago = 'efectivo', $id_venta = null) {
+    public function addMovimiento($id_caja, $tipo, $monto, $descripcion, $metodo_pago = 'efectivo', $id_venta = null)
+    {
         $sql = "INSERT INTO caja_movimientos (id_caja, tipo, monto, descripcion, metodo_pago, id_venta, fecha) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)";
         return $this->db->execute($sql, [
@@ -90,7 +96,8 @@ class Caja extends BaseModel {
     /**
      * Obtiene todos los movimientos de una caja
      */
-    public function getMovimientos($id_caja) {
+    public function getMovimientos($id_caja)
+    {
         $sql = "SELECT * FROM caja_movimientos WHERE id_caja = ? ORDER BY fecha DESC";
         return $this->db->fetchAll($sql, [$id_caja]);
     }
@@ -98,7 +105,8 @@ class Caja extends BaseModel {
     /**
      * Obtiene el historial de cajas de una sucursal
      */
-    public function getHistorial($id_sucursal, $limit = 10) {
+    public function getHistorial($id_sucursal, $limit = 10)
+    {
         $sql = "SELECT c.*, 
                 u1.primer_nombre as usuario_apertura, 
                 u2.primer_nombre as usuario_cierre 

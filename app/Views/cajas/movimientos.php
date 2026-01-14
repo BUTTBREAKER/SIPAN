@@ -35,7 +35,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($movimientos)): ?>
+                                <?php if (empty($movimientos)) : ?>
                                 <tr>
                                     <td colspan="6" class="text-center py-5 text-muted">
                                         <i class="fas fa-info-circle fa-2x mb-3 d-block opacity-25"></i>
@@ -43,17 +43,17 @@
                                     </td>
                                 </tr>
                                 <?php endif; ?>
-                                <?php foreach ($movimientos as $m): ?>
+                                <?php foreach ($movimientos as $m) : ?>
                                 <tr>
                                     <td class="px-4 py-3 border-0 text-muted">
                                         <?php echo date('H:i', strtotime($m['fecha'])); ?>
                                     </td>
                                     <td class="py-3 border-0">
-                                        <?php if ($m['tipo'] === 'ingreso'): ?>
+                                        <?php if ($m['tipo'] === 'ingreso') : ?>
                                             <span class="badge bg-soft-success text-success">
                                                 <i class="fas fa-arrow-up me-1"></i> INGRESO
                                             </span>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             <span class="badge bg-soft-danger text-danger">
                                                 <i class="fas fa-arrow-down me-1"></i> EGRESO
                                             </span>
@@ -65,9 +65,9 @@
                                         <?php echo ($m['tipo'] === 'ingreso' ? '+' : '-') . ' ' . SIPAN::formatMoney($m['monto']); ?>
                                     </td>
                                     <td class="px-4 py-3 border-0 text-end">
-                                        <?php if ($m['id_venta']): ?>
+                                        <?php if ($m['id_venta']) : ?>
                                             <span class="text-muted">#<?php echo $m['id_venta']; ?></span>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             <span class="text-muted opacity-25">---</span>
                                         <?php endif; ?>
                                     </td>

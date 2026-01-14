@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Registrar Compra';
 $currentPage = 'compras';
 require_once __DIR__ . '/../layouts/header.php';
@@ -23,7 +23,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                 <label class="form-label">Proveedor <span class="text-danger">*</span></label>
                                 <select x-model="id_proveedor" class="form-select" required>
                                     <option value="">Seleccionar Proveedor</option>
-                                    <?php foreach ($proveedores as $prov): ?>
+                                    <?php foreach ($proveedores as $prov) : ?>
                                     <option value="<?= $prov['id'] ?>"><?= htmlspecialchars($prov['nombre']) ?></option>
                                     <?php endforeach; ?>
                                 </select>
@@ -57,7 +57,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             <label class="form-label small">Insumo</label>
                             <select x-model="item_temp.id" class="form-select" id="selectInsumo">
                                 <option value="">Seleccionar Insumo...</option>
-                                <?php foreach ($insumos as $ins): ?>
+                                <?php foreach ($insumos as $ins) : ?>
                                 <option value="<?= $ins['id'] ?>" 
                                         data-nombre="<?= htmlspecialchars($ins['nombre']) ?>"
                                         data-costo="<?= $ins['costo_unitario'] ?? 0 ?>">

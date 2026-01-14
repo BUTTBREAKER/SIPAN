@@ -99,7 +99,7 @@ class CSRF
     public static function validateRequest()
     {
         $token = self::getTokenFromRequest();
-        
+
         if (!$token) {
             return false;
         }

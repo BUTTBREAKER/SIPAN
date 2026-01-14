@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Editar Proveedor';
 $currentPage = 'proveedores';
 require_once __DIR__ . '/../layouts/header.php';

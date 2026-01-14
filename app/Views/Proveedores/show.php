@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Detalle de Proveedor';
 $currentPage = 'proveedores';
 require_once __DIR__ . '/../layouts/header.php';
@@ -99,10 +99,10 @@ require_once __DIR__ . '/../layouts/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if(empty($insumos)): ?>
+                            <?php if (empty($insumos)) : ?>
                                 <tr><td colspan="4" class="text-center py-3 text-muted">No tiene insumos asignados directamente</td></tr>
-                            <?php else: ?>
-                                <?php foreach($insumos as $ins): ?>
+                            <?php else : ?>
+                                <?php foreach ($insumos as $ins) : ?>
                                 <tr>
                                     <td><strong><?= htmlspecialchars($ins['nombre']) ?></strong></td>
                                     <td><?= $ins['unidad_medida'] ?></td>
@@ -146,29 +146,29 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if(empty($compras)): ?>
+                    <?php if (empty($compras)) : ?>
                         <tr><td colspan="7" class="text-center">No hay compras registradas a este proveedor</td></tr>
-                    <?php else: ?>
-                        <?php foreach($compras as $compra): ?>
+                    <?php else : ?>
+                        <?php foreach ($compras as $compra) : ?>
                         <tr>
                             <td><?= date('d/m/Y', strtotime($compra['fecha_compra'])) ?></td>
                             <td><?= htmlspecialchars($compra['numero_comprobante'] ?? $compra['id']) ?></td>
                             <td><?= htmlspecialchars($compra['usuario_nombre']) ?></td>
                             <td>
-                                <?php 
-                                    $estado = $compra['estado_pago'] ?? 'pendiente'; 
-                                    $class = match($estado) {
+                                <?php
+                                    $estado = $compra['estado_pago'] ?? 'pendiente';
+                                    $class = match ($estado) {
                                         'pagado' => 'success',
                                         'pendiente' => 'danger',
                                         'parcial' => 'warning',
                                         default => 'secondary'
                                     };
-                                ?>
+    ?>
                                 <span class="badge bg-<?= $class ?>"><?= ucfirst($estado) ?></span>
                             </td>
                             <td><strong>$ <?= number_format($compra['total'], 2) ?></strong></td>
                             <td class="text-center">
-                                <?php if(($compra['monto_deuda'] ?? 0) > 0): ?>
+                                <?php if (($compra['monto_deuda'] ?? 0) > 0) : ?>
                                     <span class="text-danger">$ <?= number_format($compra['monto_deuda'], 2) ?></span>
                                 <?php endif; ?>
                             </td>

@@ -15,7 +15,7 @@ class Produccion extends BaseModel
             $produccion_id = $this->create($produccion_data);
 
             error_log('Producción creada con ID: ' . $produccion_id); // LOG
-            
+
             // Instanciar modelos para descontar stock
             $loteModel = new Lote();
             $insumoModel = new Insumo();
@@ -27,7 +27,7 @@ class Produccion extends BaseModel
                 if (!isset($insumo['id_insumo']) || !isset($insumo['cantidad_utilizada'])) {
                     throw new \Exception('Estructura de insumo inválida: ' . print_r($insumo, true));
                 }
-                
+
                 $id_insumo = $insumo['id_insumo'];
                 $cantidad = $insumo['cantidad_utilizada'];
 
@@ -39,11 +39,11 @@ class Produccion extends BaseModel
                     $id_insumo,
                     $cantidad
                 ]);
-                
+
                 // B. Descontar de Lotes (FIFO)
                 // Esto busca lotes activos y los consume en orden de vencimiento
                 $loteModel->descontarStock('insumo', $id_insumo, $cantidad, $produccion_data['id_sucursal']);
-                
+
                 // C. Descontar Stock Total del Insumo
                 // Se asume que Insumo::updateStock maneja la resta
                 $insumoModel->updateStock($id_insumo, $cantidad, 'subtract');

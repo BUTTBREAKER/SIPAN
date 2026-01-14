@@ -17,31 +17,31 @@ class ConfigController
     public function refreshTasa()
     {
         AuthMiddleware::check(); // Ensure logged in
-        
+
         header('Content-Type: application/json');
         ob_start(); // Buffer output
 
         try {
             $newRate = $this->configModel->updateTasaBCV();
-            
+
             ob_clean(); // Clean buffer
-            
+
             if ($newRate) {
                 echo json_encode([
-                    'success' => true, 
+                    'success' => true,
                     'rate' => $newRate,
                     'message' => 'Tasa actualizada correctamente'
                 ]);
             } else {
                 echo json_encode([
-                    'success' => false, 
+                    'success' => false,
                     'message' => 'No se pudo obtener la tasa en este momento'
                 ]);
             }
         } catch (\Exception $e) {
             ob_clean();
             echo json_encode([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
             ]);
         }

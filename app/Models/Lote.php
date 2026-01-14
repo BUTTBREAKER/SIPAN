@@ -14,7 +14,7 @@ class Lote extends BaseModel
         $sql = "INSERT INTO {$this->table} 
                 (id_sucursal, tipo, id_item, codigo_lote, fecha_entrada, fecha_vencimiento, cantidad_inicial, cantidad_actual, costo_unitario)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
+
         $this->db->execute($sql, [
             $data['id_sucursal'],
             $data['tipo'],
@@ -68,16 +68,18 @@ class Lote extends BaseModel
                 WHERE tipo = ? AND id_item = ? AND id_sucursal = ? 
                 AND estado = 'activo' AND cantidad_actual > 0
                 ORDER BY fecha_vencimiento ASC, created_at ASC";
-        
+
         $lotes = $this->db->fetchAll($sql, [$tipo, $id_item, $sucursal_id]);
-        
+
         $pendiente = $cantidad;
 
         foreach ($lotes as $lote) {
-            if ($pendiente <= 0) break;
+            if ($pendiente <= 0) {
+                break;
+            }
 
             $descontar = min($pendiente, $lote['cantidad_actual']);
-            
+
             // Actualizar lote
             $nuevo_stock = $lote['cantidad_actual'] - $descontar;
             $estado = ($nuevo_stock <= 0) ? 'agotado' : 'activo';

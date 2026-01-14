@@ -24,7 +24,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <label class="form-label">Producto <span class="text-danger">*</span></label>
                         <select x-model="id_producto" @change="cargarReceta()" class="form-control" required>
                             <option value="">Seleccionar producto</option>
-                            <?php foreach ($productos as $producto): ?>
+                            <?php foreach ($productos as $producto) : ?>
                                 <option value="<?= $producto['id'] ?>">
                                     <?= htmlspecialchars($producto['nombre']) ?>
                                 </option>

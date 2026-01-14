@@ -16,7 +16,7 @@ class Pedido extends BaseModel
 
             // Crear pedido
             $pedido_id = $this->create($pedido_data);
-            
+
 
             /// Agregar productos
             foreach ($productos as $producto) {

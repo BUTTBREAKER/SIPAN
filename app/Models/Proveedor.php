@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-class Proveedor extends BaseModel {
+class Proveedor extends BaseModel
+{
     protected $table = 'proveedores';
 
-    public function getAllBySucursal($sucursal_id) {
+    public function getAllBySucursal($sucursal_id)
+    {
         $sql = "SELECT * FROM {$this->table} WHERE sucursal_id = ? ORDER BY nombre ASC";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 
-    public function getWithInsumos($id) {
+    public function getWithInsumos($id)
+    {
         $sql = "SELECT p.*, pi.id_insumo, i.nombre AS insumo_nombre, pi.precio, pi.tiempo_entrega
                 FROM proveedores p
                 LEFT JOIN proveedor_insumos pi ON p.id = pi.id_proveedor
@@ -19,7 +22,8 @@ class Proveedor extends BaseModel {
         return $this->db->fetchAll($sql, [$id]);
     }
 
-    public function addInsumos($proveedor_id, $insumos) {
+    public function addInsumos($proveedor_id, $insumos)
+    {
         $this->db->beginTransaction();
         try {
             $this->db->execute("DELETE FROM proveedor_insumos WHERE id_proveedor = ?", [$proveedor_id]);
@@ -40,21 +44,15 @@ class Proveedor extends BaseModel {
         }
     }
 
-public function getInsumosSinProveedor($sucursal_id) {
-    $sql = "SELECT i.id, i.nombre, i.unidad_medida, i.stock_actual, i.stock_minimo
+    public function getInsumosSinProveedor($sucursal_id)
+    {
+        $sql = "SELECT i.id, i.nombre, i.unidad_medida, i.stock_actual, i.stock_minimo
             FROM insumos i
             LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
             WHERE i.id_sucursal = ?
             GROUP BY i.id
             HAVING COUNT(pi.id) = 0
             ORDER BY i.nombre";
-    return $this->db->fetchAll($sql, [$sucursal_id]);
+        return $this->db->fetchAll($sql, [$sucursal_id]);
+    }
 }
-
-
-
-
-}
-
-
-

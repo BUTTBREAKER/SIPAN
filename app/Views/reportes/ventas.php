@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Reporte de Ventas';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
@@ -84,12 +84,12 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($ventas)): ?>
+                    <?php if (empty($ventas)) : ?>
                     <tr>
                         <td colspan="6" class="text-center">No hay ventas en este período</td>
                     </tr>
-                    <?php else: ?>
-                    <?php foreach ($ventas as $venta): ?>
+                    <?php else : ?>
+                        <?php foreach ($ventas as $venta) : ?>
                     <tr>
                         <td>#<?= str_pad($venta['id'], 6, '0', STR_PAD_LEFT) ?></td>
                         <td><?= date('d/m/Y H:i', strtotime($venta['fecha_venta'])) ?></td>
@@ -100,7 +100,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </td>
                         <td><?= htmlspecialchars($venta['usuario_nombre'] ?? '-') ?></td>
                     </tr>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
                 <tfoot>

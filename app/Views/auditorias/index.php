@@ -45,7 +45,9 @@ function obtenerCambiosRelevantes($datos_anteriores, $datos_nuevos)
     $anterior = json_decode($datos_anteriores, true);
     $nuevo = json_decode($datos_nuevos, true);
 
-    if (!$anterior || !$nuevo) return [];
+    if (!$anterior || !$nuevo) {
+        return [];
+    }
 
     $cambios = [];
     foreach ($nuevo as $campo => $valor_nuevo) {
@@ -162,13 +164,13 @@ function formatearCampo($campo)
         <h5 class="mb-0"><i class="fas fa-history"></i> Historial de Cambios</h5>
     </div>
     <div class="card-body">
-        <?php if (empty($auditorias)): ?>
+        <?php if (empty($auditorias)) : ?>
             <div class="alert alert-info">
                 <i class="fas fa-info-circle"></i> No hay registros de auditoría disponibles.
             </div>
-        <?php else: ?>
+        <?php else : ?>
             <div class="audit-timeline" id="timelineAuditorias">
-                <?php foreach ($auditorias as $auditoria): ?>
+                <?php foreach ($auditorias as $auditoria) : ?>
                     <?php
                     $accion_upper = strtoupper($auditoria['accion']);
                     $es_update = $accion_upper === 'UPDATE';
@@ -193,7 +195,7 @@ function formatearCampo($campo)
                                     <span class="audit-table"><?= traducirTabla($auditoria['tabla']) ?></span>
                                     <span class="audit-id">#<?= $auditoria['registro_id'] ?? 'N/A' ?></span>
 
-                                    <?php if ($fue_deshecho): ?>
+                                    <?php if ($fue_deshecho) : ?>
                                         <span class="badge bg-secondary ms-2">
                                             <i class="fas fa-undo"></i> Deshecho
                                         </span>
@@ -214,11 +216,11 @@ function formatearCampo($campo)
                             </div>
 
                             <div class="audit-content">
-                                <?php if ($es_update && !empty($auditoria['datos_anteriores']) && !empty($auditoria['datos_nuevos'])): ?>
+                                <?php if ($es_update && !empty($auditoria['datos_anteriores']) && !empty($auditoria['datos_nuevos'])) : ?>
                                     <?php $cambios = obtenerCambiosRelevantes($auditoria['datos_anteriores'], $auditoria['datos_nuevos']); ?>
-                                    <?php if (!empty($cambios)): ?>
+                                    <?php if (!empty($cambios)) : ?>
                                         <div class="cambios-grid">
-                                            <?php foreach ($cambios as $campo => $valores): ?>
+                                            <?php foreach ($cambios as $campo => $valores) : ?>
                                                 <div class="cambio-item">
                                                     <div class="cambio-campo"><?= formatearCampo($campo) ?></div>
                                                     <div class="cambio-valores">
@@ -229,24 +231,25 @@ function formatearCampo($campo)
                                                 </div>
                                             <?php endforeach; ?>
                                         </div>
-                                    <?php else: ?>
+                                    <?php else : ?>
                                         <p class="text-muted mb-0"><i class="fas fa-info-circle"></i> Sin cambios visibles en los campos principales</p>
                                     <?php endif; ?>
 
-                                <?php elseif ($es_insert && !empty($auditoria['datos_nuevos'])): ?>
+                                <?php elseif ($es_insert && !empty($auditoria['datos_nuevos'])) : ?>
                                     <?php $datos = json_decode($auditoria['datos_nuevos'], true); ?>
-                                    <?php if ($datos): ?>
+                                    <?php if ($datos) : ?>
                                         <div class="datos-creados">
                                             <?php $count = 0; ?>
-                                            <?php foreach ($datos as $campo => $valor): ?>
-                                                <?php if ($campo !== 'id' && $count < 6): ?>
+                                            <?php foreach ($datos as $campo => $valor) : ?>
+                                                <?php if ($campo !== 'id' && $count < 6) : ?>
                                                     <div class="dato-item">
                                                         <strong><?= formatearCampo($campo) ?>:</strong>
                                                         <span><?= htmlspecialchars($valor) ?></span>
                                                     </div>
-                                                <?php $count++; endif; ?>
+                                                    <?php $count++;
+                                                endif; ?>
                                             <?php endforeach; ?>
-                                            <?php if (count($datos) > 7): ?>
+                                            <?php if (count($datos) > 7) : ?>
                                                 <div class="dato-item text-muted">
                                                     <small>+ <?= count($datos) - 7 ?> campos más...</small>
                                                 </div>
@@ -254,24 +257,24 @@ function formatearCampo($campo)
                                         </div>
                                     <?php endif; ?>
 
-                                <?php elseif ($es_delete && !empty($auditoria['datos_anteriores'])): ?>
+                                <?php elseif ($es_delete && !empty($auditoria['datos_anteriores'])) : ?>
                                     <?php $datos = json_decode($auditoria['datos_anteriores'], true); ?>
-                                    <?php if ($datos): ?>
+                                    <?php if ($datos) : ?>
                                         <div class="alert alert-danger mb-0">
                                             <strong><i class="fas fa-exclamation-triangle"></i> Registro eliminado</strong>
-                                            <?php if (isset($datos['nombre'])): ?>
+                                            <?php if (isset($datos['nombre'])) : ?>
                                                 <p class="mb-0 mt-2">Nombre: <strong><?= htmlspecialchars($datos['nombre']) ?></strong></p>
                                             <?php endif; ?>
                                         </div>
                                     <?php endif; ?>
 
-                                <?php elseif ($es_undo): ?>
+                                <?php elseif ($es_undo) : ?>
                                     <div class="alert alert-secondary mb-0">
                                         <i class="fas fa-undo"></i> Acción deshecha correctamente
                                     </div>
                                 <?php endif; ?>
 
-                                <?php if ($fue_deshecho && $auditoria['fecha_deshacer']): ?>
+                                <?php if ($fue_deshecho && $auditoria['fecha_deshacer']) : ?>
                                     <div class="alert alert-warning mb-0 mt-2">
                                         <small>
                                             <i class="fas fa-info-circle"></i>
@@ -295,7 +298,7 @@ function formatearCampo($campo)
                                     <?php endif; ?>
                                     */ ?>
 
-                                    <?php if (!empty($auditoria['ip_address'])): ?>
+                                    <?php if (!empty($auditoria['ip_address'])) : ?>
                                         <span class="text-muted ms-3">
                                             <small><i class="fas fa-globe"></i> IP: <?= htmlspecialchars($auditoria['ip_address']) ?></small>
                                         </span>

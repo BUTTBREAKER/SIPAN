@@ -9,7 +9,7 @@ class RateLimiter
 {
     /**
      * Verificar si se excedió el límite de intentos
-     * 
+     *
      * @param string $key Clave única para el rate limit (ej: 'login:192.168.1.1')
      * @param int $maxAttempts Número máximo de intentos permitidos
      * @param int $windowSeconds Ventana de tiempo en segundos
@@ -22,7 +22,7 @@ class RateLimiter
 
         // Limpiar intentos antiguos
         $now = time();
-        $attempts = array_filter($attempts, function($timestamp) use ($now, $windowSeconds) {
+        $attempts = array_filter($attempts, function ($timestamp) use ($now, $windowSeconds) {
             return ($now - $timestamp) < $windowSeconds;
         });
 
@@ -60,7 +60,7 @@ class RateLimiter
 
         // Limpiar intentos antiguos
         $now = time();
-        $attempts = array_filter($attempts, function($timestamp) use ($now, $windowSeconds) {
+        $attempts = array_filter($attempts, function ($timestamp) use ($now, $windowSeconds) {
             return ($now - $timestamp) < $windowSeconds;
         });
 
@@ -105,7 +105,7 @@ class RateLimiter
     private static function getFilePath($key)
     {
         $dir = dirname(__DIR__, 2) . '/logs/rate-limits';
-        
+
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }

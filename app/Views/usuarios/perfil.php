@@ -19,7 +19,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <h3><?= htmlspecialchars(trim(($usuario['primer_nombre'] ?? '') . ' ' . ($usuario['segundo_nombre'] ?? '') . ' ' . ($usuario['apellido_paterno'] ?? '') . ' ' . ($usuario['apellido_materno'] ?? ''))) ?></h3>
                 <p class="text-muted"><?= ucfirst($usuario['rol']) ?></p>
                 <p class="text-muted"><i class="fas fa-envelope"></i> <?= htmlspecialchars($usuario['correo']) ?></p>
-                <?php if ($usuario['telefono']): ?>
+                <?php if ($usuario['telefono']) : ?>
                     <p class="text-muted"><i class="fas fa-phone"></i> <?= htmlspecialchars($usuario['telefono']) ?></p>
                 <?php endif; ?>
 
@@ -42,11 +42,11 @@ require_once __DIR__ . '/../layouts/header.php';
 
                 <div class="mt-3">
                     <small class="text-muted">Últimas acciones:</small>
-                    <?php if (empty($actividad)): ?>
+                    <?php if (empty($actividad)) : ?>
                         <p class="text-muted mt-2">No hay actividad reciente</p>
-                    <?php else: ?>
+                    <?php else : ?>
                         <ul class="list-unstyled mt-2">
-                            <?php foreach (array_slice($actividad, 0, 5) as $act): ?>
+                            <?php foreach (array_slice($actividad, 0, 5) as $act) : ?>
                                 <li class="mb-2">
                                     <small>
                                         <strong><?= ucfirst($act['accion']) ?></strong> en <?= $act['tabla'] ?>

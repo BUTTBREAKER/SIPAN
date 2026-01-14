@@ -125,7 +125,7 @@
             <h1><?= htmlspecialchars($negocio['nombre'] ?? 'SIPAN') ?></h1>
             <p><?= htmlspecialchars($sucursal['nombre'] ?? 'Sucursal Principal') ?></p>
             <p><?= htmlspecialchars($sucursal['direccion'] ?? '') ?></p>
-            <?php if (!empty($negocio['telefono'])): ?>
+            <?php if (!empty($negocio['telefono'])) : ?>
             <p>Tel: <?= htmlspecialchars($negocio['telefono']) ?></p>
             <?php endif; ?>
         </div>
@@ -150,7 +150,7 @@
         </div>
         
         <div class="items">
-            <?php foreach ($detalles as $detalle): ?>
+            <?php foreach ($detalles as $detalle) : ?>
             <div class="item">
                 <div class="item-name"><?= htmlspecialchars($detalle['producto_nombre'] ?? 'Producto') ?></div>
                 <div class="item-details">
@@ -169,13 +169,15 @@
             <div class="total-row">
                 <span>MÉTODO DE PAGO:</span>
                 <div style="text-align: right;">
-                    <?php if (empty($pagos)): ?>
+                    <?php if (empty($pagos)) : ?>
                         <span><?= strtoupper($venta['metodo_pago']) ?></span>
-                    <?php else: ?>
-                        <?php foreach($pagos as $p): ?>
+                    <?php else : ?>
+                        <?php foreach ($pagos as $p) : ?>
                             <div>
                                 <?= strtoupper($p['metodo_pago']) ?>: $ <?= number_format($p['monto'], 2) ?>
-                                <?php if($p['referencia']): ?><br><small>(Ref: <?= $p['referencia'] ?>)</small><?php endif; ?>
+                                <?php if ($p['referencia']) :
+                                    ?><br><small>(Ref: <?= $p['referencia'] ?>)</small><?php
+                                endif; ?>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>

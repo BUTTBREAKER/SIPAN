@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-class Receta extends BaseModel {
+class Receta extends BaseModel
+{
     protected $table = 'recetas';
 
     /**
@@ -11,7 +12,8 @@ class Receta extends BaseModel {
      *
      * $insumos: array of ['id'|'id_insumo' => int, 'cantidad' => float, optionally 'unidad_medida' => string]
      */
-    public function createWithInsumos($id_producto, $rendimiento, $instrucciones, $sucursal_id, $insumos) {
+    public function createWithInsumos($id_producto, $rendimiento, $instrucciones, $sucursal_id, $insumos)
+    {
         try {
             $this->db->beginTransaction();
 
@@ -52,7 +54,8 @@ class Receta extends BaseModel {
     /**
      * Buscar receta por id incluyendo nombre del producto asociado.
      */
-    public function find($id) {
+    public function find($id)
+    {
         $sql = "SELECT r.*, p.nombre AS producto_nombre
                 FROM {$this->table} r
                 LEFT JOIN productos p ON r.id_producto = p.id
@@ -60,7 +63,8 @@ class Receta extends BaseModel {
         return $this->db->fetchOne($sql, [$id]);
     }
 
-    public function getByProducto($producto_id) {
+    public function getByProducto($producto_id)
+    {
         $sql = "SELECT * FROM {$this->table} WHERE id_producto = ?";
         return $this->db->fetchOne($sql, [$producto_id]);
     }
@@ -68,7 +72,8 @@ class Receta extends BaseModel {
     /**
      * Retorna insumos de una receta. Mantengo las columnas previas y agrego nombres de insumo.
      */
-    public function getInsumos($receta_id) {
+    public function getInsumos($receta_id)
+    {
         $sql = "SELECT ri.*, i.nombre, i.unidad_medida as unidad_insumo, i.stock_actual, i.precio_unitario
                 FROM receta_insumos ri
                 INNER JOIN insumos i ON ri.id_insumo = i.id
@@ -76,18 +81,21 @@ class Receta extends BaseModel {
         return $this->db->fetchAll($sql, [$receta_id]);
     }
 
-    public function addInsumo($receta_id, $insumo_id, $cantidad, $unidad_medida = 'kg') {
+    public function addInsumo($receta_id, $insumo_id, $cantidad, $unidad_medida = 'kg')
+    {
         $sql = "INSERT INTO receta_insumos (id_receta, id_insumo, cantidad, unidad_medida) 
                 VALUES (?, ?, ?, ?)";
         return $this->db->execute($sql, [$receta_id, $insumo_id, $cantidad, $unidad_medida]);
     }
 
-    public function removeInsumo($receta_id, $insumo_id) {
+    public function removeInsumo($receta_id, $insumo_id)
+    {
         $sql = "DELETE FROM receta_insumos WHERE id_receta = ? AND id_insumo = ?";
         return $this->db->execute($sql, [$receta_id, $insumo_id]);
     }
 
-    public function updateInsumo($receta_id, $insumo_id, $cantidad) {
+    public function updateInsumo($receta_id, $insumo_id, $cantidad)
+    {
         $sql = "UPDATE receta_insumos SET cantidad = ? WHERE id_receta = ? AND id_insumo = ?";
         return $this->db->execute($sql, [$cantidad, $receta_id, $insumo_id]);
     }
@@ -96,7 +104,8 @@ class Receta extends BaseModel {
      * Reemplaza todos los insumos de la receta: borra los actuales y agrega los nuevos.
      * $insumos debe tener elementos con 'id'|'id_insumo', 'cantidad' y opcional 'unidad_medida'.
      */
-    public function updateInsumos($receta_id, array $insumos) {
+    public function updateInsumos($receta_id, array $insumos)
+    {
         try {
             $this->db->beginTransaction();
 
@@ -127,12 +136,14 @@ class Receta extends BaseModel {
         }
     }
 
-    public function calcularInsumos($producto_id, $cantidad) {
+    public function calcularInsumos($producto_id, $cantidad)
+    {
         $sql = "CALL sp_calcular_insumos_produccion(?, ?)";
         return $this->db->fetchAll($sql, [$producto_id, $cantidad]);
     }
 
-    public function getWithDetails($sucursal_id) {
+    public function getWithDetails($sucursal_id)
+    {
         $sql = "SELECT r.*, p.nombre as producto_nombre, 
                        COUNT(ri.id) as total_insumos
                 FROM {$this->table} r
@@ -144,7 +155,8 @@ class Receta extends BaseModel {
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 
-    public function all($sucursal_id = null) {
+    public function all($sucursal_id = null)
+    {
         if ($sucursal_id === null) {
             $sql = "SELECT r.*, p.nombre as producto_nombre
                     FROM {$this->table} r
@@ -161,7 +173,8 @@ class Receta extends BaseModel {
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 
-    public function getInsumosByReceta($receta_id) {
+    public function getInsumosByReceta($receta_id)
+    {
         $sql = "SELECT ri.*, i.nombre, i.unidad_medida, i.stock_actual, i.precio_unitario
                 FROM receta_insumos ri
                 INNER JOIN insumos i ON ri.id_insumo = i.id
@@ -169,12 +182,14 @@ class Receta extends BaseModel {
         return $this->db->fetchAll($sql, [$receta_id]);
     }
 
-    public function findByProducto($producto_id) {
+    public function findByProducto($producto_id)
+    {
         $sql = "SELECT * FROM {$this->table} WHERE id_producto = ? LIMIT 1";
         return $this->db->fetchOne($sql, [$producto_id]);
     }
 
-    public function getInsumosPorProducto($producto_id) {
+    public function getInsumosPorProducto($producto_id)
+    {
         $sql = "SELECT ri.*, r.rendimiento as rendimiento_receta
                 FROM recetas r
                 INNER JOIN receta_insumos ri ON r.id = ri.id_receta

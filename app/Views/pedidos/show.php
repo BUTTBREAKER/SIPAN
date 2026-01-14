@@ -30,12 +30,12 @@ require_once __DIR__ . '/../layouts/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($productos)): ?>
+                            <?php if (empty($productos)) : ?>
                                 <tr>
                                     <td colspan="4" class="text-center">No hay productos en este pedido</td>
                                 </tr>
-                            <?php else: ?>
-                                <?php foreach ($productos as $detalle): ?>
+                            <?php else : ?>
+                                <?php foreach ($productos as $detalle) : ?>
                                     <tr>
                                         <td><strong><?= htmlspecialchars($detalle['producto_nombre'] ?? 'Producto #' . $detalle['id_producto']) ?></strong></td>
                                         <td>$ <?= number_format($detalle['precio_unitario'], 2) ?></td>
@@ -60,7 +60,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <div class="card">
             <div class="card-header d-flex justify-between align-center">
                 <h3 class="card-title">Historial de Pagos</h3>
-                <?php if ($pedido['estado_pago'] !== 'pagado'): ?>
+                <?php if ($pedido['estado_pago'] !== 'pagado') : ?>
                     <button type="button" data-bs-toggle="modal" data-bs-target="#modalPago" class="btn btn-success btn-sm">
                         <i class="fas fa-dollar-sign"></i> Registrar Pago
                     </button>
@@ -78,12 +78,12 @@ require_once __DIR__ . '/../layouts/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (empty($pagos)): ?>
+                            <?php if (empty($pagos)) : ?>
                                 <tr>
                                     <td colspan="4" class="text-center">No hay pagos registrados</td>
                                 </tr>
-                            <?php else: ?>
-                                <?php foreach ($pagos as $pago): ?>
+                            <?php else : ?>
+                                <?php foreach ($pagos as $pago) : ?>
                                     <tr>
                                         <td><?= date('d/m/Y H:i', strtotime($pago['fecha_pago'])) ?></td>
                                         <td><strong>$ <?= number_format($pago['monto'], 2) ?></strong></td>
@@ -140,7 +140,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </p>
                 </div>
 
-                <?php if (!empty($pedido['observaciones'])): ?>
+                <?php if (!empty($pedido['observaciones'])) : ?>
                     <div class="mb-3">
                         <label class="text-muted">Observaciones:</label>
                         <p class="mb-0"><?= nl2br(htmlspecialchars($pedido['observaciones'])) ?></p>
@@ -149,7 +149,8 @@ require_once __DIR__ . '/../layouts/header.php';
 
                 <hr>
 
-                <?php if ($pedido['estado_pedido'] !== 'cancelado'): ?> <!-- Cambiado a 'estado_pedido' -->
+                <?php if ($pedido['estado_pedido'] !== 'cancelado') :
+                    ?> <!-- Cambiado a 'estado_pedido' -->
                     <div class="d-grid gap-2">
                         <select x-model="nuevoEstado" class="form-control">
                             <option value="">Cambiar estado...</option>

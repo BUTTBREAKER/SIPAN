@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Reporte de Productos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
@@ -36,7 +36,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($productos as $prod): ?>
+                    <?php foreach ($productos as $prod) : ?>
                     <tr>
                         <td><?= htmlspecialchars($prod['nombre']) ?></td>
                         <td><?= htmlspecialchars($prod['categoria_nombre'] ?? '-') ?></td>

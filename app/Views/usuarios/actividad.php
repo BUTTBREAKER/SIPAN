@@ -1,10 +1,11 @@
-<?php 
+<?php
 $pageTitle = 'Actividad de Usuario';
 $currentPage = 'usuarios';
 require_once __DIR__ . '/../layouts/header.php';
 
 // Función para traducir acciones
-function traducirAccion($accion) {
+function traducirAccion($accion)
+{
     $traducciones = [
         'INSERT' => 'Creó',
         'UPDATE' => 'Actualizó',
@@ -15,7 +16,8 @@ function traducirAccion($accion) {
 }
 
 // Función para traducir nombres de tablas
-function traducirTabla($tabla) {
+function traducirTabla($tabla)
+{
     $traducciones = [
         'ventas' => 'Venta',
         'productos' => 'Producto',
@@ -31,12 +33,15 @@ function traducirTabla($tabla) {
 }
 
 // Función para obtener los cambios importantes en un UPDATE
-function obtenerCambiosRelevantes($datos_anteriores, $datos_nuevos) {
+function obtenerCambiosRelevantes($datos_anteriores, $datos_nuevos)
+{
     $anterior = json_decode($datos_anteriores, true);
     $nuevo = json_decode($datos_nuevos, true);
-    
-    if (!$anterior || !$nuevo) return [];
-    
+
+    if (!$anterior || !$nuevo) {
+        return [];
+    }
+
     $cambios = [];
     foreach ($nuevo as $campo => $valor_nuevo) {
         if (isset($anterior[$campo]) && $anterior[$campo] != $valor_nuevo && $campo !== 'id') {
@@ -46,12 +51,13 @@ function obtenerCambiosRelevantes($datos_anteriores, $datos_nuevos) {
             ];
         }
     }
-    
+
     return $cambios;
 }
 
 // Función para formatear nombres de campos
-function formatearCampo($campo) {
+function formatearCampo($campo)
+{
     $traducciones = [
         'stock_actual' => 'Stock Actual',
         'stock_minimo' => 'Stock Mínimo',
@@ -67,7 +73,7 @@ function formatearCampo($campo) {
         'telefono' => 'Teléfono',
         'direccion' => 'Dirección'
     ];
-    
+
     return $traducciones[$campo] ?? ucwords(str_replace('_', ' ', $campo));
 }
 ?>
@@ -85,19 +91,19 @@ function formatearCampo($campo) {
         </a>
     </div>
     <div class="card-body">
-        <?php if (empty($actividad)): ?>
+        <?php if (empty($actividad)) : ?>
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i> No hay actividad registrada para este usuario
         </div>
-        <?php else: ?>
+        <?php else : ?>
         <div class="activity-timeline">
-            <?php foreach ($actividad as $act): ?>
-            <?php 
+            <?php foreach ($actividad as $act) : ?>
+                <?php
                 $accion_upper = strtoupper($act['accion']);
                 $es_update = $accion_upper === 'UPDATE';
                 $es_insert = $accion_upper === 'INSERT';
                 $es_delete = $accion_upper === 'DELETE';
-            ?>
+                ?>
             <div class="activity-item">
                 <div class="activity-icon <?= $es_insert ? 'icon-success' : ($es_delete ? 'icon-danger' : 'icon-warning') ?>">
                     <i class="fas fa-<?= $es_insert ? 'plus-circle' : ($es_delete ? 'trash-alt' : 'edit') ?>"></i>
@@ -117,11 +123,11 @@ function formatearCampo($campo) {
                     </div>
                     
                     <div class="activity-content">
-                        <?php if ($es_update && !empty($act['datos_anteriores']) && !empty($act['datos_nuevos'])): ?>
+                        <?php if ($es_update && !empty($act['datos_anteriores']) && !empty($act['datos_nuevos'])) : ?>
                             <?php $cambios = obtenerCambiosRelevantes($act['datos_anteriores'], $act['datos_nuevos']); ?>
-                            <?php if (!empty($cambios)): ?>
+                            <?php if (!empty($cambios)) : ?>
                                 <div class="cambios-grid">
-                                    <?php foreach ($cambios as $campo => $valores): ?>
+                                    <?php foreach ($cambios as $campo => $valores) : ?>
                                     <div class="cambio-item">
                                         <div class="cambio-campo"><?= formatearCampo($campo) ?></div>
                                         <div class="cambio-valores">
@@ -132,16 +138,16 @@ function formatearCampo($campo) {
                                     </div>
                                     <?php endforeach; ?>
                                 </div>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <p class="text-muted mb-0"><i class="fas fa-info-circle"></i> Sin cambios visibles en los campos principales</p>
                             <?php endif; ?>
                             
-                        <?php elseif ($es_insert && !empty($act['datos_nuevos'])): ?>
+                        <?php elseif ($es_insert && !empty($act['datos_nuevos'])) : ?>
                             <?php $datos = json_decode($act['datos_nuevos'], true); ?>
-                            <?php if ($datos): ?>
+                            <?php if ($datos) : ?>
                                 <div class="datos-creados">
-                                    <?php foreach ($datos as $campo => $valor): ?>
-                                        <?php if ($campo !== 'id'): ?>
+                                    <?php foreach ($datos as $campo => $valor) : ?>
+                                        <?php if ($campo !== 'id') : ?>
                                         <div class="dato-item">
                                             <strong><?= formatearCampo($campo) ?>:</strong>
                                             <span><?= htmlspecialchars($valor) ?></span>
@@ -151,19 +157,19 @@ function formatearCampo($campo) {
                                 </div>
                             <?php endif; ?>
                             
-                        <?php elseif ($es_delete && !empty($act['datos_anteriores'])): ?>
+                        <?php elseif ($es_delete && !empty($act['datos_anteriores'])) : ?>
                             <?php $datos = json_decode($act['datos_anteriores'], true); ?>
-                            <?php if ($datos): ?>
+                            <?php if ($datos) : ?>
                                 <div class="alert alert-danger mb-0">
                                     <strong><i class="fas fa-exclamation-triangle"></i> Registro eliminado</strong>
-                                    <?php if (isset($datos['nombre'])): ?>
+                                    <?php if (isset($datos['nombre'])) : ?>
                                         <p class="mb-0 mt-2">Nombre: <strong><?= htmlspecialchars($datos['nombre']) ?></strong></p>
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
                         <?php endif; ?>
                         
-                        <?php if (!empty($act['ip_address'])): ?>
+                        <?php if (!empty($act['ip_address'])) : ?>
                         <div class="activity-meta mt-2">
                             <small class="text-muted">
                                 <i class="fas fa-globe"></i> IP: <?= htmlspecialchars($act['ip_address']) ?>

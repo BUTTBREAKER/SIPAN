@@ -46,7 +46,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         </div>
                     </div>
                     
-                    <?php if (!empty($produccion['observaciones'])): ?>
+                    <?php if (!empty($produccion['observaciones'])) : ?>
                     <div class="row mb-3">
                         <div class="col-12">
                             <strong>Observaciones:</strong><br>
@@ -74,12 +74,12 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php 
+                                <?php
                                 $costo_total = 0;
-                                foreach ($insumos as $insumo): 
+                                foreach ($insumos as $insumo) :
                                     $costo_insumo = $insumo['cantidad_utilizada'] * $insumo['precio_unitario'];
                                     $costo_total += $costo_insumo;
-                                ?>
+                                    ?>
                                 <tr>
                                     <td><?= htmlspecialchars($insumo['nombre']) ?></td>
                                     <td><?= number_format($insumo['cantidad_utilizada'], 2) ?></td>
@@ -88,13 +88,13 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                                     <td>$ <?= number_format($costo_insumo, 2) ?></td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php if (empty($insumos_utilizados)): ?>
+                                <?php if (empty($insumos_utilizados)) : ?>
                                 <tr>
                                     <td colspan="5" class="text-center text-muted">No hay insumos registrados</td>
                                 </tr>
                                 <?php endif; ?>
                             </tbody>
-                            <?php if (!empty($insumos_utilizados)): ?>
+                            <?php if (!empty($insumos_utilizados)) : ?>
                             <tfoot>
                                 <tr class="table-info">
                                     <th colspan="4" class="text-end">Costo Total de Producción:</th>
@@ -118,7 +118,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <h5><i class="fas fa-calculator"></i> Resumen de Costos</h5>
                 </div>
                 <div class="card-body">
-                    <?php if (!empty($insumos_utilizados)): ?>
+                    <?php if (!empty($insumos_utilizados)) : ?>
                     <div class="mb-3 p-3 bg-light rounded">
                         <div class="d-flex justify-content-between mb-2">
                             <strong>Cantidad Producida:</strong>
@@ -134,7 +134,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                             <span class="text-success fs-5">$ <?= number_format($costo_total / $produccion['cantidad'], 2) ?></span>
                         </div>
                     </div>
-                    <?php else: ?>
+                    <?php else : ?>
                     <p class="text-muted">No hay datos de costos disponibles</p>
                     <?php endif; ?>
                 </div>

@@ -29,9 +29,9 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         </div>
                         <div class="col-md-6">
                             <strong>Estado:</strong><br>
-                            <?php if ($sucursal['estado'] === 'activa'): ?>
+                            <?php if ($sucursal['estado'] === 'activa') : ?>
                                 <span class="badge bg-success">Activa</span>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <span class="badge bg-danger">Inactiva</span>
                             <?php endif; ?>
                         </div>
@@ -83,21 +83,21 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($empleados as $empleado): ?>
+                                <?php foreach ($empleados as $empleado) : ?>
                                 <tr>
                                     <td><?= htmlspecialchars($empleado['nombre']) ?></td>
                                     <td><?= htmlspecialchars($empleado['correo']) ?></td>
                                     <td><span class="badge bg-primary"><?= ucfirst($empleado['rol']) ?></span></td>
                                     <td>
-                                        <?php if ($empleado['estado'] === 'activo'): ?>
+                                        <?php if ($empleado['estado'] === 'activo') : ?>
                                             <span class="badge bg-success">Activo</span>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             <span class="badge bg-danger">Inactivo</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php if (empty($empleados)): ?>
+                                <?php if (empty($empleados)) : ?>
                                 <tr>
                                     <td colspan="4" class="text-center text-muted">No hay empleados registrados</td>
                                 </tr>

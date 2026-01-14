@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Detalle del Cliente';
 $currentPage = 'clientes';
 require_once __DIR__ . '/../layouts/header.php';
@@ -16,7 +16,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <a href="/clientes/edit/<?= $cliente['id'] ?>" class="btn btn-warning">
             <i class="fas fa-edit"></i> Editar
         </a>
-        <?php if ($_SESSION['user_rol'] === 'administrador'): ?>
+        <?php if ($_SESSION['user_rol'] === 'administrador') : ?>
         <button onclick="eliminarCliente(<?= $cliente['id'] ?>)" class="btn btn-danger">
             <i class="fas fa-trash"></i> Eliminar
         </button>
@@ -24,7 +24,7 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<?php if (isset($cliente) && !empty($cliente)): ?>
+<?php if (isset($cliente) && !empty($cliente)) : ?>
 <div class="row">
     <!-- Información Personal -->
     <div class="col-md-6">
@@ -55,9 +55,9 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div class="info-group">
                     <label class="info-label">Estado:</label>
                     <p class="info-value">
-                        <?php if ($cliente['estado'] === 'activo'): ?>
+                        <?php if ($cliente['estado'] === 'activo') : ?>
                         <span class="badge badge-success">Activo</span>
-                        <?php else: ?>
+                        <?php else : ?>
                         <span class="badge badge-danger">Inactivo</span>
                         <?php endif; ?>
                     </p>
@@ -78,9 +78,9 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div class="info-group">
                     <label class="info-label">Teléfono:</label>
                     <p class="info-value">
-                        <?php if (!empty($cliente['telefono'])): ?>
+                        <?php if (!empty($cliente['telefono'])) : ?>
                             <i class="fas fa-phone"></i> <?= htmlspecialchars($cliente['telefono']) ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <span class="text-muted">-</span>
                         <?php endif; ?>
                     </p>
@@ -89,9 +89,9 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div class="info-group">
                     <label class="info-label">Correo Electrónico:</label>
                     <p class="info-value">
-                        <?php if (!empty($cliente['correo'])): ?>
+                        <?php if (!empty($cliente['correo'])) : ?>
                             <i class="fas fa-envelope"></i> <?= htmlspecialchars($cliente['correo']) ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <span class="text-muted">-</span>
                         <?php endif; ?>
                     </p>
@@ -107,7 +107,7 @@ require_once __DIR__ . '/../layouts/header.php';
 </div>
 
 <!-- Información Adicional -->
-<?php if (isset($cliente['fecha_registro']) || isset($cliente['notas'])): ?>
+    <?php if (isset($cliente['fecha_registro']) || isset($cliente['notas'])) : ?>
 <div class="row mt-3">
     <div class="col-md-12">
         <div class="card">
@@ -117,7 +117,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 </h3>
             </div>
             <div class="card-body">
-                <?php if (isset($cliente['fecha_registro'])): ?>
+                <?php if (isset($cliente['fecha_registro'])) : ?>
                 <div class="info-group">
                     <label class="info-label">Fecha de Registro:</label>
                     <p class="info-value">
@@ -127,7 +127,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 </div>
                 <?php endif; ?>
                 
-                <?php if (!empty($cliente['notas'])): ?>
+                <?php if (!empty($cliente['notas'])) : ?>
                 <div class="info-group">
                     <label class="info-label">Notas:</label>
                     <p class="info-value"><?= nl2br(htmlspecialchars($cliente['notas'])) ?></p>
@@ -137,9 +137,9 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
 </div>
-<?php endif; ?>
+    <?php endif; ?>
 
-<?php else: ?>
+<?php else : ?>
 <div class="card">
     <div class="card-body text-center">
         <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #f39c12;"></i>

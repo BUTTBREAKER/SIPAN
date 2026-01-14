@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Detalle de Venta';
 $currentPage = 'ventas';
 require_once __DIR__ . '/../layouts/header.php';
@@ -27,7 +27,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($detalles as $detalle): ?>
+                            <?php foreach ($detalles as $detalle) : ?>
                             <tr>
                                 <td><strong><?= htmlspecialchars($detalle['producto_nombre'] ?? 'Producto #' . $detalle['id_producto']) ?></strong></td>
                                 <td>$ <?= number_format($detalle['precio_unitario'], 2) ?></td>
@@ -81,7 +81,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             'yape' => 'Yape',
                             'otros' => 'Otros'
                         ];
-                        
+
                         // Fallback legacy
                         if (empty($pagos)) {
                             echo '<span class="badge badge-secondary">' . ($nombres_pagos[$venta['metodo_pago']] ?? $venta['metodo_pago']) . '</span>';

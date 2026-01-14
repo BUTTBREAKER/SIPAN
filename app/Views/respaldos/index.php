@@ -39,12 +39,12 @@ if ($_SESSION['user_rol'] !== 'administrador') {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($respaldos)): ?>
+                    <?php if (empty($respaldos)) : ?>
                         <tr>
                             <td colspan="7" class="text-center">No hay respaldos disponibles</td>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($respaldos as $respaldo): ?>
+                    <?php else : ?>
+                        <?php foreach ($respaldos as $respaldo) : ?>
                             <tr>
                                 <td><?= $respaldo['id'] ?></td>
                                 <td><?= date('d/m/Y H:i:s', strtotime($respaldo['fecha_creacion'])) ?></td>

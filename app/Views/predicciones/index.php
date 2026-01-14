@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Predicciones de Venta';
 $currentPage = 'predicciones';
 require_once __DIR__ . '/../layouts/header.php';

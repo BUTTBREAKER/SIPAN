@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Sugerencias de Compra';
 $currentPage = 'sugerencias';
 require_once __DIR__ . '/../layouts/header.php';
@@ -42,25 +42,25 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($sugerencias)): ?>
+                    <?php if (empty($sugerencias)) : ?>
                         <tr>
                             <td colspan="7" class="text-center py-5">
                                 <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
                                 <p class="text-muted">No hay sugerencias en este estado.</p>
                             </td>
                         </tr>
-                    <?php else: ?>
-                        <?php foreach ($sugerencias as $sug): ?>
+                    <?php else : ?>
+                        <?php foreach ($sugerencias as $sug) : ?>
                             <tr>
                                 <td>
-                                    <?php 
-                                    $badge = match($sug['prioridad']) {
+                                    <?php
+                                    $badge = match ($sug['prioridad']) {
                                         'alta' => 'danger',
                                         'media' => 'warning',
                                         'baja' => 'info',
                                         default => 'secondary'
                                     };
-                                    ?>
+    ?>
                                     <span class="badge bg-<?= $badge ?>"><?= ucfirst($sug['prioridad']) ?></span>
                                 </td>
                                 <td>
@@ -91,14 +91,14 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <?= date('d/m H:i', strtotime($sug['fecha_sugerencia'])) ?>
                                 </td>
                                 <td>
-                                    <?php if ($sug['estado'] === 'pendiente'): ?>
+                                    <?php if ($sug['estado'] === 'pendiente') : ?>
                                         <button class="btn btn-sm btn-success" onclick="aprobar(<?= $sug['id'] ?>)" title="Aprobar para compra">
                                             <i class="fas fa-check"></i>
                                         </button>
                                         <button class="btn btn-sm btn-danger" onclick="rechazar(<?= $sug['id'] ?>)" title="Rechazar">
                                             <i class="fas fa-times"></i>
                                         </button>
-                                    <?php elseif ($sug['estado'] === 'aprobada'): ?>
+                                    <?php elseif ($sug['estado'] === 'aprobada') : ?>
                                         <a href="/compras/create?from_sugerencia=<?= $sug['id'] ?>" class="btn btn-sm btn-primary">
                                             <i class="fas fa-cart-plus"></i> Comprar
                                         </a>

@@ -69,13 +69,13 @@
                     <div class="d-sm-none brand-font fs-4 text-primary fw-bold flex-shrink-0">SIPAN</div>
 
                     <!-- Tasa BCV Global -->
-                    <?php 
+                    <?php
                     if (isset($_SESSION['user_id'])) {
                         require_once __DIR__ . '/../../Models/Configuracion.php';
                         $tasaGlobal = (new \App\Models\Configuracion())->getTasaBCV();
                     }
                     ?>
-                    <?php if (isset($tasaGlobal)): ?>
+                    <?php if (isset($tasaGlobal)) : ?>
                     <div class="d-none d-sm-flex align-items-center bg-white px-3 py-1 rounded shadow-sm border ms-3">
                         <span class="text-muted small text-uppercase me-2 fw-bold" style="font-size: 0.7rem;">Tasa BCV</span>
                         <span class="fw-bold text-success" id="header-tasa">Bs <?= number_format($tasaGlobal, 2) ?></span>
@@ -88,7 +88,7 @@
                 
                 <div class="navbar-right d-flex align-items-center gap-4" x-data="notificationsApp()">
 
-                    <?php if (($_SESSION['user_rol'] ?? '') === 'administrador'): ?>
+                    <?php if (($_SESSION['user_rol'] ?? '') === 'administrador') : ?>
                     <div class="position-relative">
                         <select class="form-select form-select-sm border-0 bg-light fw-medium" 
                                 style="min-width: 140px; cursor: pointer; box-shadow: none;"
@@ -98,8 +98,8 @@
                             require_once __DIR__ . '/../../Models/Sucursal.php';
                             $sucursalModel = new \App\Models\Sucursal();
                             $sucursales = $sucursalModel->getActivas();
-                            foreach ($sucursales as $sucursal):
-                            ?>
+                            foreach ($sucursales as $sucursal) :
+                                ?>
                             <option value="<?= $sucursal['id'] ?>" <?= $sucursal['id'] == $_SESSION['sucursal_id'] ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($sucursal['nombre']) ?>
                             </option>
@@ -170,7 +170,7 @@
                         </div>
                         <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold shadow-sm"
                              style="width: 38px; height: 38px; font-size: 0.9rem;">
-                            <?php 
+                            <?php
                                 $nombre = $_SESSION['user_nombre'] ?? 'U';
                                 echo strtoupper(substr($nombre, 0, 2));
                             ?>
@@ -183,24 +183,24 @@
             </nav>
             
             <div class="content">
-                <?php if (isset($_SESSION['flash_message'])): ?>
-                <?php 
+                <?php if (isset($_SESSION['flash_message'])) : ?>
+                    <?php
                     $flashMessage = $_SESSION['flash_message'];
                     $flashType = $_SESSION['flash_type'] ?? 'info';
-                    
+
                     if (is_array($flashMessage)) {
                         $flashType = $flashMessage['type'] ?? $flashType;
                         $flashMessage = $flashMessage['content'] ?? '';
                     }
-                ?>
+                    ?>
                 <div class="alert alert-<?= $flashType ?> alert-dismissible fade show border-0 shadow-sm mb-4 mx-4" role="alert">
                     <?= $flashMessage ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <?php 
-                unset($_SESSION['flash_message']);
-                unset($_SESSION['flash_type']);
-                endif; 
+                    <?php
+                    unset($_SESSION['flash_message']);
+                    unset($_SESSION['flash_type']);
+                endif;
                 ?>
 
 <script>

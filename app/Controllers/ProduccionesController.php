@@ -26,7 +26,7 @@ class ProduccionesController
         $this->insumoModel = new Insumo();
         $this->recetaModel = new Receta();
         $this->negocioModel = new Negocio();
-        $this->usuarioModel = new Usuario;
+        $this->usuarioModel = new Usuario();
     }
 
     public function index()
@@ -55,54 +55,55 @@ class ProduccionesController
     }
 
 
-    public function store() {
-    AuthMiddleware::checkRole(['administrador', 'empleado']);
-    
-    header('Content-Type: application/json');
-    
-    $user = AuthMiddleware::getUser();
-    $sucursal_id = $user['sucursal_id'];
-    
-    $negocio = $this->negocioModel->getBySucursal($sucursal_id);
-    
-    if (!$negocio) {
-        echo json_encode(['success' => false, 'message' => 'No se encontró negocio para esta sucursal']);
-        exit;
-    }
-    
-    $produccion_data = [
+    public function store()
+    {
+        AuthMiddleware::checkRole(['administrador', 'empleado']);
+
+        header('Content-Type: application/json');
+
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'];
+
+        $negocio = $this->negocioModel->getBySucursal($sucursal_id);
+
+        if (!$negocio) {
+            echo json_encode(['success' => false, 'message' => 'No se encontró negocio para esta sucursal']);
+            exit;
+        }
+
+        $produccion_data = [
         'id_negocio' => $negocio['id'],
         'id_sucursal' => $sucursal_id,
         'id_usuario' => $user['id'],
         'id_producto' => $_POST['id_producto'] ?? 0,
         'cantidad_producida' => $_POST['cantidad_producida'] ?? 0,
         'costo_total' => $_POST['costo_total'] ?? 0
-    ];
-    
-    $insumos = json_decode($_POST['insumos'] ?? '[]', true);
-    
+        ];
+
+        $insumos = json_decode($_POST['insumos'] ?? '[]', true);
+
     // LOG PARA DEBUG
-    error_log('=== DEBUG PRODUCCIÓN ===');
-    error_log('Datos producción: ' . print_r($produccion_data, true));
-    error_log('Insumos recibidos: ' . print_r($insumos, true));
-    
-    try {
-        if (empty($insumos)) {
-            // Producción sin consumo de insumos
-            $produccion_id = $this->produccionModel->create($produccion_data);
-        } else {
-            // Producción con consumo de insumos
-            $produccion_id = $this->produccionModel->createWithInsumos($produccion_data, $insumos);
+        error_log('=== DEBUG PRODUCCIÓN ===');
+        error_log('Datos producción: ' . print_r($produccion_data, true));
+        error_log('Insumos recibidos: ' . print_r($insumos, true));
+
+        try {
+            if (empty($insumos)) {
+                // Producción sin consumo de insumos
+                $produccion_id = $this->produccionModel->create($produccion_data);
+            } else {
+                // Producción con consumo de insumos
+                $produccion_id = $this->produccionModel->createWithInsumos($produccion_data, $insumos);
+            }
+
+            echo json_encode(['success' => true, 'message' => 'Producción registrada correctamente', 'id' => $produccion_id]);
+        } catch (\Exception $e) {
+            error_log('Error en producción: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            echo json_encode(['success' => false, 'message' => 'Error al registrar producción: ' . $e->getMessage()]);
         }
-        
-        echo json_encode(['success' => true, 'message' => 'Producción registrada correctamente', 'id' => $produccion_id]);
-    } catch (\Exception $e) {
-        error_log('Error en producción: ' . $e->getMessage());
-        error_log('Stack trace: ' . $e->getTraceAsString());
-        echo json_encode(['success' => false, 'message' => 'Error al registrar producción: ' . $e->getMessage()]);
+        exit;
     }
-    exit;
-}
 
     public function show($id)
     {

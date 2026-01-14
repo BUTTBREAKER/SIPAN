@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Recetas';
 $currentPage = 'recetas';
 require_once __DIR__ . '/../layouts/header.php';
@@ -30,7 +30,7 @@ require_once __DIR__ . '/../layouts/header.php';
 require_once __DIR__ . '/../../Models/Receta.php';
 $recetaModel = new \App\Models\Receta();
 
-$recetasData = array_map(function($r) use ($recetaModel) {
+$recetasData = array_map(function ($r) use ($recetaModel) {
     // We fetch insumos count per row
     $insumos = $recetaModel->getInsumos($r['id']);
     $r['insumos_count'] = count($insumos);

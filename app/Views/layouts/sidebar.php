@@ -145,7 +145,7 @@
             </ul>
         </div>
 
-        <?php if (($_SESSION['user_rol'] ?? '') === 'administrador'): ?>
+        <?php if (($_SESSION['user_rol'] ?? '') === 'administrador') : ?>
         <!-- Grupo: Sistema -->
         <div class="nav-group" data-group="sistema">
             <div class="nav-group-header" title="Sistema">

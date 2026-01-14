@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Detalle de Compra #' . $compra['id'];
 $currentPage = 'compras';
 require_once __DIR__ . '/../layouts/header.php';
@@ -38,8 +38,12 @@ require_once __DIR__ . '/../layouts/header.php';
                         <td>
                             <?php
                             $badgeClass = 'bg-success';
-                            if ($compra['estado'] === 'pendiente') $badgeClass = 'bg-warning';
-                            if ($compra['estado'] === 'anulada') $badgeClass = 'bg-danger';
+                            if ($compra['estado'] === 'pendiente') {
+                                $badgeClass = 'bg-warning';
+                            }
+                            if ($compra['estado'] === 'anulada') {
+                                $badgeClass = 'bg-danger';
+                            }
                             ?>
                             <span class="badge <?= $badgeClass ?>"><?= ucfirst($compra['estado']) ?></span>
                         </td>
@@ -59,7 +63,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             <div class="card-body">
                 <h5 class="mb-2"><?= htmlspecialchars($compra['proveedor_nombre'] ?? 'Sin especificar') ?></h5>
-                <?php if (!empty($compra['proveedor_telefono'])): ?>
+                <?php if (!empty($compra['proveedor_telefono'])) : ?>
                 <p class="mb-0 text-muted">
                     <i class="fas fa-phone"></i> <?= htmlspecialchars($compra['proveedor_telefono']) ?>
                 </p>
@@ -88,7 +92,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($detalles as $detalle): ?>
+                            <?php foreach ($detalles as $detalle) : ?>
                             <tr>
                                 <td>
                                     <strong><?= htmlspecialchars($detalle['item_nombre']) ?></strong>
@@ -97,15 +101,15 @@ require_once __DIR__ . '/../layouts/header.php';
                                     <span class="badge bg-primary"><?= ucfirst($detalle['tipo_item']) ?></span>
                                 </td>
                                 <td>
-                                    <?php if ($detalle['lote_codigo']): ?>
+                                    <?php if ($detalle['lote_codigo']) : ?>
                                         <small class="d-block"><strong>Lote:</strong> <?= htmlspecialchars($detalle['lote_codigo']) ?></small>
                                     <?php endif; ?>
-                                    <?php if ($detalle['fecha_vencimiento']): ?>
+                                    <?php if ($detalle['fecha_vencimiento']) : ?>
                                         <small class="d-block text-danger">
                                             <strong>Vence:</strong> <?= date('d/m/Y', strtotime($detalle['fecha_vencimiento'])) ?>
                                         </small>
                                     <?php endif; ?>
-                                    <?php if (!$detalle['lote_codigo'] && !$detalle['fecha_vencimiento']): ?>
+                                    <?php if (!$detalle['lote_codigo'] && !$detalle['fecha_vencimiento']) : ?>
                                         <span class="text-muted">-</span>
                                     <?php endif; ?>
                                 </td>

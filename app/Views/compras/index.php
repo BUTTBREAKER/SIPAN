@@ -1,6 +1,6 @@
-<?php 
+<?php
 $pageTitle = 'Compras y Abastecimiento';
-$currentPage = 'compras'; 
+$currentPage = 'compras';
 require_once __DIR__ . '/../layouts/header.php';
 ?>
 

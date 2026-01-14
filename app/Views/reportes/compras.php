@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Reporte de Compras';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
@@ -17,7 +17,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 'fecha_fin' => $fecha_fin,
                 'id_proveedor' => $id_proveedor
             ]);
-        ?>
+            ?>
         <a href="/reportes/compras?<?= $params ?>&formato=pdf" class="btn btn-danger" target="_blank">
             <i class="fas fa-file-pdf"></i> PDF
         </a>
@@ -45,7 +45,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <label class="form-label">Proveedor</label>
                 <select name="id_proveedor" class="form-select">
                     <option value="">Todos los proveedores</option>
-                    <?php foreach ($proveedores as $prov): ?>
+                    <?php foreach ($proveedores as $prov) : ?>
                     <option value="<?= $prov['id'] ?>" <?= $id_proveedor == $prov['id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($prov['nombre_empresa']) ?>
                     </option>
@@ -101,10 +101,10 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($compras)): ?>
+                    <?php if (empty($compras)) : ?>
                     <tr><td colspan="6" class="text-center text-muted">No se encontraron compras en el rango seleccionado.</td></tr>
-                    <?php else: ?>
-                    <?php foreach ($compras as $compra): ?>
+                    <?php else : ?>
+                        <?php foreach ($compras as $compra) : ?>
                     <tr>
                         <td><?= date('d/m/Y H:i', strtotime($compra['fecha_compra'])) ?></td>
                         <td><?= htmlspecialchars($compra['proveedor_nombre']) ?></td>
@@ -117,7 +117,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             <button class="btn btn-sm btn-info" title="Ver Detalle"><i class="fas fa-eye"></i></button>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>

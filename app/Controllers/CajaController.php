@@ -6,16 +6,19 @@ use App\Models\Caja;
 use App\Models\Sucursal;
 use App\Middlewares\AuthMiddleware;
 
-class CajaController {
+class CajaController
+{
     private $cajaModel;
     private $sucursalModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->cajaModel = new Caja();
         $this->sucursalModel = new Sucursal();
     }
 
-    public function index() {
+    public function index()
+    {
         $id_sucursal = $_SESSION['sucursal_id'];
         $cajaActiva = $this->cajaModel->getActiva($id_sucursal);
         $historial = $this->cajaModel->getHistorial($id_sucursal);
@@ -25,7 +28,8 @@ class CajaController {
         require_once __DIR__ . '/../Views/cajas/index.php';
     }
 
-    public function abrirPanel() {
+    public function abrirPanel()
+    {
         $id_sucursal = $_SESSION['sucursal_id'];
         $cajaActiva = $this->cajaModel->getActiva($id_sucursal);
 
@@ -39,7 +43,8 @@ class CajaController {
         require_once __DIR__ . '/../Views/cajas/apertura.php';
     }
 
-    public function abrir() {
+    public function abrir()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /cajas');
             exit;
@@ -68,7 +73,8 @@ class CajaController {
         exit;
     }
 
-    public function cerrarPanel() {
+    public function cerrarPanel()
+    {
         $id_sucursal = $_SESSION['sucursal_id'];
         $cajaActiva = $this->cajaModel->getActiva($id_sucursal);
 
@@ -84,7 +90,8 @@ class CajaController {
         require_once __DIR__ . '/../Views/cajas/cierre.php';
     }
 
-    public function cerrar() {
+    public function cerrar()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /cajas');
             exit;
@@ -114,7 +121,8 @@ class CajaController {
         exit;
     }
 
-    public function movimientos() {
+    public function movimientos()
+    {
         $id_sucursal = $_SESSION['sucursal_id'];
         $cajaActiva = $this->cajaModel->getActiva($id_sucursal);
 
@@ -131,7 +139,8 @@ class CajaController {
         require_once __DIR__ . '/../Views/cajas/movimientos.php';
     }
 
-    public function addMovimiento() {
+    public function addMovimiento()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /cajas/movimientos');
             exit;

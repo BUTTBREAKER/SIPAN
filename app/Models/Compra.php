@@ -17,7 +17,7 @@ class Compra extends BaseModel
             // 2. Insertar Detalles y Actualizar Stock/Lotes
             $sqlDetalle = "INSERT INTO compra_detalles (id_compra, tipo_item, id_item, cantidad, costo_unitario, subtotal, lote_codigo, fecha_vencimiento) 
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            
+
             $loteModel = new Lote();
             $insumoModel = new Insumo();
 
@@ -57,22 +57,21 @@ class Compra extends BaseModel
                         $detalle['cantidad'],
                         $detalle['costo_unitario']
                     );
-                } else if ($detalle['tipo_item'] === 'producto') {
+                } elseif ($detalle['tipo_item'] === 'producto') {
                    // Si compramos productos terminados (revender)
-                   $prodModel = new Producto();
-                   $prodModel->updateStock($detalle['id_item'], $detalle['cantidad'], 'add');
+                    $prodModel = new Producto();
+                    $prodModel->updateStock($detalle['id_item'], $detalle['cantidad'], 'add');
                 }
             }
 
             $this->db->commit();
             return $compraId;
-
         } catch (\Exception $e) {
             $this->db->rollback();
             throw $e;
         }
     }
-    
+
     /**
      * Actualizar stock de insumo con cálculo de costo promedio ponderado
      */
@@ -81,23 +80,24 @@ class Compra extends BaseModel
         // Obtener stock y costo actual
         $sql = "SELECT stock_actual, precio_unitario FROM insumos WHERE id = ?";
         $insumo = $this->db->fetch($sql, [$id_insumo]);
-        
+
         $stock_actual = floatval($insumo['stock_actual']);
         $costo_actual = floatval($insumo['precio_unitario']);
-        
+
         // Calcular costo promedio ponderado
         $valor_actual = $stock_actual * $costo_actual;
         $valor_nuevo = floatval($cantidad_nueva) * floatval($costo_nuevo);
         $stock_total = $stock_actual + floatval($cantidad_nueva);
-        
+
         $costo_promedio = $stock_total > 0 ? ($valor_actual + $valor_nuevo) / $stock_total : $costo_nuevo;
-        
+
         // Actualizar stock y costo promedio
         $sqlUpdate = "UPDATE insumos SET stock_actual = stock_actual + ?, precio_unitario = ? WHERE id = ?";
         $this->db->execute($sqlUpdate, [floatval($cantidad_nueva), $costo_promedio, $id_insumo]);
     }
-    
-    public function getWithProveedor($sucursal_id) {
+
+    public function getWithProveedor($sucursal_id)
+    {
          $sql = "SELECT c.*, p.nombre as proveedor_nombre, CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
                 FROM {$this->table} c
                 LEFT JOIN proveedores p ON c.id_proveedor = p.id
@@ -106,8 +106,9 @@ class Compra extends BaseModel
                 ORDER BY c.fecha_compra DESC";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
-    
-    public function getById($id) {
+
+    public function getById($id)
+    {
         $sql = "SELECT c.*, p.nombre as proveedor_nombre, p.telefono as proveedor_telefono,
                        CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
                 FROM {$this->table} c
@@ -116,8 +117,9 @@ class Compra extends BaseModel
                 WHERE c.id = ?";
         return $this->db->fetch($sql, [$id]);
     }
-    
-    public function getDetalles($id_compra) {
+
+    public function getDetalles($id_compra)
+    {
         $sql = "SELECT cd.*, 
                        CASE 
                            WHEN cd.tipo_item = 'insumo' THEN i.nombre
@@ -135,7 +137,8 @@ class Compra extends BaseModel
         return $this->db->fetchAll($sql, [$id_compra]);
     }
 
-    public function getByProveedor($proveedor_id) {
+    public function getByProveedor($proveedor_id)
+    {
         $sql = "SELECT c.*, CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
                 FROM {$this->table} c
                 LEFT JOIN usuarios u ON c.id_usuario = u.id

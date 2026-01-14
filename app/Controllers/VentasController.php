@@ -54,9 +54,9 @@ class VentasController
     {
         ob_start(); // Prevent accidental output
         AuthMiddleware::checkRole(['administrador', 'cajero', 'empleado']);
-        
+
         // Clean any previous output (warnings, spaces before php tag)
-        ob_clean(); 
+        ob_clean();
         header('Content-Type: application/json');
 
         try {
@@ -76,7 +76,7 @@ class VentasController
             $total = floatval($_POST['total'] ?? 0);
             $productos_raw = json_decode($_POST['productos'] ?? '[]', true);
             $productos = [];
-            
+
             // Normalizar datos para el modelo
             foreach ($productos_raw as $p) {
                 $productos[] = [
@@ -109,17 +109,17 @@ class VentasController
                     $totalPagado += (float)$p['monto'];
                 }
                 error_log("Total pagado calc: $totalPagado vs Total req: $total");
-                
+
                 // Permitir pequeña diferencia por redondeo
                 if (abs($total - $totalPagado) > 0.05) {
                     error_log("Error: Diferencia montos. Total: $total, Pagado: $totalPagado");
                     echo json_encode(['success' => false, 'message' => 'El total de los pagos no coincide con el total de la venta']);
                     exit;
                 }
-                $metodo_pago = 'mixto'; 
+                $metodo_pago = 'mixto';
                 error_log("Metodo set to 'mixto'");
             } else {
-                 if (empty($metodo_pago)) {
+                if (empty($metodo_pago)) {
                     error_log("Error: Metodo pago vacio");
                     echo json_encode(['success' => false, 'message' => 'Debe seleccionar un método de pago']);
                     exit;
@@ -131,7 +131,7 @@ class VentasController
                 'id_negocio' => $negocio['id'],
                 'id_sucursal' => $sucursal_id,
                 'id_usuario' => $user['id'],
-                'id_cliente' => $id_cliente, 
+                'id_cliente' => $id_cliente,
                 'total' => $total,
                 'metodo_pago' => $metodo_pago,
                 'estado' => 'completada',
@@ -146,11 +146,11 @@ class VentasController
             $cajaActiva = $cajaModel->getActiva($sucursal_id);
             if ($cajaActiva) {
                 $cajaModel->addMovimiento(
-                    $cajaActiva['id'], 
-                    'ingreso', 
-                    $total, 
-                    "Venta #$venta_id", 
-                    $metodo_pago, 
+                    $cajaActiva['id'],
+                    'ingreso',
+                    $total,
+                    "Venta #$venta_id",
+                    $metodo_pago,
                     $venta_id
                 );
             }
@@ -196,7 +196,7 @@ class VentasController
 
         // Obtener detalles de productos
         $detalles = $this->ventaModel->getProductos($id);
-        
+
         // Obtener pagos
         $pagos = $this->ventaModel->getPagos($id);
 
@@ -229,7 +229,7 @@ class VentasController
 
         // Obtener productos de la venta - CAMBIAR $productos por $detalles
         $detalles = $this->ventaModel->getProductos($id);
-        
+
         // Obtener pagos
         $pagos = $this->ventaModel->getPagos($id);
 

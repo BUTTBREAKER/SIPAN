@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Reporte de Insumos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
@@ -36,7 +36,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($insumos as $insumo): ?>
+                    <?php foreach ($insumos as $insumo) : ?>
                     <tr>
                         <td><?= htmlspecialchars($insumo['codigo'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($insumo['nombre']) ?></td>

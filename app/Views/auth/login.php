@@ -368,9 +368,9 @@
             <p class="login-form-subtitle">Ingresa tus credenciales para acceder al sistema</p>
             
             <form id="loginForm" action="/login" method="POST">
-                <?php 
+                <?php
                 require_once __DIR__ . '/../../Helpers/CSRF.php';
-                echo \App\Helpers\CSRF::field(); 
+                echo \App\Helpers\CSRF::field();
                 ?>
                 <div class="form-group">
                     <label class="form-label">Correo Electrónico</label>

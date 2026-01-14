@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Detalle de Receta';
 $currentPage = 'recetas';
 require_once __DIR__ . '/../layouts/header.php';
@@ -77,7 +77,7 @@ require_once __DIR__ . '/../layouts/header.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($detalles_insumos as $insumo): ?>
+                            <?php foreach ($detalles_insumos as $insumo) : ?>
                             <tr>
                                 <td><?= htmlspecialchars($insumo['nombre'] ?? $insumo['nombre_insumo']) ?></td>
                                 <td><?= $insumo['cantidad'] ?> <?= $insumo['unidad_medida'] ?? '' ?></td>

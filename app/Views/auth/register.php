@@ -243,9 +243,9 @@
         </div>
 
         <form @submit.prevent="handleSubmit" id="registerForm">
-            <?php 
+            <?php
             require_once __DIR__ . '/../../Helpers/CSRF.php';
-            echo \App\Helpers\CSRF::field(); 
+            echo \App\Helpers\CSRF::field();
             ?>
 
             <!-- STEP 1: Personal -->

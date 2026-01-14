@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-class SugerenciaCompra extends BaseModel {
+class SugerenciaCompra extends BaseModel
+{
     protected $table = 'sugerencias_compra';
-    
-    public function generar($sucursal_id) {
+
+    public function generar($sucursal_id)
+    {
         $sql = "CALL sp_generar_sugerencias_compra(?)";
         return $this->db->fetchOne($sql, [$sucursal_id]);
     }
-    
-    public function getWithDetails($sucursal_id, $estado = null) {
+
+    public function getWithDetails($sucursal_id, $estado = null)
+    {
         $sql = "SELECT 
                     sc.*,
                     COALESCE(i.nombre, p.nombre) as item_nombre,
@@ -29,39 +32,44 @@ class SugerenciaCompra extends BaseModel {
                 LEFT JOIN insumos i ON sc.id_insumo = i.id
                 LEFT JOIN productos p ON sc.id_producto = p.id
                 WHERE sc.id_sucursal = ?";
-        
+
         $params = [$sucursal_id];
-        
+
         if ($estado) {
             $sql .= " AND sc.estado = ?";
             $params[] = $estado;
         }
-        
+
         $sql .= " ORDER BY 
                     FIELD(sc.prioridad, 'alta', 'media', 'baja'),
                     sc.fecha_sugerencia DESC";
-        
+
         return $this->db->fetchAll($sql, $params);
     }
-    
-    public function cambiarEstado($id, $estado) {
+
+    public function cambiarEstado($id, $estado)
+    {
         $sql = "UPDATE {$this->table} SET estado = ?, fecha_actualizacion = NOW() WHERE id = ?";
         return $this->db->execute($sql, [$estado, $id]);
     }
-    
-    public function aprobar($id) {
+
+    public function aprobar($id)
+    {
         return $this->cambiarEstado($id, 'aprobada');
     }
-    
-    public function rechazar($id) {
+
+    public function rechazar($id)
+    {
         return $this->cambiarEstado($id, 'rechazada');
     }
-    
-    public function completar($id) {
+
+    public function completar($id)
+    {
         return $this->cambiarEstado($id, 'completada');
     }
-    
-    public function getPendientes($sucursal_id) {
+
+    public function getPendientes($sucursal_id)
+    {
         return $this->getWithDetails($sucursal_id, 'pendiente');
     }
 }

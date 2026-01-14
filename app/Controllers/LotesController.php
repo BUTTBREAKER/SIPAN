@@ -18,10 +18,10 @@ class LotesController
     {
         AuthMiddleware::checkRole(['administrador', 'empleado']);
         $user = AuthMiddleware::getUser();
-        
+
         // Obtener lotes activos
         $lotes = $this->loteModel->getPorVencer($user['sucursal_id'], 365); // Ver todos por un año
-        
+
         require_once __DIR__ . '/../Views/lotes/index.php';
     }
 
@@ -34,7 +34,7 @@ class LotesController
         header('Content-Type: application/json');
 
         $input = json_decode(file_get_contents('php://input'), true);
-        
+
         if (empty($input['id']) || !isset($input['cantidad_real'])) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
             exit;
@@ -44,9 +44,9 @@ class LotesController
             // Lógica de ajuste podría ir aquí o en modelo
             // Por simplicidad en MVP asumimos actualización directa
             // Idealmente crear historial de ajustes
-            
+
             // $this->loteModel->ajustar($input['id'], $input['cantidad_real']);
-            
+
             echo json_encode(['success' => true, 'message' => 'Lote ajustado correctamente']);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);

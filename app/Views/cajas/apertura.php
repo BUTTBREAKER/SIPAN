@@ -12,7 +12,7 @@
                     <p class="mb-0 opacity-75">Inicia un nuevo turno de trabajo</p>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <?php 
+                    <?php
                     $tasa = (new \App\Models\Configuracion())->getTasaBCV();
                     ?>
                     <div class="alert alert-info border-0 rounded-4 mb-4 d-flex align-items-center">

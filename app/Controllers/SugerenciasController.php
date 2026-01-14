@@ -5,34 +5,38 @@ namespace App\Controllers;
 use App\Models\SugerenciaCompra;
 use App\Middlewares\AuthMiddleware;
 
-class SugerenciasController {
+class SugerenciasController
+{
     private $sugerenciaModel;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->sugerenciaModel = new SugerenciaCompra();
     }
-    
-    public function index() {
+
+    public function index()
+    {
         AuthMiddleware::check();
-        
+
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
-        
+
         $estado = $_GET['estado'] ?? null;
-        
+
         $sugerencias = $this->sugerenciaModel->getWithDetails($sucursal_id, $estado);
-        
+
         require_once __DIR__ . '/../Views/sugerencias/index.php';
     }
-    
-    public function generar() {
+
+    public function generar()
+    {
         AuthMiddleware::checkRole(['administrador', 'empleado']);
-        
+
         header('Content-Type: application/json');
-        
+
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
-        
+
         try {
             $resultado = $this->sugerenciaModel->generar($sucursal_id);
             echo json_encode(['success' => true, 'message' => 'Sugerencias generadas correctamente', 'total' => $resultado['sugerencias_generadas']]);
@@ -41,19 +45,20 @@ class SugerenciasController {
         }
         exit;
     }
-    
-    public function aprobar() {
+
+    public function aprobar()
+    {
         AuthMiddleware::checkRole(['administrador', 'empleado']);
-        
+
         header('Content-Type: application/json');
-        
+
         $id = $_POST['id'] ?? 0;
-        
+
         if (!$id) {
             echo json_encode(['success' => false, 'message' => 'ID no válido']);
             exit;
         }
-        
+
         try {
             $this->sugerenciaModel->aprobar($id);
             echo json_encode(['success' => true, 'message' => 'Sugerencia aprobada']);
@@ -62,19 +67,20 @@ class SugerenciasController {
         }
         exit;
     }
-    
-    public function rechazar() {
+
+    public function rechazar()
+    {
         AuthMiddleware::checkRole(['administrador', 'empleado']);
-        
+
         header('Content-Type: application/json');
-        
+
         $id = $_POST['id'] ?? 0;
-        
+
         if (!$id) {
             echo json_encode(['success' => false, 'message' => 'ID no válido']);
             exit;
         }
-        
+
         try {
             $this->sugerenciaModel->rechazar($id);
             echo json_encode(['success' => true, 'message' => 'Sugerencia rechazada']);
@@ -83,19 +89,20 @@ class SugerenciasController {
         }
         exit;
     }
-    
-    public function completar() {
+
+    public function completar()
+    {
         AuthMiddleware::checkRole(['administrador', 'empleado']);
-        
+
         header('Content-Type: application/json');
-        
+
         $id = $_POST['id'] ?? 0;
-        
+
         if (!$id) {
             echo json_encode(['success' => false, 'message' => 'ID no válido']);
             exit;
         }
-        
+
         try {
             $this->sugerenciaModel->completar($id);
             echo json_encode(['success' => true, 'message' => 'Sugerencia marcada como completada']);

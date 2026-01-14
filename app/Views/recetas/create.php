@@ -24,7 +24,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <label class="form-label">Producto <span class="text-danger">*</span></label>
                         <select x-model="id_producto" class="form-control" required>
                             <option value="">Seleccionar producto</option>
-                            <?php foreach ($productos as $producto): ?>
+                            <?php foreach ($productos as $producto) : ?>
                                 <option value="<?= $producto['id'] ?>">
                                     <?= htmlspecialchars($producto['nombre']) ?>
                                 </option>
@@ -62,7 +62,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <label class="form-label">Seleccionar Insumo</label>
                         <select x-model="insumo_seleccionado" class="form-control">
                             <option value="">Seleccionar insumo</option>
-                            <?php foreach ($insumos as $insumo): ?>
+                            <?php foreach ($insumos as $insumo) : ?>
                                 <option value="<?= $insumo['id'] ?>"
                                     data-nombre="<?= htmlspecialchars($insumo['nombre']) ?>"
                                     data-unidad="<?= htmlspecialchars($insumo['unidad_medida']) ?>">

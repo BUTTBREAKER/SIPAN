@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Nuevo Pedido';
 $currentPage = 'pedidos';
 require_once __DIR__ . '/../layouts/header.php';
@@ -29,8 +29,8 @@ require_once __DIR__ . '/../layouts/header.php';
                             require_once __DIR__ . '/../../Models/Cliente.php';
                             $clienteModel = new \App\Models\Cliente();
                             $clientes = $clienteModel->getBySucursal($_SESSION['sucursal_id']);
-                            foreach ($clientes as $cliente):
-                            ?>
+                            foreach ($clientes as $cliente) :
+                                ?>
                             <option value="<?= $cliente['id'] ?>">
                                 <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido']) ?>
                             </option>

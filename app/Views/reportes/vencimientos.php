@@ -1,4 +1,4 @@
-<?php 
+<?php
 $pageTitle = 'Reporte de Vencimientos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
@@ -57,16 +57,16 @@ require_once __DIR__ . '/../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($lotes)): ?>
+                    <?php if (empty($lotes)) : ?>
                     <tr><td colspan="8" class="text-center text-muted">No se encontraron lotes por vencer en el rango seleccionado.</td></tr>
-                    <?php else: ?>
-                    <?php foreach ($lotes as $lote): 
-                        $fecha_venc = strtotime($lote['fecha_vencimiento']);
-                        $hoy = time();
-                        $dias_restantes = ceil(($fecha_venc - $hoy) / 86400);
-                        $clase_estado = $dias_restantes <= 0 ? 'bg-danger text-white' : ($dias_restantes <= 15 ? 'bg-warning' : 'bg-success text-white');
-                        $texto_estado = $dias_restantes <= 0 ? 'Vencido' : ($dias_restantes <= 15 ? 'Crítico' : 'Ok');
-                    ?>
+                    <?php else : ?>
+                        <?php foreach ($lotes as $lote) :
+                            $fecha_venc = strtotime($lote['fecha_vencimiento']);
+                            $hoy = time();
+                            $dias_restantes = ceil(($fecha_venc - $hoy) / 86400);
+                            $clase_estado = $dias_restantes <= 0 ? 'bg-danger text-white' : ($dias_restantes <= 15 ? 'bg-warning' : 'bg-success text-white');
+                            $texto_estado = $dias_restantes <= 0 ? 'Vencido' : ($dias_restantes <= 15 ? 'Crítico' : 'Ok');
+                            ?>
                     <tr>
                         <td><?= htmlspecialchars($lote['codigo_lote']) ?></td>
                         <td>
@@ -84,7 +84,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <td><strong><?= $lote['cantidad_actual'] ?></strong></td>
                         <td><span class="badge <?= $clase_estado ?>"><?= $texto_estado ?></span></td>
                     </tr>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>

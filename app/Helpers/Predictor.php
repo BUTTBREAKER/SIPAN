@@ -2,28 +2,30 @@
 
 namespace App\Helpers;
 
-class Predictor {
+class Predictor
+{
     /**
      * Calcula la regresión lineal simple (y = mx + b)
-     * 
+     *
      * @param array $datos Array de valores historicos [fecha => cantidad]
      * @param int $dias_a_proyectar Número de días futuros a predecir
      * @return array Array con las proyecciones futuras
      */
-    public static function regresionLineal($datos, $dias_a_proyectar = 7) {
+    public static function regresionLineal($datos, $dias_a_proyectar = 7)
+    {
         $n = count($datos);
-        
+
         if ($n < 2) {
             return []; // No hay suficientes datos
         }
 
         // Convertir keys (fechas) a índices numéricos (x) y valores a (y)
-        $x = range(1, $n); 
+        $x = range(1, $n);
         $y = array_values($datos);
 
         $sumX = array_sum($x);
         $sumY = array_sum($y);
-        
+
         $sumXY = 0;
         $sumXX = 0;
 
@@ -35,9 +37,9 @@ class Predictor {
         // Fórmulas de m (pendiente) y b (intersección)
         // m = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
         // b = (sumY - m * sumX) / n
-        
+
         $divisor = ($n * $sumXX) - ($sumX * $sumX);
-        
+
         if ($divisor == 0) {
             return []; // Evitar división por cero
         }
@@ -48,14 +50,14 @@ class Predictor {
         // Proyectar futuro
         $proyecciones = [];
         $ultima_fecha = array_key_last($datos);
-        
+
         for ($i = 1; $i <= $dias_a_proyectar; $i++) {
             $nuevo_x = $n + $i;
             $prediccion = ($m * $nuevo_x) + $b;
-            
+
             // No permitir valores negativos
             $prediccion = max(0, $prediccion);
-            
+
             $fecha_futura = date('Y-m-d', strtotime("$ultima_fecha + $i days"));
             $proyecciones[] = [
                 'fecha' => $fecha_futura,
@@ -76,7 +78,8 @@ class Predictor {
      * Calcula la Media Móvil Simple (SMA)
      * Útil para suavizar la curva de demanda
      */
-    public static function mediaMovil($datos, $periodo = 3) {
+    public static function mediaMovil($datos, $periodo = 3)
+    {
         $resultado = [];
         $valores = array_values($datos);
         $count = count($valores);
@@ -84,7 +87,7 @@ class Predictor {
         for ($i = 0; $i < $count; $i++) {
             if ($i < $periodo - 1) {
                 // No hay suficientes datos anteriores
-                $resultado[] = null; 
+                $resultado[] = null;
                 continue;
             }
 
@@ -92,7 +95,7 @@ class Predictor {
             for ($j = 0; $j < $periodo; $j++) {
                 $suma += $valores[$i - $j];
             }
-            
+
             $resultado[] = round($suma / $periodo, 2);
         }
 
