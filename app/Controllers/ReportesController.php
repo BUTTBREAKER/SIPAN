@@ -126,7 +126,7 @@ class ReportesController
         ];
 
         if ($formato === 'pdf') {
-            $this->generarPDFVentas($data);
+            // TODO: $this->generarPDFVentas($data);
         } elseif ($formato === 'excel') {
             $this->generarExcelVentas($data);
         } else {
@@ -145,8 +145,8 @@ class ReportesController
 
         // Propiedades
         $spreadsheet->getProperties()->setCreator("SIPAN")
-                                     ->setTitle("Reporte de Ventas")
-                                     ->setSubject("Ventas " . $data['fecha_inicio'] . " al " . $data['fecha_fin']);
+            ->setTitle("Reporte de Ventas")
+            ->setSubject("Ventas " . $data['fecha_inicio'] . " al " . $data['fecha_fin']);
 
         // Encabezados
         $sheet->setCellValue('A1', 'Reporte de Ventas');
@@ -219,7 +219,7 @@ class ReportesController
         ];
 
         if ($formato === 'pdf') {
-            $this->generarPDFProductos($data);
+            //TODO: $this->generarPDFProductos($data);
         } elseif ($formato === 'excel') {
             $this->generarExcelProductos($data);
         } else {
@@ -238,8 +238,8 @@ class ReportesController
 
         // Propiedades
         $spreadsheet->getProperties()->setCreator("SIPAN")
-                                     ->setTitle("Reporte de Inventario")
-                                     ->setSubject("Inventario al " . date('d/m/Y'));
+            ->setTitle("Reporte de Inventario")
+            ->setSubject("Inventario al " . date('d/m/Y'));
 
         // Encabezados
         $sheet->setCellValue('A1', 'Reporte de Inventario de Productos');
@@ -306,7 +306,7 @@ class ReportesController
         ];
 
         if ($formato === 'pdf') {
-            $this->generarPDFClientes($data);
+            // TODO: $this->generarPDFClientes($data);
         } elseif ($formato === 'excel') {
             $this->generarExcelClientes($data);
         } else {
@@ -374,9 +374,9 @@ class ReportesController
         } elseif ($formato === 'excel') {
             $this->generarExcelInsumos($data);
         } else {
-             $data['pageTitle'] = 'Reporte de Insumos';
-             $data['currentPage'] = 'reportes';
-             require_once __DIR__ . '/../Views/reportes/insumos.php';
+            $data['pageTitle'] = 'Reporte de Insumos';
+            $data['currentPage'] = 'reportes';
+            require_once __DIR__ . '/../Views/reportes/insumos.php';
         }
     }
 
@@ -434,9 +434,9 @@ class ReportesController
         } elseif ($formato === 'excel') {
             $this->generarExcelProducciones($data);
         } else {
-             $data['pageTitle'] = 'Reporte de Producciones';
-             $data['currentPage'] = 'reportes';
-             require_once __DIR__ . '/../Views/reportes/producciones.php';
+            $data['pageTitle'] = 'Reporte de Producciones';
+            $data['currentPage'] = 'reportes';
+            require_once __DIR__ . '/../Views/reportes/producciones.php';
         }
     }
 
@@ -486,16 +486,16 @@ class ReportesController
     public function pedidos()
     {
         $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id']);
-         $formato = $_GET['formato'] ?? 'html';
+        $formato = $_GET['formato'] ?? 'html';
 
         $data = ['pedidos' => $pedidos];
 
         if ($formato === 'pdf') {
             $this->generarPDFPedidos($data);
         } else {
-             $data['pageTitle'] = 'Reporte de Pedidos';
-             $data['currentPage'] = 'reportes';
-             require_once __DIR__ . '/../Views/reportes/pedidos.php';
+            $data['pageTitle'] = 'Reporte de Pedidos';
+            $data['currentPage'] = 'reportes';
+            require_once __DIR__ . '/../Views/reportes/pedidos.php';
         }
     }
 
@@ -511,18 +511,39 @@ class ReportesController
     private function getHTMLInsumos($data)
     {
         ob_start();
-        ?>
+?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <style>
-                body { font-family: monospace; font-size: 11px; }
-                h1 { text-align: center; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border-bottom: 1px solid #ddd; padding: 5px; text-align: left; }
-                .num { text-align: right; }
+                body {
+                    font-family: monospace;
+                    font-size: 11px;
+                }
+
+                h1 {
+                    text-align: center;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th,
+                td {
+                    border-bottom: 1px solid #ddd;
+                    padding: 5px;
+                    text-align: left;
+                }
+
+                .num {
+                    text-align: right;
+                }
             </style>
         </head>
+
         <body>
             <h1>Reporte de Insumos</h1>
             <table>
@@ -536,18 +557,19 @@ class ReportesController
                 </thead>
                 <tbody>
                     <?php foreach ($data['insumos'] as $i) : ?>
-                    <tr>
-                        <td><?= htmlspecialchars($i['codigo'] ?? '-') ?></td>
-                        <td><?= htmlspecialchars($i['nombre']) ?></td>
-                        <td><?= htmlspecialchars($i['unidad_medida']) ?></td>
-                        <td class="num"><?= $i['stock_actual'] ?></td>
-                    </tr>
+                        <tr>
+                            <td><?= htmlspecialchars($i['codigo'] ?? '-') ?></td>
+                            <td><?= htmlspecialchars($i['nombre']) ?></td>
+                            <td><?= htmlspecialchars($i['unidad_medida']) ?></td>
+                            <td class="num"><?= $i['stock_actual'] ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </body>
+
         </html>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -563,18 +585,39 @@ class ReportesController
     private function getHTMLProducciones($data)
     {
         ob_start();
-        ?>
+    ?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <style>
-                body { font-family: monospace; font-size: 11px; }
-                h1 { text-align: center; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border-bottom: 1px solid #ddd; padding: 5px; text-align: left; }
-                .num { text-align: right; }
+                body {
+                    font-family: monospace;
+                    font-size: 11px;
+                }
+
+                h1 {
+                    text-align: center;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th,
+                td {
+                    border-bottom: 1px solid #ddd;
+                    padding: 5px;
+                    text-align: left;
+                }
+
+                .num {
+                    text-align: right;
+                }
             </style>
         </head>
+
         <body>
             <h1>Reporte de Producciones</h1>
             <table>
@@ -589,19 +632,20 @@ class ReportesController
                 </thead>
                 <tbody>
                     <?php foreach ($data['producciones'] as $p) : ?>
-                    <tr>
-                        <td><?= date('d/m/Y H:i', strtotime($p['fecha_produccion'])) ?></td>
-                        <td><?= htmlspecialchars($p['producto_nombre']) ?></td>
-                        <td class="num"><?= $p['cantidad_producida'] ?></td>
-                        <td><?= htmlspecialchars($p['primer_nombre'] . ' ' . $p['apellido_paterno']) ?></td>
-                        <td><?= ucfirst($p['estado']) ?></td>
-                    </tr>
+                        <tr>
+                            <td><?= date('d/m/Y H:i', strtotime($p['fecha_produccion'])) ?></td>
+                            <td><?= htmlspecialchars($p['producto_nombre']) ?></td>
+                            <td class="num"><?= $p['cantidad_producida'] ?></td>
+                            <td><?= htmlspecialchars($p['primer_nombre'] . ' ' . $p['apellido_paterno']) ?></td>
+                            <td><?= ucfirst($p['estado']) ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </body>
+
         </html>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -617,18 +661,39 @@ class ReportesController
     private function getHTMLPedidos($data)
     {
         ob_start();
-        ?>
+    ?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <style>
-                body { font-family: monospace; font-size: 11px; }
-                h1 { text-align: center; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border-bottom: 1px solid #ddd; padding: 5px; text-align: left; }
-                .num { text-align: right; }
+                body {
+                    font-family: monospace;
+                    font-size: 11px;
+                }
+
+                h1 {
+                    text-align: center;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th,
+                td {
+                    border-bottom: 1px solid #ddd;
+                    padding: 5px;
+                    text-align: left;
+                }
+
+                .num {
+                    text-align: right;
+                }
             </style>
         </head>
+
         <body>
             <h1>Reporte de Pedidos</h1>
             <table>
@@ -644,20 +709,21 @@ class ReportesController
                 </thead>
                 <tbody>
                     <?php foreach ($data['pedidos'] as $p) : ?>
-                    <tr>
-                        <td><?= htmlspecialchars($p['numero_pedido']) ?></td>
-                        <td><?= date('d/m/Y H:i', strtotime($p['fecha_pedido'])) ?></td>
-                        <td><?= htmlspecialchars($p['cliente_nombre'] . ' ' . $p['cliente_apellido']) ?></td>
-                        <td class="num"><?= number_format($p['total'], 2) ?></td>
-                        <td><?= ucfirst($p['estado_pedido']) ?></td>
-                        <td><?= ucfirst($p['estado_pago']) ?></td>
-                    </tr>
+                        <tr>
+                            <td><?= htmlspecialchars($p['numero_pedido']) ?></td>
+                            <td><?= date('d/m/Y H:i', strtotime($p['fecha_pedido'])) ?></td>
+                            <td><?= htmlspecialchars($p['cliente_nombre'] . ' ' . $p['cliente_apellido']) ?></td>
+                            <td class="num"><?= number_format($p['total'], 2) ?></td>
+                            <td><?= ucfirst($p['estado_pedido']) ?></td>
+                            <td><?= ucfirst($p['estado_pago']) ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </body>
+
         </html>
-        <?php
+    <?php
         return ob_get_clean();
     }
     private function generarPDFCompras($data)
@@ -672,18 +738,39 @@ class ReportesController
     private function getHTMLCompras($data)
     {
         ob_start();
-        ?>
+    ?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <style>
-                body { font-family: monospace; font-size: 11px; }
-                h1 { text-align: center; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border-bottom: 1px solid #ddd; padding: 5px; text-align: left; }
-                .num { text-align: right; }
+                body {
+                    font-family: monospace;
+                    font-size: 11px;
+                }
+
+                h1 {
+                    text-align: center;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th,
+                td {
+                    border-bottom: 1px solid #ddd;
+                    padding: 5px;
+                    text-align: left;
+                }
+
+                .num {
+                    text-align: right;
+                }
             </style>
         </head>
+
         <body>
             <h1>Reporte de Compras</h1>
             <p style="text-align:center">Del: <?= $data['fecha_inicio'] ?> Al: <?= $data['fecha_fin'] ?></p>
@@ -699,17 +786,17 @@ class ReportesController
                 </thead>
                 <tbody>
                     <?php foreach ($data['compras'] as $c) : ?>
-                    <tr>
-                        <td><?= date('d/m/Y', strtotime($c['fecha_compra'])) ?></td>
-                        <td><?= htmlspecialchars($c['proveedor_nombre']) ?></td>
-                        <td><?= htmlspecialchars($c['numero_comprobante']) ?></td>
-                        <td class="num"><?= number_format($c['total'], 2) ?></td>
-                        <td><?= ucfirst($c['estado']) ?></td>
-                    </tr>
+                        <tr>
+                            <td><?= date('d/m/Y', strtotime($c['fecha_compra'])) ?></td>
+                            <td><?= htmlspecialchars($c['proveedor_nombre']) ?></td>
+                            <td><?= htmlspecialchars($c['numero_comprobante']) ?></td>
+                            <td class="num"><?= number_format($c['total'], 2) ?></td>
+                            <td><?= ucfirst($c['estado']) ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
                 <tfoot>
-                     <tr>
+                    <tr>
                         <th colspan="3" class="num">TOTAL</th>
                         <th class="num">$ <?= number_format($data['total_compras'], 2) ?></th>
                         <th></th>
@@ -717,8 +804,9 @@ class ReportesController
                 </tfoot>
             </table>
         </body>
+
         </html>
-        <?php
+    <?php
         return ob_get_clean();
     }
 
@@ -734,19 +822,45 @@ class ReportesController
     private function getHTMLVencimientos($data)
     {
         ob_start();
-        ?>
+    ?>
         <!DOCTYPE html>
         <html>
+
         <head>
             <style>
-                body { font-family: monospace; font-size: 11px; }
-                h1 { text-align: center; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border-bottom: 1px solid #ddd; padding: 5px; text-align: left; }
-                .num { text-align: right; }
-                .badge { font-size: 9px; padding: 2px; border: 1px solid #ccc; }
+                body {
+                    font-family: monospace;
+                    font-size: 11px;
+                }
+
+                h1 {
+                    text-align: center;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th,
+                td {
+                    border-bottom: 1px solid #ddd;
+                    padding: 5px;
+                    text-align: left;
+                }
+
+                .num {
+                    text-align: right;
+                }
+
+                .badge {
+                    font-size: 9px;
+                    padding: 2px;
+                    border: 1px solid #ccc;
+                }
             </style>
         </head>
+
         <body>
             <h1>Reporte de Vencimientos</h1>
             <p style="text-align:center">Lotes que vencen en los próximos <?= $data['dias'] ?> días</p>
@@ -763,20 +877,21 @@ class ReportesController
                 <tbody>
                     <?php foreach ($data['lotes'] as $l) :
                         $dias = ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
-                        ?>
-                    <tr>
-                        <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
-                        <td><?= htmlspecialchars($l['nombre_item']) ?></td>
-                        <td><?= date('d/m/Y', strtotime($l['fecha_vencimiento'])) ?></td>
-                        <td><?= $dias ?></td>
-                        <td class="num"><?= $l['cantidad_actual'] ?></td>
-                    </tr>
+                    ?>
+                        <tr>
+                            <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
+                            <td><?= htmlspecialchars($l['nombre_item']) ?></td>
+                            <td><?= date('d/m/Y', strtotime($l['fecha_vencimiento'])) ?></td>
+                            <td><?= $dias ?></td>
+                            <td class="num"><?= $l['cantidad_actual'] ?></td>
+                        </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </body>
+
         </html>
-        <?php
+<?php
         return ob_get_clean();
     }
 }

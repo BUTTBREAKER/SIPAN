@@ -1,4 +1,4 @@
-<?php require_once '../app/Views/layouts/header.php'; ?>
+<?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
 <div class="container-fluid py-4">
     <div class="row mb-4">
@@ -180,4 +180,4 @@
 .avatar-sm { width: 32px; height: 32px; font-weight: bold; font-size: 0.8rem; }
 </style>
 
-<?php require_once '../app/Views/layouts/footer.php'; ?>
+<?php require_once __DIR__ . '/../layouts/footer.php';

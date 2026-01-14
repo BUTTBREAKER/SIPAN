@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Core\Database;
+
 class BaseModel
 {
     protected $db;
@@ -9,7 +11,7 @@ class BaseModel
 
     public function __construct()
     {
-        $this->db = \Database::getInstance();
+        $this->db = Database::getInstance();
     }
 
     public function all($sucursal_id = null)

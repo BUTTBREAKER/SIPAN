@@ -1,4 +1,4 @@
-<?php require_once '../app/Views/layouts/header.php'; ?>
+<?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
 <div class="container-fluid py-4">
     <div class="row mb-4">
@@ -146,4 +146,4 @@
 .btn-outline-danger:checked + label { background-color: #dc3545; color: white; }
 </style>
 
-<?php require_once '../app/Views/layouts/footer.php'; ?>
+<?php require_once __DIR__ . '/../layouts/footer.php';

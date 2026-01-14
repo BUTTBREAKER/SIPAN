@@ -104,7 +104,7 @@ class RateLimiter
      */
     private static function getFilePath($key)
     {
-        $dir = dirname(__DIR__, 2) . '/logs/rate-limits';
+        $dir = dirname(__DIR__, 2) . '/storage/logs/rate-limits';
 
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
