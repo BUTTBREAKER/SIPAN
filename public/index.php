@@ -15,14 +15,14 @@ $config = require __DIR__ . '/../config/config.php';
 if ($config['app_env'] === 'production') {
     // Producción: No mostrar errores en pantalla, solo registrar en log
     error_reporting(E_ALL);
-    ini_set('display_errors', 0);
-    ini_set('log_errors', 1);
+    ini_set('display_errors', false);
+    ini_set('log_errors', true);
     ini_set('error_log', __DIR__ . '/../logs/php-errors.log');
 } else {
     // Desarrollo: Mostrar todos los errores
     error_reporting(E_ALL);
-    ini_set('display_errors', $config['app_debug'] ? 1 : 0);
-    ini_set('log_errors', 1);
+    ini_set('display_errors', $config['app_debug']);
+    ini_set('log_errors', true);
     ini_set('error_log', __DIR__ . '/../logs/sipan-debug.log');
 }
 
