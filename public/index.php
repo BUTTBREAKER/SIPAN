@@ -1,4 +1,7 @@
 <?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
 // SIPAN - Sistema Integral para Panaderías
 // Archivo principal de enrutamiento
 
