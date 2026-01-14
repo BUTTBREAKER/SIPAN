@@ -110,7 +110,10 @@ foreach ($routes as $route => $handler) {
                     call_user_func_array([$controller, $methodName], $params);
                 } else {
                     http_response_code(500);
-                    if ($_SERVER['HTTP_ACCEPT'] === 'application/json' || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+                    if (
+                        $_SERVER['HTTP_ACCEPT'] === 'application/json'
+                        || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
+                    ) {
                         header('Content-Type: application/json');
                         echo json_encode(['success' => false, 'message' => "Método no encontrado: {$methodName}"]);
                     } else {
@@ -119,7 +122,10 @@ foreach ($routes as $route => $handler) {
                 }
             } else {
                 http_response_code(500);
-                if ($_SERVER['HTTP_ACCEPT'] === 'application/json' || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+                if (
+                    $_SERVER['HTTP_ACCEPT'] === 'application/json'
+                    || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
+                ) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => false, 'message' => "Controlador no encontrado: {$controllerName}"]);
                 } else {
@@ -128,7 +134,10 @@ foreach ($routes as $route => $handler) {
             }
         } catch (Exception $e) {
             http_response_code(500);
-            if ($_SERVER['HTTP_ACCEPT'] === 'application/json' || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+            if (
+                $_SERVER['HTTP_ACCEPT'] === 'application/json'
+                || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
+            ) {
                 header('Content-Type: application/json');
                 echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
             } else {
