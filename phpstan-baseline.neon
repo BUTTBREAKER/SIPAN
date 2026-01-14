@@ -1,0 +1,115 @@
+parameters:
+	ignoreErrors:
+		-
+			rawMessage: 'Call to an undefined method App\Controllers\ReportesController::generarPDFClientes().'
+			identifier: method.notFound
+			count: 1
+			path: app/Controllers/ReportesController.php
+
+		-
+			rawMessage: 'Call to an undefined method App\Controllers\ReportesController::generarPDFProductos().'
+			identifier: method.notFound
+			count: 1
+			path: app/Controllers/ReportesController.php
+
+		-
+			rawMessage: 'Call to an undefined method App\Controllers\ReportesController::generarPDFVentas().'
+			identifier: method.notFound
+			count: 1
+			path: app/Controllers/ReportesController.php
+
+		-
+			rawMessage: Instantiated class PhpOffice\PhpSpreadsheet\Spreadsheet not found.
+			identifier: class.notFound
+			count: 5
+			path: app/Controllers/ReportesController.php
+
+		-
+			rawMessage: Instantiated class PhpOffice\PhpSpreadsheet\Writer\Xlsx not found.
+			identifier: class.notFound
+			count: 5
+			path: app/Controllers/ReportesController.php
+
+		-
+			rawMessage: 'Call to static method getInstance() on an unknown class App\Core\Database.'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/OrdenCompra.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/footer.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/apertura.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/header.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/apertura.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/footer.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/cierre.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/header.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/cierre.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/footer.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/index.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/header.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/index.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/footer.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/movimientos.php
+
+		-
+			rawMessage: 'Path in require_once() "../app/Views/layouts/header.php" is not a file or it does not exist.'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: app/Views/cajas/movimientos.php
+
+		-
+			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+			identifier: whitespace.fileEnd
+			count: 1
+			path: app/Views/dashboard/index.php
+
+		-
+			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+			identifier: whitespace.fileEnd
+			count: 1
+			path: app/Views/producciones/show.php
+
+		-
+			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+			identifier: whitespace.fileEnd
+			count: 1
+			path: app/Views/recetas/edit.php
+
+		-
+			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+			identifier: whitespace.fileEnd
+			count: 1
+			path: app/Views/sucursales/edit.php
+
+		-
+			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+			identifier: whitespace.fileEnd
+			count: 1
+			path: app/Views/sucursales/show.php

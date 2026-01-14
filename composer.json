@@ -17,6 +17,8 @@
         "files": ["app/Database.php", "app/SIPAN.php", "app/helpers.php"]
     },
     "require-dev": {
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
         "squizlabs/php_codesniffer": "^4.0",
         "symfony/var-dumper": "^7.4"
     },
@@ -28,9 +30,13 @@
         ],
         "post-autoload-dump": [
             "php -r \"if (!file_exists('.env')) copy('.env.example', '.env');\""
-        ]
+        ],
+        "lint": ["phpstan --memory-limit=1G"]
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     }
 }

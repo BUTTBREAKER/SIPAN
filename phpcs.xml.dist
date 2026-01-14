@@ -6,8 +6,8 @@
   <arg name="colors" />
   <arg name="tab-width" value="4" />
   <file>app/</file>
-  <file>config/</file>
   <file>public/</file>
+  <file>routes/</file>
   <exclude-pattern>vendor</exclude-pattern>
   <exclude-pattern>node_modules</exclude-pattern>
   <rule ref="PSR12" />
