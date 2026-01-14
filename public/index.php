@@ -47,10 +47,6 @@ if (session_status() === PHP_SESSION_NONE) {
 // Habilitar log de debug
 ini_set('log_errors', true);
 
-// Log todas las peticiones
-$log_message = "{$_SERVER['REQUEST_METHOD']} | {$_SERVER['REQUEST_URI']}";
-error_log($log_message);
-
 // Obtener la ruta solicitada
 $request_uri = $_SERVER['REQUEST_URI'];
 $path = parse_url($request_uri, PHP_URL_PATH);
@@ -68,7 +64,13 @@ $path = rtrim($path, '/');
 if (empty($path)) $path = '/';
 
 // Debug (comentar en producción)
-// file_put_contents('/tmp/sipan-debug.log', date('Y-m-d H:i:s') . " - Path: $path, Method: {$_SERVER['REQUEST_METHOD']}, URI: $request_uri\n", FILE_APPEND);
+if ($config['app_debug']) {
+    error_log("Path: $path, Method: {$_SERVER['REQUEST_METHOD']}, URI: $request_uri");
+} else {
+    // Log todas las peticiones
+    $log_message = "{$_SERVER['REQUEST_METHOD']} | {$_SERVER['REQUEST_URI']}";
+    error_log($log_message);
+}
 
 // Método HTTP
 $method = $_SERVER['REQUEST_METHOD'];
