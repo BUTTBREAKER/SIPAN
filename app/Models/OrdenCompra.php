@@ -6,7 +6,7 @@ use App\Core\Database;
 
 class OrdenCompra extends BaseModel
 {
-    private $db;
+    protected $db;
 
     public function __construct()
     {
