@@ -9,7 +9,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 ob_start();
 
 // Cargar configuración
-require_once __DIR__ . '/../config/config.php';
 $config = require __DIR__ . '/../config/config.php';
 
 // Configurar errores según entorno
