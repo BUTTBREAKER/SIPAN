@@ -60,8 +60,7 @@ if (!str_starts_with($path, '/')) {
 $path = str_replace('/index.php', '', $path);
 
 // Limpiar la ruta
-$path = rtrim($path, '/');
-if (empty($path)) $path = '/';
+$path = rtrim($path, '/') ?: '/';
 
 // Debug (comentar en producción)
 if ($config['app_debug']) {
