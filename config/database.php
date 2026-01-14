@@ -7,7 +7,7 @@ class Database
 
     private function __construct()
     {
-        $config = require __DIR__ . '/config.php';
+        $config = $_ENV;
 
         try {
             $dsn = "mysql:host={$config['db_host']};dbname={$config['db_name']};charset=utf8mb4";

@@ -25,7 +25,7 @@ class Respaldo extends BaseModel
 
     public function generarRespaldo($usuario_id)
     {
-        $config = require __DIR__ . '/../../config/config.php';
+        $config = $_ENV;
 
         $fecha = date('Y-m-d_H-i-s');
         $nombre_archivo = "sipan_backup_{$fecha}.sql";
@@ -80,7 +80,7 @@ class Respaldo extends BaseModel
             return ['success' => false, 'error' => 'Archivo de respaldo no encontrado'];
         }
 
-        $config = require __DIR__ . '/../../config/config.php';
+        $config = $_ENV;
 
         // Detectar la ruta de mysql
         $mysql_path = $this->findMysql();

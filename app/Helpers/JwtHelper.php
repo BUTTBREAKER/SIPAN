@@ -8,7 +8,7 @@ class JwtHelper
 
     public static function init()
     {
-        $config = require __DIR__ . '/../../config/config.php';
+        $config = $_ENV;
         self::$secret = $config['jwt_secret'];
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+use Symfony\Component\Dotenv\Dotenv;
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 // SIPAN - Sistema Integral para Panaderías
@@ -9,7 +11,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 ob_start();
 
 // Cargar configuración
-$config = require __DIR__ . '/../config/config.php';
+(new Dotenv())->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
+$_ENV['app_debug'] = filter_var($_ENV['app_debug'], FILTER_VALIDATE_BOOL);
+$config = $_ENV;
 
 // Configurar errores según entorno
 if ($config['app_env'] === 'production') {

@@ -7,7 +7,8 @@
         "ext-json": "*",
         "ext-pdo": "*",
         "firebase/php-jwt": "^7.0",
-        "mpdf/mpdf": "^8.2"
+        "mpdf/mpdf": "^8.2",
+        "symfony/dotenv": "^7.4"
     },
     "autoload": {
         "psr-4": {
@@ -24,6 +25,9 @@
         "serve": [
             "Composer\\Config::disableProcessTimeout",
             "php -S localhost:61001 -t public"
+        ],
+        "post-autoload-dump": [
+            "php -r \"if (!file_exists('.env')) copy('.env.example', '.env');\""
         ]
     },
     "config": {
