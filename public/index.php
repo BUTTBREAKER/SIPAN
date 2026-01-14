@@ -13,10 +13,9 @@ ob_start();
 // Cargar configuración
 (new Dotenv())->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
 $_ENV['app_debug'] = filter_var($_ENV['app_debug'], FILTER_VALIDATE_BOOL);
-$config = $_ENV;
 
 // Configurar errores según entorno
-if ($config['app_env'] === 'production') {
+if ($_ENV['app_env'] === 'production') {
     // Producción: No mostrar errores en pantalla, solo registrar en log
     error_reporting(E_ALL);
     ini_set('display_errors', false);
@@ -24,7 +23,7 @@ if ($config['app_env'] === 'production') {
 } else {
     // Desarrollo: Mostrar todos los errores
     error_reporting(E_ALL);
-    ini_set('display_errors', $config['app_debug']);
+    ini_set('display_errors', $_ENV['app_debug']);
     ini_set('error_log', __DIR__ . '/../logs/sipan-debug.log');
 }
 
@@ -35,7 +34,7 @@ $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] =
 $sessionParams = session_get_cookie_params();
 
 session_set_cookie_params([
-    'lifetime' => $config['session_lifetime'] ?? 86400 /* 1 day */,
+    'lifetime' => $_ENV['session_lifetime'] ?? 86400 /* 1 day */,
     'path' => $sessionParams['path'],
     'domain' => $sessionParams['domain'],
     'secure' => $isSecure,
@@ -44,7 +43,7 @@ session_set_cookie_params([
 ]);
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_name($config['session_name'] ?? 'SIPAN_SESSION');
+    session_name($_ENV['session_name'] ?? 'SIPAN_SESSION');
     session_start();
 }
 
@@ -67,7 +66,7 @@ $path = str_replace('/index.php', '', $path);
 $path = rtrim($path, '/') ?: '/';
 
 // Debug (comentar en producción)
-if ($config['app_debug']) {
+if ($_ENV['app_debug']) {
     error_log("Path: $path, Method: {$_SERVER['REQUEST_METHOD']}, URI: $request_uri");
 } else {
     // Log todas las peticiones
