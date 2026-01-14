@@ -15,11 +15,17 @@
         }
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^4.0"
+        "squizlabs/php_codesniffer": "^4.0",
+        "symfony/var-dumper": "^7.4"
     },
     "scripts": {
-        "format": ["phpcbf"],
-        "serve": "php -S localhost:61001 -t public"
+        "format": [
+            "phpcbf"
+        ],
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "php -S localhost:61001 -t public"
+        ]
     },
     "config": {
         "sort-packages": true
