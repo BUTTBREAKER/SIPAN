@@ -19,12 +19,12 @@ if ($_ENV['app_env'] === 'production') {
     // Producción: No mostrar errores en pantalla, solo registrar en log
     error_reporting(E_ALL);
     ini_set('display_errors', false);
-    ini_set('error_log', __DIR__ . '/../logs/php-errors.log');
+    ini_set('error_log', __DIR__ . '/../storage/logs/php-errors.log');
 } else {
     // Desarrollo: Mostrar todos los errores
     error_reporting(E_ALL);
     ini_set('display_errors', $_ENV['app_debug']);
-    ini_set('error_log', __DIR__ . '/../logs/sipan-debug.log');
+    ini_set('error_log', __DIR__ . '/../storage/logs/sipan-debug.log');
 }
 
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
