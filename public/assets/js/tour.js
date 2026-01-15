@@ -21,10 +21,22 @@ function startContextualTour(pageKey) {
     if (path.includes("/auditorias")) contextKey = "auditorias";
     if (path.includes("/predicciones")) contextKey = "predicciones";
     if (path.includes("/sugerencias")) contextKey = "sugerencias";
-    if (path.includes("/cajas")) contextKey = "cajas";
+    if (path.includes('/usuarios')) contextKey = 'usuarios';
+    if (path.includes('/sucursales')) contextKey = 'sucursales';
+    if (path.includes('/respaldos')) contextKey = 'respaldos';
+    if (path.includes('/notificaciones')) contextKey = 'notificaciones';
 
-    const steps =
-        tourSteps[contextKey] || tourSteps[pageKey] || tourSteps["dashboard"];
+    // Sub-context overwrites for broader matches
+    if (path.includes('/sucursales/create')) contextKey = 'sucursales_create';
+    if (path.includes('/sucursales/edit')) contextKey = 'sucursales_edit';
+    if (path.includes('/clientes/create')) contextKey = 'clientes_create';
+    if (path.includes('/clientes/edit')) contextKey = 'clientes_edit';
+    if (path.includes('/proveedores/create')) contextKey = 'proveedores_create';
+    if (path.includes('/proveedores/edit')) contextKey = 'proveedores_edit';
+    if (path.includes('/insumos/create')) contextKey = 'insumos_create';
+    if (path.includes('/recetas/create')) contextKey = 'recetas_create';
+    if (path.includes('/compras/create')) contextKey = 'compras_create';
+    if (path.includes('/pedidos/create')) contextKey = 'pedidos_create';
 
     const driverObj = driver({
         showProgress: true,
@@ -339,4 +351,82 @@ const tourSteps = {
             },
         },
     ],
+    'sucursales': [
+        {
+            popover: { title: '🏢 Gestión de Sucursales', description: 'Administra las diferentes sedes o tiendas de tu negocio.' }
+        },
+        {
+            element: 'a[href="/sucursales/create"]',
+            popover: { title: '➕ Nueva Sucursal', description: 'Registra una nueva tienda física.', side: "bottom" }
+        }
+    ],
+    'sucursales_create': [
+        {
+            popover: { title: '🏢 Nueva Sucursal', description: 'Registra los datos de una nueva ubicación física.' }
+        },
+        {
+            element: 'input[name="nombre"]',
+            popover: { title: '🏷️ Nombre', description: 'Identificador único de la tienda.', side: "bottom" }
+        }
+    ],
+    'respaldos': [
+        {
+            popover: { title: '💾 Respaldos de Seguridad', description: 'Genera y descarga copias de seguridad de tu base de datos.' }
+        },
+        {
+            element: 'button[type="submit"]',
+            popover: { title: '⚡ Generar Respaldo', description: 'Crea una copia instantánea del estado actual del sistema.', side: "bottom" }
+        }
+    ],
+    'notificaciones': [
+        {
+            popover: { title: '🔔 Centro de Notificaciones', description: 'Revisa todas las alertas y avisos importantes del sistema.' }
+        }
+    ],
+    'clientes_create': [
+        {
+            popover: { title: '👤 Registrar Cliente', description: 'Añade un nuevo cliente a la base de datos.' }
+        },
+        {
+            element: 'input[name="nombre"]',
+            popover: { title: '📝 Datos Personales', description: 'Nombre completo del cliente.', side: "bottom" }
+        }
+    ],
+    'proveedores_create': [
+        {
+            popover: { title: '🚛 Registrar Proveedor', description: 'Ingresa los datos de contacto de tu socio comercial.' }
+        }
+    ],
+    'compras_create': [
+        {
+            popover: { title: '🛍️ Registrar Compra', description: 'Ingresa una nueva factura de compra para aumentar stock.' }
+        },
+        {
+            element: '#selectProveedor',
+            popover: { title: '🤝 Proveedor', description: 'Selecciona a quién le estás comprando.' }
+        }
+    ],
+    'insumos_create': [
+        {
+            popover: { title: '📦 Nuevo Insumo', description: 'Define una nueva materia prima.' }
+        },
+        {
+            element: 'select[name="unidad_medida"]',
+            popover: { title: '⚖️ Unidad', description: '¿Cómo mides este insumo? (KG, Litros, Unidades)', side: "bottom" }
+        }
+    ],
+    'pedidos_create': [
+        {
+            popover: { title: '📝 Nuevo Pedido', description: 'Toma un pedido especial para una fecha futura.' }
+        },
+        {
+            element: 'input[name="fecha_entrega"]',
+            popover: { title: '📅 Fecha de Entrega', description: '¿Cuándo debe estar listo el pedido?', side: "bottom" }
+        }
+    ],
+    'recetas_create': [
+        {
+            popover: { title: '📖 Nueva Receta', description: 'Crea la fórmula de un producto para descontar inventario.' }
+        }
+    ]
 };
