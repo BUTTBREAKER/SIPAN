@@ -36,7 +36,7 @@ class AuthController
         header('Content-Type: application/json');
 
         // Cargar configuración
-        $config = $_ENV;
+        $config = require __DIR__ . '/../../config/config.php';
 
         // Obtener datos
         $correo = $_POST['correo'] ?? '';

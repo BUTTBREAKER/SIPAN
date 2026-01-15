@@ -38,6 +38,8 @@ function startContextualTour(pageKey) {
     if (path.includes('/compras/create')) contextKey = 'compras_create';
     if (path.includes('/pedidos/create')) contextKey = 'pedidos_create';
 
+    const steps = tourSteps[contextKey] || tourSteps[pageKey] || tourSteps['dashboard'];
+
     const driverObj = driver({
         showProgress: true,
         animate: true,

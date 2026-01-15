@@ -45,14 +45,14 @@ class NotificationManager {
                 navigator.serviceWorker.ready.then((registration) => {
                     registration.showNotification(title, {
                         body: body,
-                        icon: "/assets/img/logo.png", // Ajusta ruta
+                        // icon: "/assets/img/logo.png", // Image not found
                         vibrate: [200, 100, 200],
                     });
                 });
             } else {
                 new Notification(title, {
                     body: body,
-                    icon: "/assets/img/logo.png",
+                    // icon: "/assets/img/logo.png",
                 });
             }
         }

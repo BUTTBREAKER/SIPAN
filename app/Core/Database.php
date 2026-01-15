@@ -12,11 +12,15 @@ class Database
 
     private function __construct()
     {
-        $config = $_ENV;
+        // Use Environment helper to get config
+        $host = \App\Helpers\Environment::get('DB_HOST', 'localhost');
+        $name = \App\Helpers\Environment::get('DB_NAME', 'sipan');
+        $user = \App\Helpers\Environment::get('DB_USER', 'root');
+        $pass = \App\Helpers\Environment::get('DB_PASS', '');
 
         try {
-            $dsn = "mysql:host={$config['db_host']};dbname={$config['db_name']};charset=utf8mb4";
-            $this->connection = new PDO($dsn, $config['db_user'], $config['db_pass'], [
+            $dsn = "mysql:host={$host};dbname={$name};charset=utf8mb4";
+            $this->connection = new PDO($dsn, $user, $pass, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false
