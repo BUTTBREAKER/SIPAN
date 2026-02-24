@@ -184,27 +184,16 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Asegurar que todos los días estén presentes
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
+
         $ventas = [];
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
-            $encontrado = false;
-            foreach ($result as $row) {
-                if ($row['fecha'] === $fecha) {
-                    $ventas[] = [
-                        'fecha' => date('d/m', strtotime($fecha)),
-                        'total' => (float)$row['total']
-                    ];
-                    $encontrado = true;
-                    break;
-                }
-            }
-            if (!$encontrado) {
-                $ventas[] = [
-                    'fecha' => date('d/m', strtotime($fecha)),
-                    'total' => 0
-                ];
-            }
+            $ventas[] = [
+                'fecha' => date('d/m', strtotime($fecha)),
+                'total' => (float)($indexedResult[$fecha] ?? 0)
+            ];
         }
 
         return $ventas;
@@ -220,31 +209,16 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Llenar huecos de días sin ventas
-        $ventas = [];
-        // Empezar desde hace $dias hasta ayer (o hoy)
-        // La lógica del bucle anterior era backwards, aquí lo hacemos igual para mantener consistencia
-        // pero devolviendo formato Y-m-d para el helper
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
 
+        $ventas = [];
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
-            $encontrado = false;
-            foreach ($result as $row) {
-                if ($row['fecha'] === $fecha) {
-                    $ventas[] = [
-                        'fecha' => $fecha,
-                        'total' => (float)$row['total']
-                    ];
-                    $encontrado = true;
-                    break;
-                }
-            }
-            if (!$encontrado) {
-                $ventas[] = [
-                    'fecha' => $fecha,
-                    'total' => 0.0
-                ];
-            }
+            $ventas[] = [
+                'fecha' => $fecha,
+                'total' => (float)($indexedResult[$fecha] ?? 0)
+            ];
         }
 
         return $ventas;
