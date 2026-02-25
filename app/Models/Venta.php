@@ -185,26 +185,16 @@ class Venta extends BaseModel
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
         // Asegurar que todos los días estén presentes
+        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
+        $indexedResults = array_column($result, 'total', 'fecha');
         $ventas = [];
+
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
-            $encontrado = false;
-            foreach ($result as $row) {
-                if ($row['fecha'] === $fecha) {
-                    $ventas[] = [
-                        'fecha' => date('d/m', strtotime($fecha)),
-                        'total' => (float)$row['total']
-                    ];
-                    $encontrado = true;
-                    break;
-                }
-            }
-            if (!$encontrado) {
-                $ventas[] = [
-                    'fecha' => date('d/m', strtotime($fecha)),
-                    'total' => 0
-                ];
-            }
+            $ventas[] = [
+                'fecha' => date('d/m', strtotime($fecha)),
+                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
+            ];
         }
 
         return $ventas;
@@ -221,30 +211,18 @@ class Venta extends BaseModel
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
         // Llenar huecos de días sin ventas
-        $ventas = [];
-        // Empezar desde hace $dias hasta ayer (o hoy)
+        // Empezar desde hace $dias hasta hoy
         // La lógica del bucle anterior era backwards, aquí lo hacemos igual para mantener consistencia
-        // pero devolviendo formato Y-m-d para el helper
+        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
+        $indexedResults = array_column($result, 'total', 'fecha');
+        $ventas = [];
 
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
-            $encontrado = false;
-            foreach ($result as $row) {
-                if ($row['fecha'] === $fecha) {
-                    $ventas[] = [
-                        'fecha' => $fecha,
-                        'total' => (float)$row['total']
-                    ];
-                    $encontrado = true;
-                    break;
-                }
-            }
-            if (!$encontrado) {
-                $ventas[] = [
-                    'fecha' => $fecha,
-                    'total' => 0.0
-                ];
-            }
+            $ventas[] = [
+                'fecha' => $fecha,
+                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
+            ];
         }
 
         return $ventas;
