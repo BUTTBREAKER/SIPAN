@@ -67,18 +67,21 @@ class ReportesController
 
         $total_ventas = 0;
 
+        // Optimización Bolt: Obtener todos los pagos en una sola consulta para evitar N+1
+        $ventaIds = array_column($ventas, 'id');
+        $todosLosPagos = $this->ventaModel->getPagosByVentaIds($ventaIds);
+
+        // Agrupar pagos por ID de venta para búsqueda rápida O(1)
+        $pagosPorVenta = [];
+        foreach ($todosLosPagos as $pago) {
+            $pagosPorVenta[$pago['id_venta']][] = $pago;
+        }
+
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            // Buscar pagos de esta venta
-            // Asumimos que ventaModel tiene metodo getPagos, si no, usaremos db directo
-            $sql = "SELECT metodo_pago, monto FROM venta_pagos WHERE id_venta = ?";
-            // Acceso "truco" al db del modelo si es protected, pero mejor instanciar modelo Venta si tiene el metodo
-            // Si Venta no tiene getPagos, lo agregamos rapido o usamos query directo
-            // Usaremos el modelo venta para ser limpios, asumiendo getPagos existe o lo creamos.
-            // Si no existe, fallback a 'metodo_pago' de la tabla ventas.
-
-            $pagos = $this->ventaModel->getPagos($venta['id']); // Necesitamos crear este metodo
+            // Obtener pagos de la venta desde el mapa en memoria
+            $pagos = $pagosPorVenta[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
                 // Sumar del detalle
@@ -511,7 +514,7 @@ class ReportesController
     private function getHTMLInsumos($data)
     {
         ob_start();
-?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -569,7 +572,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -585,7 +588,7 @@ class ReportesController
     private function getHTMLProducciones($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -645,7 +648,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -661,7 +664,7 @@ class ReportesController
     private function getHTMLPedidos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -723,7 +726,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
     private function generarPDFCompras($data)
@@ -738,7 +741,7 @@ class ReportesController
     private function getHTMLCompras($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -806,7 +809,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -822,7 +825,7 @@ class ReportesController
     private function getHTMLVencimientos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -877,7 +880,7 @@ class ReportesController
                 <tbody>
                     <?php foreach ($data['lotes'] as $l) :
                         $dias = ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
-                    ?>
+                        ?>
                         <tr>
                             <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
                             <td><?= htmlspecialchars($l['nombre_item']) ?></td>
@@ -891,7 +894,7 @@ class ReportesController
         </body>
 
         </html>
-<?php
+        <?php
         return ob_get_clean();
     }
 }
