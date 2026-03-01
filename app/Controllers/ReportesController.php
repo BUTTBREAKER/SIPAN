@@ -67,18 +67,20 @@ class ReportesController
 
         $total_ventas = 0;
 
+        // Optimización Bolt: Batch fetch de todos los pagos para evitar N+1
+        $ventaIds = array_column($ventas, 'id');
+        $allPagos = $this->ventaModel->getPagosByVentaIds($ventaIds);
+
+        // Agrupar pagos por ID de venta
+        $pagosMap = [];
+        foreach ($allPagos as $pago) {
+            $pagosMap[$pago['id_venta']][] = $pago;
+        }
+
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            // Buscar pagos de esta venta
-            // Asumimos que ventaModel tiene metodo getPagos, si no, usaremos db directo
-            $sql = "SELECT metodo_pago, monto FROM venta_pagos WHERE id_venta = ?";
-            // Acceso "truco" al db del modelo si es protected, pero mejor instanciar modelo Venta si tiene el metodo
-            // Si Venta no tiene getPagos, lo agregamos rapido o usamos query directo
-            // Usaremos el modelo venta para ser limpios, asumiendo getPagos existe o lo creamos.
-            // Si no existe, fallback a 'metodo_pago' de la tabla ventas.
-
-            $pagos = $this->ventaModel->getPagos($venta['id']); // Necesitamos crear este metodo
+            $pagos = $pagosMap[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
                 // Sumar del detalle
@@ -101,9 +103,7 @@ class ReportesController
             } else {
                 // Usar el metodo principal (compatibilidad anterior)
                 $m = $venta['metodo_pago'];
-                if ($m == 'mixto') {
-                    // Si es mixto pero no tiene pagos en tabla (error data antigua), no sumamos al desglose especifico o lo ponemos en otros
-                } else {
+                if ($m !== 'mixto') {
                     if (isset($desglose_medios[$m])) {
                         $desglose_medios[$m] += $venta['total'];
                     }
@@ -511,7 +511,7 @@ class ReportesController
     private function getHTMLInsumos($data)
     {
         ob_start();
-?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -569,7 +569,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -585,7 +585,7 @@ class ReportesController
     private function getHTMLProducciones($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -645,7 +645,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -661,7 +661,7 @@ class ReportesController
     private function getHTMLPedidos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -723,7 +723,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
     private function generarPDFCompras($data)
@@ -738,7 +738,7 @@ class ReportesController
     private function getHTMLCompras($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -806,7 +806,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -822,7 +822,7 @@ class ReportesController
     private function getHTMLVencimientos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -877,7 +877,7 @@ class ReportesController
                 <tbody>
                     <?php foreach ($data['lotes'] as $l) :
                         $dias = ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
-                    ?>
+                        ?>
                         <tr>
                             <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
                             <td><?= htmlspecialchars($l['nombre_item']) ?></td>
@@ -891,7 +891,7 @@ class ReportesController
         </body>
 
         </html>
-<?php
+        <?php
         return ob_get_clean();
     }
 }
