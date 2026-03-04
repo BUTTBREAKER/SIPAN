@@ -44,9 +44,9 @@ class Produccion extends BaseModel
                 // Esto busca lotes activos y los consume en orden de vencimiento
                 $loteModel->descontarStock('insumo', $id_insumo, $cantidad, $produccion_data['id_sucursal']);
 
-                // C. Descontar Stock Total del Insumo
-                // Se asume que Insumo::updateStock maneja la resta
-                $insumoModel->updateStock($id_insumo, $cantidad, 'subtract');
+                // Optimización Bolt: Eliminada actualización manual del stock total del insumo.
+                // El trigger 'tr_descontar_insumos_produccion' en la DB ya realiza este descuento automáticamente
+                // al insertar en la tabla 'produccion_insumos'.
             }
 
             $this->db->commit();
