@@ -8,74 +8,78 @@ class Venta extends BaseModel
 
     public function createWithProducts($venta_data, $productos, $pagos = [])
     {
+        if (empty($productos)) {
+            throw new \Exception("Debe agregar al menos un producto");
+        }
+
         try {
             $this->db->beginTransaction();
 
-            // Validar stock antes de crear la venta
-            foreach ($productos as $producto) {
-                $sql_stock = "SELECT stock_actual FROM productos WHERE id = ?";
-                $producto_db = $this->db->fetchOne($sql_stock, [$producto['id_producto']]);
+            // Optimización Bolt: Batch Stock Validation (1 query en lugar de N)
+            $productIds = array_column($productos, 'id_producto');
+            $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+            $sql_stock = "SELECT id, stock_actual FROM productos WHERE id IN ($placeholders)";
+            $productos_db = $this->db->fetchAll($sql_stock, $productIds);
 
-                if (!$producto_db) {
+            $stockMap = array_column($productos_db, 'stock_actual', 'id');
+
+            foreach ($productos as $producto) {
+                if (!isset($stockMap[$producto['id_producto']])) {
                     throw new \Exception("Producto con ID {$producto['id_producto']} no encontrado");
                 }
 
-                if ($producto_db['stock_actual'] < $producto['cantidad']) {
-                    throw new \Exception("Stock insuficiente para el producto");
+                if ($stockMap[$producto['id_producto']] < $producto['cantidad']) {
+                    throw new \Exception("Stock insuficiente para el producto ID {$producto['id_producto']}");
                 }
             }
 
             // Crear venta maestra
-            // Si hay múltiples pagos, podemos poner 'mixto' o el primero en el campo legacy
             $venta_id = $this->create($venta_data);
 
             if (!$venta_id) {
                 throw new \Exception("Error al crear la venta");
             }
 
-            // Registrar Pagos Múltiples
+            // Optimización Bolt: Batch Payment Insertion (1 query en lugar de N)
             if (!empty($pagos)) {
-                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
+                $pago_values = [];
+                $pago_params = [];
                 foreach ($pagos as $pago) {
-                    $this->db->execute($sql_pago, [
-                    $venta_id,
-                    $pago['metodo'],
-                    $pago['monto'],
-                    $pago['referencia'] ?? null
-                    ]);
+                    $pago_values[] = "(?, ?, ?, ?)";
+                    $pago_params[] = $venta_id;
+                    $pago_params[] = $pago['metodo'];
+                    $pago_params[] = $pago['monto'];
+                    $pago_params[] = $pago['referencia'] ?? null;
                 }
+                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $pago_values);
+                $this->db->execute($sql_pago, $pago_params);
             } else {
-                // Compatibilidad hacia atrás: si no vienen pagos detallados, crear uno con el método global
                 $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
                 $this->db->execute($sql_pago, [
-                $venta_id,
-                $venta_data['metodo_pago'],
-                $venta_data['total'],
-                null
+                    $venta_id,
+                    $venta_data['metodo_pago'],
+                    $venta_data['total'],
+                    null
                 ]);
             }
 
-            // Agregar productos y actualizar stock
-            foreach ($productos as $producto) {
-                // Insertar detalle de venta
-                $sql = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal)
-                    VALUES (?, ?, ?, ?, ?)";
-                $this->db->execute($sql, [
-                $venta_id,
-                $producto['id_producto'],
-                $producto['cantidad'],
-                $producto['precio_unitario'],
-                $producto['subtotal']
-                ]);
-
-                // Actualizar stock del producto
-                $sql_update_stock = "UPDATE productos 
-                                SET stock_actual = stock_actual - ? 
-                                WHERE id = ?";
-                $this->db->execute($sql_update_stock, [
-                    $producto['cantidad'],
-                    $producto['id_producto']
-                ]);
+            // Optimización Bolt: Batch Product Insertion (1 query en lugar de N)
+            // NOTA: Se eliminó la actualización manual de stock porque el sistema cuenta con el disparador
+            // 'tr_actualizar_stock_venta' que lo realiza automáticamente al insertar en venta_productos.
+            // Eliminar la actualización manual evita el problema de doble descuento y mejora el rendimiento.
+            if (!empty($productos)) {
+                $prod_values = [];
+                $prod_params = [];
+                foreach ($productos as $producto) {
+                    $prod_values[] = "(?, ?, ?, ?, ?)";
+                    $prod_params[] = $venta_id;
+                    $prod_params[] = $producto['id_producto'];
+                    $prod_params[] = $producto['cantidad'];
+                    $prod_params[] = $producto['precio_unitario'];
+                    $prod_params[] = $producto['subtotal'];
+                }
+                $sql_prod = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES " . implode(', ', $prod_values);
+                $this->db->execute($sql_prod, $prod_params);
             }
 
             $this->db->commit();
