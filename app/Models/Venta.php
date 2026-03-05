@@ -68,14 +68,8 @@ class Venta extends BaseModel
                 $producto['subtotal']
                 ]);
 
-                // Actualizar stock del producto
-                $sql_update_stock = "UPDATE productos 
-                                SET stock_actual = stock_actual - ? 
-                                WHERE id = ?";
-                $this->db->execute($sql_update_stock, [
-                    $producto['cantidad'],
-                    $producto['id_producto']
-                ]);
+                // Bolt Optimization: Manual stock update removed.
+                // The database trigger 'tr_actualizar_stock_venta' handles this automatically.
             }
 
             $this->db->commit();
@@ -98,6 +92,22 @@ class Venta extends BaseModel
     {
         $sql = "SELECT * FROM venta_pagos WHERE id_venta = ?";
         return $this->db->fetchAll($sql, [$venta_id]);
+    }
+
+    /**
+     * Get payments for multiple sales in a single query
+     * Bolt Optimization: Eliminates N+1 query problem in reports
+     */
+    public function getPagosByVentaIds(array $venta_ids)
+    {
+        if (empty($venta_ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($venta_ids), '?'));
+        $sql = "SELECT * FROM venta_pagos WHERE id_venta IN ($placeholders)";
+
+        return $this->db->fetchAll($sql, $venta_ids);
     }
 
     public function getWithDetails($sucursal_id, $fecha_inicio = null, $fecha_fin = null)

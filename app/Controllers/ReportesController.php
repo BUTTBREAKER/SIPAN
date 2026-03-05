@@ -51,9 +51,15 @@ class ReportesController
 
         $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
 
-        // Obtener desglose de pagos detallado
-        // Necesitamos iterar ventas y buscar sus pagos si es mixto, o si queremos precision total
-        // Lo ideal sería un query agrupado en venta_pagos, pero lo haremos iterativo por simplicidad
+        // Bolt Optimization: Get all payments at once to avoid N+1 queries
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = $this->ventaModel->getPagosByVentaIds($venta_ids);
+
+        // Group payments by id_venta for O(1) lookup
+        $pagos_agrupados = [];
+        foreach ($todos_los_pagos as $pago) {
+            $pagos_agrupados[$pago['id_venta']][] = $pago;
+        }
 
         $desglose_medios = [
             'efectivo_bs' => 0,
@@ -70,15 +76,8 @@ class ReportesController
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            // Buscar pagos de esta venta
-            // Asumimos que ventaModel tiene metodo getPagos, si no, usaremos db directo
-            $sql = "SELECT metodo_pago, monto FROM venta_pagos WHERE id_venta = ?";
-            // Acceso "truco" al db del modelo si es protected, pero mejor instanciar modelo Venta si tiene el metodo
-            // Si Venta no tiene getPagos, lo agregamos rapido o usamos query directo
-            // Usaremos el modelo venta para ser limpios, asumiendo getPagos existe o lo creamos.
-            // Si no existe, fallback a 'metodo_pago' de la tabla ventas.
-
-            $pagos = $this->ventaModel->getPagos($venta['id']); // Necesitamos crear este metodo
+            // Bolt Optimization: Use grouped payments from memory (O(1)) instead of per-sale query
+            $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
                 // Sumar del detalle
@@ -101,9 +100,7 @@ class ReportesController
             } else {
                 // Usar el metodo principal (compatibilidad anterior)
                 $m = $venta['metodo_pago'];
-                if ($m == 'mixto') {
-                    // Si es mixto pero no tiene pagos en tabla (error data antigua), no sumamos al desglose especifico o lo ponemos en otros
-                } else {
+                if ($m != 'mixto') {
                     if (isset($desglose_medios[$m])) {
                         $desglose_medios[$m] += $venta['total'];
                     }
