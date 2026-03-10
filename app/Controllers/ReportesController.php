@@ -511,7 +511,7 @@ class ReportesController
     private function getHTMLInsumos($data)
     {
         ob_start();
-?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -569,7 +569,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -585,7 +585,7 @@ class ReportesController
     private function getHTMLProducciones($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -645,7 +645,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -661,7 +661,7 @@ class ReportesController
     private function getHTMLPedidos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -723,7 +723,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
     private function generarPDFCompras($data)
@@ -738,7 +738,7 @@ class ReportesController
     private function getHTMLCompras($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -806,7 +806,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -822,7 +822,7 @@ class ReportesController
     private function getHTMLVencimientos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -877,7 +877,7 @@ class ReportesController
                 <tbody>
                     <?php foreach ($data['lotes'] as $l) :
                         $dias = ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
-                    ?>
+                        ?>
                         <tr>
                             <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
                             <td><?= htmlspecialchars($l['nombre_item']) ?></td>
@@ -891,7 +891,7 @@ class ReportesController
         </body>
 
         </html>
-<?php
+        <?php
         return ob_get_clean();
     }
 }

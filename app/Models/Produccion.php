@@ -8,6 +8,10 @@ class Produccion extends BaseModel
 
     public function createWithInsumos($produccion_data, $insumos)
     {
+        if (empty($insumos)) {
+            throw new \Exception("Debe agregar al menos un insumo");
+        }
+
         try {
             $this->db->beginTransaction();
 
@@ -21,9 +25,11 @@ class Produccion extends BaseModel
             $insumoModel = new Insumo();
 
             // 2. Procesar insumos
-            foreach ($insumos as $insumo) {
-                error_log('Procesando insumo: ' . print_r($insumo, true)); // LOG
+            // Bolt Optimization: Multi-row INSERT for production insumos (O(1) round-trip)
+            $insumo_values = [];
+            $insumo_params = [];
 
+            foreach ($insumos as $insumo) {
                 if (!isset($insumo['id_insumo']) || !isset($insumo['cantidad_utilizada'])) {
                     throw new \Exception('Estructura de insumo inválida: ' . print_r($insumo, true));
                 }
@@ -32,22 +38,19 @@ class Produccion extends BaseModel
                 $cantidad = $insumo['cantidad_utilizada'];
 
                 // A. Registrar consumo en tabla produccion_insumos
-                $sql = "INSERT INTO produccion_insumos (id_produccion, id_insumo, cantidad_utilizada)
-                    VALUES (?, ?, ?)";
-                $this->db->execute($sql, [
-                    $produccion_id,
-                    $id_insumo,
-                    $cantidad
-                ]);
+                $insumo_values[] = "(?, ?, ?)";
+                array_push($insumo_params, $produccion_id, $id_insumo, $cantidad);
 
                 // B. Descontar de Lotes (FIFO)
-                // Esto busca lotes activos y los consume en orden de vencimiento
+                // Note: This must remain in the loop as it handles complex FIFO logic across multiple rows
                 $loteModel->descontarStock('insumo', $id_insumo, $cantidad, $produccion_data['id_sucursal']);
 
-                // C. Descontar Stock Total del Insumo
-                // Se asume que Insumo::updateStock maneja la resta
-                $insumoModel->updateStock($id_insumo, $cantidad, 'subtract');
+                // Note: Manual Insumo::updateStock removed as it's handled by database trigger 'tr_descontar_insumos_produccion'
             }
+
+            // Since we already have a guard clause at the top, $insumo_values won't be empty here
+            $sql = "INSERT INTO produccion_insumos (id_produccion, id_insumo, cantidad_utilizada) VALUES " . implode(',', $insumo_values);
+            $this->db->execute($sql, $insumo_params);
 
             $this->db->commit();
             return $produccion_id;
