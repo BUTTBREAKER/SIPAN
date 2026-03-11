@@ -11,17 +11,30 @@ class Venta extends BaseModel
         try {
             $this->db->beginTransaction();
 
-            // Validar stock antes de crear la venta
-            foreach ($productos as $producto) {
-                $sql_stock = "SELECT stock_actual FROM productos WHERE id = ?";
-                $producto_db = $this->db->fetchOne($sql_stock, [$producto['id_producto']]);
-
-                if (!$producto_db) {
-                    throw new \Exception("Producto con ID {$producto['id_producto']} no encontrado");
+            // 1. Validar stock en lote (Optimización Bolt)
+            if (!empty($productos)) {
+                // Agrupar cantidades por ID de producto (por si vienen duplicados en el input)
+                $cantidadesRequeridas = [];
+                foreach ($productos as $p) {
+                    $id = $p['id_producto'];
+                    $cantidadesRequeridas[$id] = ($cantidadesRequeridas[$id] ?? 0) + $p['cantidad'];
                 }
 
-                if ($producto_db['stock_actual'] < $producto['cantidad']) {
-                    throw new \Exception("Stock insuficiente para el producto");
+                $productIds = array_keys($cantidadesRequeridas);
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                $sql_stock = "SELECT id, nombre, stock_actual FROM productos WHERE id IN ($placeholders)";
+                $stocks_db = $this->db->fetchAll($sql_stock, $productIds);
+
+                $stocksMap = array_column($stocks_db, 'stock_actual', 'id');
+                $nombresMap = array_column($stocks_db, 'nombre', 'id');
+
+                foreach ($cantidadesRequeridas as $id => $cantidad) {
+                    if (!isset($stocksMap[$id])) {
+                        throw new \Exception("Producto con ID $id no encontrado");
+                    }
+                    if ($stocksMap[$id] < $cantidad) {
+                        throw new \Exception("Stock insuficiente para el producto: " . ($nombresMap[$id] ?? $id));
+                    }
                 }
             }
 
@@ -33,49 +46,46 @@ class Venta extends BaseModel
                 throw new \Exception("Error al crear la venta");
             }
 
-            // Registrar Pagos Múltiples
+            // 2. Registrar Pagos (Batch Insert - Optimización Bolt)
+            $pagos_insert = [];
+            $pagos_params = [];
+
             if (!empty($pagos)) {
-                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
                 foreach ($pagos as $pago) {
-                    $this->db->execute($sql_pago, [
-                    $venta_id,
-                    $pago['metodo'],
-                    $pago['monto'],
-                    $pago['referencia'] ?? null
-                    ]);
+                    $pagos_insert[] = "(?, ?, ?, ?)";
+                    $pagos_params[] = $venta_id;
+                    $pagos_params[] = $pago['metodo'];
+                    $pagos_params[] = $pago['monto'];
+                    $pagos_params[] = $pago['referencia'] ?? null;
                 }
             } else {
-                // Compatibilidad hacia atrás: si no vienen pagos detallados, crear uno con el método global
-                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
-                $this->db->execute($sql_pago, [
-                $venta_id,
-                $venta_data['metodo_pago'],
-                $venta_data['total'],
-                null
-                ]);
+                // Compatibilidad hacia atrás
+                $pagos_insert[] = "(?, ?, ?, ?)";
+                $pagos_params[] = $venta_id;
+                $pagos_params[] = $venta_data['metodo_pago'];
+                $pagos_params[] = $venta_data['total'];
+                $pagos_params[] = null;
             }
 
-            // Agregar productos y actualizar stock
-            foreach ($productos as $producto) {
-                // Insertar detalle de venta
-                $sql = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal)
-                    VALUES (?, ?, ?, ?, ?)";
-                $this->db->execute($sql, [
-                $venta_id,
-                $producto['id_producto'],
-                $producto['cantidad'],
-                $producto['precio_unitario'],
-                $producto['subtotal']
-                ]);
+            $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $pagos_insert);
+            $this->db->execute($sql_pago, $pagos_params);
 
-                // Actualizar stock del producto
-                $sql_update_stock = "UPDATE productos 
-                                SET stock_actual = stock_actual - ? 
-                                WHERE id = ?";
-                $this->db->execute($sql_update_stock, [
-                    $producto['cantidad'],
-                    $producto['id_producto']
-                ]);
+            // 3. Agregar productos (Batch Insert - Optimización Bolt)
+            // No actualizamos stock manualmente ya que el trigger tr_actualizar_stock_venta lo hace
+            if (!empty($productos)) {
+                $prod_insert = [];
+                $prod_params = [];
+                foreach ($productos as $producto) {
+                    $prod_insert[] = "(?, ?, ?, ?, ?)";
+                    $prod_params[] = $venta_id;
+                    $prod_params[] = $producto['id_producto'];
+                    $prod_params[] = $producto['cantidad'];
+                    $prod_params[] = $producto['precio_unitario'];
+                    $prod_params[] = $producto['subtotal'];
+                }
+
+                $sql_prod = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES " . implode(', ', $prod_insert);
+                $this->db->execute($sql_prod, $prod_params);
             }
 
             $this->db->commit();
