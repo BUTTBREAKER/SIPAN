@@ -57,4 +57,21 @@ class Cliente extends BaseModel
         $sql = "SELECT * FROM clientes WHERE id_sucursal = ?";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
+
+    /**
+     * Obtener clientes de una sucursal con sus estadísticas de compras en una sola consulta
+     * Optimización Bolt: Evita N+1 queries al traer conteos y sumas mediante JOIN
+     */
+    public function getBySucursalWithStats($sucursal_id)
+    {
+        $sql = "SELECT c.*,
+                       COUNT(v.id) as total_compras,
+                       COALESCE(SUM(v.total), 0) as monto_total
+                FROM {$this->table} c
+                LEFT JOIN ventas v ON c.id = v.id_cliente AND v.estado = 'completada'
+                WHERE c.id_sucursal = ?
+                GROUP BY c.id
+                ORDER BY c.nombre";
+        return $this->db->fetchAll($sql, [$sucursal_id]);
+    }
 }

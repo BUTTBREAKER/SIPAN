@@ -100,6 +100,20 @@ class Venta extends BaseModel
         return $this->db->fetchAll($sql, [$venta_id]);
     }
 
+    /**
+     * Obtener pagos para múltiples ventas en una sola consulta
+     */
+    public function getPagosByVentaIds(array $ids)
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "SELECT * FROM venta_pagos WHERE id_venta IN ($placeholders)";
+        return $this->db->fetchAll($sql, $ids);
+    }
+
     public function getWithDetails($sucursal_id, $fecha_inicio = null, $fecha_fin = null)
     {
         $sql = "SELECT v.*, 
