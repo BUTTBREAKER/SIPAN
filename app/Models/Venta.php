@@ -11,71 +11,77 @@ class Venta extends BaseModel
         try {
             $this->db->beginTransaction();
 
-            // Validar stock antes de crear la venta
-            foreach ($productos as $producto) {
-                $sql_stock = "SELECT stock_actual FROM productos WHERE id = ?";
-                $producto_db = $this->db->fetchOne($sql_stock, [$producto['id_producto']]);
+            // Bolt: Group products by ID to handle duplicates and validate stock in batch (O(1) queries)
+            $groupedProducts = [];
+            foreach ($productos as $p) {
+                $id = $p['id_producto'];
+                $groupedProducts[$id] = ($groupedProducts[$id] ?? 0) + $p['cantidad'];
+            }
 
-                if (!$producto_db) {
-                    throw new \Exception("Producto con ID {$producto['id_producto']} no encontrado");
-                }
+            if (!empty($groupedProducts)) {
+                $productIds = array_keys($groupedProducts);
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                $sql_stock = "SELECT id, stock_actual, nombre FROM productos WHERE id IN ($placeholders)";
+                $products_db = $this->db->fetchAll($sql_stock, $productIds);
+                $stockMap = array_column($products_db, 'stock_actual', 'id');
+                $nameMap = array_column($products_db, 'nombre', 'id');
 
-                if ($producto_db['stock_actual'] < $producto['cantidad']) {
-                    throw new \Exception("Stock insuficiente para el producto");
+                foreach ($groupedProducts as $id => $cantidad) {
+                    if (!isset($stockMap[$id])) {
+                        throw new \Exception("Producto con ID $id no encontrado");
+                    }
+                    if ($stockMap[$id] < $cantidad) {
+                        $nombre = $nameMap[$id] ?? "ID $id";
+                        throw new \Exception("Stock insuficiente para el producto: $nombre");
+                    }
                 }
             }
 
             // Crear venta maestra
-            // Si hay múltiples pagos, podemos poner 'mixto' o el primero en el campo legacy
             $venta_id = $this->create($venta_data);
 
             if (!$venta_id) {
                 throw new \Exception("Error al crear la venta");
             }
 
-            // Registrar Pagos Múltiples
-            if (!empty($pagos)) {
-                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
-                foreach ($pagos as $pago) {
-                    $this->db->execute($sql_pago, [
-                    $venta_id,
-                    $pago['metodo'],
-                    $pago['monto'],
-                    $pago['referencia'] ?? null
-                    ]);
-                }
-            } else {
-                // Compatibilidad hacia atrás: si no vienen pagos detallados, crear uno con el método global
-                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
-                $this->db->execute($sql_pago, [
-                $venta_id,
-                $venta_data['metodo_pago'],
-                $venta_data['total'],
-                null
-                ]);
+            // Bolt: Batch insert payments (O(1) database calls)
+            if (empty($pagos)) {
+                $pagos = [[
+                    'metodo' => $venta_data['metodo_pago'],
+                    'monto' => $venta_data['total'],
+                    'referencia' => null
+                ]];
             }
 
-            // Agregar productos y actualizar stock
-            foreach ($productos as $producto) {
-                // Insertar detalle de venta
-                $sql = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal)
-                    VALUES (?, ?, ?, ?, ?)";
-                $this->db->execute($sql, [
-                $venta_id,
-                $producto['id_producto'],
-                $producto['cantidad'],
-                $producto['precio_unitario'],
-                $producto['subtotal']
-                ]);
+            if (!empty($pagos)) {
+                $values = [];
+                $params = [];
+                foreach ($pagos as $pago) {
+                    $values[] = "(?, ?, ?, ?)";
+                    $params[] = $venta_id;
+                    $params[] = $pago['metodo'] ?? ($pago['metodo_pago'] ?? '');
+                    $params[] = $pago['monto'];
+                    $params[] = $pago['referencia'] ?? null;
+                }
+                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $values);
+                $this->db->execute($sql_pago, $params);
+            }
 
-                // Actualizar stock del producto
-                $sql_update_stock = "UPDATE productos 
-                                SET stock_actual = stock_actual - ? 
-                                WHERE id = ?";
-                $this->db->execute($sql_update_stock, [
-                    $producto['cantidad'],
-                    $producto['id_producto']
-                ]);
+            // Bolt: Batch insert products (O(1) database calls)
+            // Note: Database trigger 'tr_actualizar_stock_venta' handles stock updates automatically
+            if (!empty($productos)) {
+                $values = [];
+                $params = [];
+                foreach ($productos as $producto) {
+                    $values[] = "(?, ?, ?, ?, ?)";
+                    $params[] = $venta_id;
+                    $params[] = $producto['id_producto'];
+                    $params[] = $producto['cantidad'];
+                    $params[] = $producto['precio_unitario'];
+                    $params[] = $producto['subtotal'];
+                }
+                $sql_productos = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES " . implode(', ', $values);
+                $this->db->execute($sql_productos, $params);
             }
 
             $this->db->commit();
