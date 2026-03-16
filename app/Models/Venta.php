@@ -235,6 +235,7 @@ class Venta extends BaseModel
         $indexedResults = array_column($result, 'total', 'fecha');
         $ventas = [];
 
+        $ventas = [];
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
