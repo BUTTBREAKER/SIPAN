@@ -8,6 +8,7 @@ class BaseModel
 {
     protected $db;
     protected $table;
+    private static $columnCache = [];
 
     public function __construct()
     {
@@ -99,14 +100,16 @@ class BaseModel
 
     protected function hasColumn($column)
     {
-    // Escapa y cita el nombre de la columna de forma segura
-        $quoted_column = $this->db->getConnection()->quote($column);
+        $column = strtolower($column);
 
-        $sql = "SHOW COLUMNS FROM {$this->table} LIKE $quoted_column";
+        if (!isset(self::$columnCache[$this->table])) {
+            $sql = "SHOW COLUMNS FROM {$this->table}";
+            $columns = $this->db->fetchAll($sql);
+            self::$columnCache[$this->table] = array_map(function ($col) {
+                return strtolower($col['Field']);
+            }, $columns);
+        }
 
-    // Ejecuta sin parámetros (no necesita prepare con ?)
-        $result = $this->db->fetchOne($sql);
-
-        return $result !== false;
+        return in_array($column, self::$columnCache[$this->table]);
     }
 }
