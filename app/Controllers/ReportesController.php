@@ -50,10 +50,17 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $ventaIds = array_column($ventas, 'id');
+
+        // Batch fetch payments - Bolt Optimization
+        $allPagos = !empty($ventaIds) ? $this->ventaModel->getPagosByVentaIds($ventaIds) : [];
+        $groupedPagos = [];
+        foreach ($allPagos as $pago) {
+            $groupedPagos[$pago['id_venta']][] = $pago;
+        }
 
         // Obtener desglose de pagos detallado
-        // Necesitamos iterar ventas y buscar sus pagos si es mixto, o si queremos precision total
-        // Lo ideal sería un query agrupado en venta_pagos, pero lo haremos iterativo por simplicidad
+        // Bolt Optimization: Batch fetched payments to avoid N+1 queries
 
         $desglose_medios = [
             'efectivo_bs' => 0,
@@ -67,20 +74,20 @@ class ReportesController
 
         $total_ventas = 0;
 
-        // Optimización Bolt: Batch fetch de todos los pagos para evitar N+1
-        $ventaIds = array_column($ventas, 'id');
-        $allPagos = $this->ventaModel->getPagosByVentaIds($ventaIds);
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = $this->ventaModel->getPagosPorVentas($venta_ids);
 
-        // Agrupar pagos por ID de venta
-        $pagosMap = [];
-        foreach ($allPagos as $pago) {
-            $pagosMap[$pago['id_venta']][] = $pago;
+        // Agrupar pagos por id_venta
+        $pagos_agrupados = [];
+        foreach ($todos_los_pagos as $p) {
+            $pagos_agrupados[$p['id_venta']][] = $p;
         }
 
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            $pagos = $pagosMap[$venta['id']] ?? [];
+            $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
                 // Sumar del detalle
