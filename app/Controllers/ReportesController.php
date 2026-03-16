@@ -74,11 +74,20 @@ class ReportesController
 
         $total_ventas = 0;
 
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = $this->ventaModel->getPagosPorVentas($venta_ids);
+
+        // Agrupar pagos por id_venta
+        $pagos_agrupados = [];
+        foreach ($todos_los_pagos as $p) {
+            $pagos_agrupados[$p['id_venta']][] = $p;
+        }
+
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            // Buscar pagos de esta venta - Bolt Optimization: Use pre-fetched data
-            $pagos = $groupedPagos[$venta['id']] ?? [];
+            $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
                 // Sumar del detalle
