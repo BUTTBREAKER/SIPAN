@@ -11,17 +11,23 @@ class Venta extends BaseModel
         try {
             $this->db->beginTransaction();
 
-            // Validar stock antes de crear la venta
-            foreach ($productos as $producto) {
-                $sql_stock = "SELECT stock_actual FROM productos WHERE id = ?";
-                $producto_db = $this->db->fetchOne($sql_stock, [$producto['id_producto']]);
+            // Validar stock antes de crear la venta (Optimización Bolt: Batch query para reducir round-trips)
+            $productIds = array_column($productos, 'id_producto');
+            if (!empty($productIds)) {
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                $sql_stock = "SELECT id, nombre, stock_actual FROM productos WHERE id IN ($placeholders)";
+                $productos_db = $this->db->fetchAll($sql_stock, $productIds);
+                $stockMap = array_column($productos_db, null, 'id');
 
-                if (!$producto_db) {
-                    throw new \Exception("Producto con ID {$producto['id_producto']} no encontrado");
-                }
+                foreach ($productos as $producto) {
+                    $id = $producto['id_producto'];
+                    if (!isset($stockMap[$id])) {
+                        throw new \Exception("Producto con ID {$id} no encontrado");
+                    }
 
-                if ($producto_db['stock_actual'] < $producto['cantidad']) {
-                    throw new \Exception("Stock insuficiente para el producto");
+                    if ($stockMap[$id]['stock_actual'] < $producto['cantidad']) {
+                        throw new \Exception("Stock insuficiente para el producto: " . $stockMap[$id]['nombre']);
+                    }
                 }
             }
 
@@ -68,14 +74,9 @@ class Venta extends BaseModel
                 $producto['subtotal']
                 ]);
 
-                // Actualizar stock del producto
-                $sql_update_stock = "UPDATE productos 
-                                SET stock_actual = stock_actual - ? 
-                                WHERE id = ?";
-                $this->db->execute($sql_update_stock, [
-                    $producto['cantidad'],
-                    $producto['id_producto']
-                ]);
+                // Optimización Bolt: Eliminada actualización manual de stock.
+                // El trigger 'tr_actualizar_stock_venta' en la DB ya realiza este descuento automáticamente.
+                // Esto ahorra una consulta por producto y evita el error de doble descuento.
             }
 
             $this->db->commit();
