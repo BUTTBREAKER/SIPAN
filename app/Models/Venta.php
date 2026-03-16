@@ -188,11 +188,13 @@ class Venta extends BaseModel
         $indexedResult = array_column($result, 'total', 'fecha');
 
         $ventas = [];
+
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => date('d/m', strtotime($fecha)),
                 'total' => (float)($indexedResult[$fecha] ?? 0)
+                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
             ];
         }
 
