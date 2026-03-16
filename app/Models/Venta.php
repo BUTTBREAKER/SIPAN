@@ -100,13 +100,21 @@ class Venta extends BaseModel
         return $this->db->fetchAll($sql, [$venta_id]);
     }
 
-    public function getPagosByVentaIds(array $venta_ids)
+    /**
+     * Obtiene los pagos de múltiples ventas en una sola consulta (Optimización Bolt)
+     *
+     * @param array $venta_ids
+     * @return array
+     */
+    public function getPagosPorVentas(array $venta_ids)
     {
         if (empty($venta_ids)) {
             return [];
         }
+
         $placeholders = implode(',', array_fill(0, count($venta_ids), '?'));
         $sql = "SELECT * FROM venta_pagos WHERE id_venta IN ($placeholders)";
+
         return $this->db->fetchAll($sql, $venta_ids);
     }
 
@@ -194,15 +202,16 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Asegurar que todos los días estén presentes
-        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
-        $indexedResults = array_column($result, 'total', 'fecha');
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
+
         $ventas = [];
 
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => date('d/m', strtotime($fecha)),
+                'total' => (float)($indexedResult[$fecha] ?? 0)
                 'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
             ];
         }
@@ -220,18 +229,15 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Llenar huecos de días sin ventas
-        // Empezar desde hace $dias hasta hoy
-        // La lógica del bucle anterior era backwards, aquí lo hacemos igual para mantener consistencia
-        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
-        $indexedResults = array_column($result, 'total', 'fecha');
-        $ventas = [];
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
 
+        $ventas = [];
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => $fecha,
-                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
+                'total' => (float)($indexedResult[$fecha] ?? 0)
             ];
         }
 
