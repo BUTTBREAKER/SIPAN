@@ -50,10 +50,17 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $ventaIds = array_column($ventas, 'id');
+
+        // Batch fetch payments - Bolt Optimization
+        $allPagos = !empty($ventaIds) ? $this->ventaModel->getPagosByVentaIds($ventaIds) : [];
+        $groupedPagos = [];
+        foreach ($allPagos as $pago) {
+            $groupedPagos[$pago['id_venta']][] = $pago;
+        }
 
         // Obtener desglose de pagos detallado
-        // Necesitamos iterar ventas y buscar sus pagos si es mixto, o si queremos precision total
-        // Lo ideal sería un query agrupado en venta_pagos, pero lo haremos iterativo por simplicidad
+        // Bolt Optimization: Batch fetched payments to avoid N+1 queries
 
         $desglose_medios = [
             'efectivo_bs' => 0,
