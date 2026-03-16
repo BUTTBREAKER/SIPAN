@@ -184,15 +184,16 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Indexar resultados por fecha para evitar búsqueda O(N^2)
-        $indexedResult = array_column($result, 'total', 'fecha');
-
+        // Asegurar que todos los días estén presentes
+        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
+        $indexedResults = array_column($result, 'total', 'fecha');
         $ventas = [];
+
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => date('d/m', strtotime($fecha)),
-                'total' => (float)($indexedResult[$fecha] ?? 0)
+                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
             ];
         }
 
@@ -209,15 +210,19 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Indexar resultados por fecha para evitar búsqueda O(N^2)
-        $indexedResult = array_column($result, 'total', 'fecha');
+        // Llenar huecos de días sin ventas
+        // Empezar desde hace $dias hasta hoy
+        // La lógica del bucle anterior era backwards, aquí lo hacemos igual para mantener consistencia
+        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
+        $indexedResults = array_column($result, 'total', 'fecha');
+        $ventas = [];
 
         $ventas = [];
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => $fecha,
-                'total' => (float)($indexedResult[$fecha] ?? 0)
+                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
             ];
         }
 
