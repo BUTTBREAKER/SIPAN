@@ -110,9 +110,7 @@ class ReportesController
             } else {
                 // Usar el metodo principal (compatibilidad anterior)
                 $m = $venta['metodo_pago'];
-                if ($m == 'mixto') {
-                    // Si es mixto pero no tiene pagos en tabla (error data antigua), no sumamos al desglose especifico o lo ponemos en otros
-                } else {
+                if ($m !== 'mixto') {
                     if (isset($desglose_medios[$m])) {
                         $desglose_medios[$m] += $venta['total'];
                     }
