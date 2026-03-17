@@ -18,11 +18,11 @@ class Produccion extends BaseModel
             // 1. Crear producción
             $produccion_id = $this->create($produccion_data);
 
-            error_log('Producción creada con ID: ' . $produccion_id); // LOG
-
             // Instanciar modelos para descontar stock
             $loteModel = new Lote();
-            $insumoModel = new Insumo();
+
+            $batch_values = [];
+            $batch_params = [];
 
             // 2. Procesar insumos
             // Bolt Optimization: Multi-row INSERT for production insumos (O(1) round-trip)
@@ -58,7 +58,6 @@ class Produccion extends BaseModel
             return $produccion_id;
         } catch (\Exception $e) {
             $this->db->rollback();
-            error_log('Error en createWithInsumos: ' . $e->getMessage());
             throw $e;
         }
     }
