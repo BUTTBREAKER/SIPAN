@@ -50,16 +50,17 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $ventaIds = array_column($ventas, 'id');
 
-        // Bolt Optimization: Get all payments at once to avoid N+1 queries
-        $venta_ids = array_column($ventas, 'id');
-        $todos_los_pagos = $this->ventaModel->getPagosByVentaIds($venta_ids);
-
-        // Group payments by id_venta for O(1) lookup
-        $pagos_agrupados = [];
-        foreach ($todos_los_pagos as $pago) {
-            $pagos_agrupados[$pago['id_venta']][] = $pago;
+        // Batch fetch payments - Bolt Optimization
+        $allPagos = !empty($ventaIds) ? $this->ventaModel->getPagosByVentaIds($ventaIds) : [];
+        $groupedPagos = [];
+        foreach ($allPagos as $pago) {
+            $groupedPagos[$pago['id_venta']][] = $pago;
         }
+
+        // Obtener desglose de pagos detallado
+        // Bolt Optimization: Batch fetched payments to avoid N+1 queries
 
         $desglose_medios = [
             'efectivo_bs' => 0,
@@ -73,10 +74,19 @@ class ReportesController
 
         $total_ventas = 0;
 
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = $this->ventaModel->getPagosPorVentas($venta_ids);
+
+        // Agrupar pagos por id_venta
+        $pagos_agrupados = [];
+        foreach ($todos_los_pagos as $p) {
+            $pagos_agrupados[$p['id_venta']][] = $p;
+        }
+
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            // Bolt Optimization: Use grouped payments from memory (O(1)) instead of per-sale query
             $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
@@ -100,7 +110,7 @@ class ReportesController
             } else {
                 // Usar el metodo principal (compatibilidad anterior)
                 $m = $venta['metodo_pago'];
-                if ($m != 'mixto') {
+                if ($m !== 'mixto') {
                     if (isset($desglose_medios[$m])) {
                         $desglose_medios[$m] += $venta['total'];
                     }
@@ -508,7 +518,7 @@ class ReportesController
     private function getHTMLInsumos($data)
     {
         ob_start();
-?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -566,7 +576,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -582,7 +592,7 @@ class ReportesController
     private function getHTMLProducciones($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -642,7 +652,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -658,7 +668,7 @@ class ReportesController
     private function getHTMLPedidos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -720,7 +730,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
     private function generarPDFCompras($data)
@@ -735,7 +745,7 @@ class ReportesController
     private function getHTMLCompras($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -803,7 +813,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -819,7 +829,7 @@ class ReportesController
     private function getHTMLVencimientos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -874,7 +884,7 @@ class ReportesController
                 <tbody>
                     <?php foreach ($data['lotes'] as $l) :
                         $dias = ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
-                    ?>
+                        ?>
                         <tr>
                             <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
                             <td><?= htmlspecialchars($l['nombre_item']) ?></td>
@@ -888,7 +898,7 @@ class ReportesController
         </body>
 
         </html>
-<?php
+        <?php
         return ob_get_clean();
     }
 }

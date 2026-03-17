@@ -11,17 +11,23 @@ class Venta extends BaseModel
         try {
             $this->db->beginTransaction();
 
-            // Validar stock antes de crear la venta
-            foreach ($productos as $producto) {
-                $sql_stock = "SELECT stock_actual FROM productos WHERE id = ?";
-                $producto_db = $this->db->fetchOne($sql_stock, [$producto['id_producto']]);
+            // Validar stock antes de crear la venta (Optimización Bolt: Batch query para reducir round-trips)
+            $productIds = array_column($productos, 'id_producto');
+            if (!empty($productIds)) {
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                $sql_stock = "SELECT id, nombre, stock_actual FROM productos WHERE id IN ($placeholders)";
+                $productos_db = $this->db->fetchAll($sql_stock, $productIds);
+                $stockMap = array_column($productos_db, null, 'id');
 
-                if (!$producto_db) {
-                    throw new \Exception("Producto con ID {$producto['id_producto']} no encontrado");
-                }
+                foreach ($productos as $producto) {
+                    $id = $producto['id_producto'];
+                    if (!isset($stockMap[$id])) {
+                        throw new \Exception("Producto con ID {$id} no encontrado");
+                    }
 
-                if ($producto_db['stock_actual'] < $producto['cantidad']) {
-                    throw new \Exception("Stock insuficiente para el producto");
+                    if ($stockMap[$id]['stock_actual'] < $producto['cantidad']) {
+                        throw new \Exception("Stock insuficiente para el producto: " . $stockMap[$id]['nombre']);
+                    }
                 }
             }
 
@@ -68,8 +74,9 @@ class Venta extends BaseModel
                 $producto['subtotal']
                 ]);
 
-                // Bolt Optimization: Manual stock update removed.
-                // The database trigger 'tr_actualizar_stock_venta' handles this automatically.
+                // Optimización Bolt: Eliminada actualización manual de stock.
+                // El trigger 'tr_actualizar_stock_venta' en la DB ya realiza este descuento automáticamente.
+                // Esto ahorra una consulta por producto y evita el error de doble descuento.
             }
 
             $this->db->commit();
@@ -95,10 +102,12 @@ class Venta extends BaseModel
     }
 
     /**
-     * Get payments for multiple sales in a single query
-     * Bolt Optimization: Eliminates N+1 query problem in reports
+     * Obtiene los pagos de múltiples ventas en una sola consulta (Optimización Bolt)
+     *
+     * @param array $venta_ids
+     * @return array
      */
-    public function getPagosByVentaIds(array $venta_ids)
+    public function getPagosPorVentas(array $venta_ids)
     {
         if (empty($venta_ids)) {
             return [];
@@ -194,15 +203,16 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Asegurar que todos los días estén presentes
-        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
-        $indexedResults = array_column($result, 'total', 'fecha');
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
+
         $ventas = [];
 
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => date('d/m', strtotime($fecha)),
+                'total' => (float)($indexedResult[$fecha] ?? 0)
                 'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
             ];
         }
@@ -220,18 +230,15 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Llenar huecos de días sin ventas
-        // Empezar desde hace $dias hasta hoy
-        // La lógica del bucle anterior era backwards, aquí lo hacemos igual para mantener consistencia
-        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
-        $indexedResults = array_column($result, 'total', 'fecha');
-        $ventas = [];
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
 
+        $ventas = [];
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => $fecha,
-                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
+                'total' => (float)($indexedResult[$fecha] ?? 0)
             ];
         }
 
