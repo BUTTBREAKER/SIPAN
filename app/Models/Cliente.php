@@ -59,8 +59,8 @@ class Cliente extends BaseModel
     }
 
     /**
-     * Obtiene todos los clientes de una sucursal con sus estadísticas de ventas
-     * Optimización: Reduce N+1 consultas a una sola con JOIN y GROUP BY
+     * Obtiene los clientes con sus estadísticas de compra (total de ventas y monto total)
+     * Optimización Bolt: Evita N+1 queries al traer estadísticas en una sola consulta
      */
     public function getBySucursalWithStats($sucursal_id)
     {
@@ -71,7 +71,7 @@ class Cliente extends BaseModel
                 LEFT JOIN ventas v ON c.id = v.id_cliente
                 WHERE c.id_sucursal = ?
                 GROUP BY c.id
-                ORDER BY c.nombre";
+                ORDER BY c.nombre ASC";
 
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }

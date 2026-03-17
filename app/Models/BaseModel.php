@@ -8,6 +8,7 @@ class BaseModel
 {
     protected $db;
     protected $table;
+    protected static $columnCache = [];
 
     public function __construct()
     {
@@ -97,16 +98,19 @@ class BaseModel
         return $result['total'] ?? 0;
     }
 
+    /**
+     * Verifica si una columna existe en la tabla del modelo.
+     * Optimización Bolt: Cachea las columnas de la tabla para evitar consultas redundantes.
+     */
     protected function hasColumn($column)
     {
-    // Escapa y cita el nombre de la columna de forma segura
-        $quoted_column = $this->db->getConnection()->quote($column);
+        if (!isset(self::$columnCache[$this->table])) {
+            $sql = "SHOW COLUMNS FROM {$this->table}";
+            $result = $this->db->fetchAll($sql);
+            // Normalizar a minúsculas para coincidencia insensible a mayúsculas/minúsculas
+            self::$columnCache[$this->table] = array_map('strtolower', array_column($result, 'Field'));
+        }
 
-        $sql = "SHOW COLUMNS FROM {$this->table} LIKE $quoted_column";
-
-    // Ejecuta sin parámetros (no necesita prepare con ?)
-        $result = $this->db->fetchOne($sql);
-
-        return $result !== false;
+        return in_array(strtolower($column), self::$columnCache[$this->table]);
     }
 }

@@ -50,10 +50,17 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $ventaIds = array_column($ventas, 'id');
+
+        // Batch fetch payments - Bolt Optimization
+        $allPagos = !empty($ventaIds) ? $this->ventaModel->getPagosByVentaIds($ventaIds) : [];
+        $groupedPagos = [];
+        foreach ($allPagos as $pago) {
+            $groupedPagos[$pago['id_venta']][] = $pago;
+        }
 
         // Obtener desglose de pagos detallado
-        // Necesitamos iterar ventas y buscar sus pagos si es mixto, o si queremos precision total
-        // Lo ideal sería un query agrupado en venta_pagos, pero lo haremos iterativo por simplicidad
+        // Bolt Optimization: Batch fetched payments to avoid N+1 queries
 
         $desglose_medios = [
             'efectivo_bs' => 0,
@@ -66,19 +73,46 @@ class ReportesController
         ];
 
         $total_ventas = 0;
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = [];
+
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries
+        if (!empty($venta_ids)) {
+            $placeholders = implode(',', array_fill(0, count($venta_ids), '?'));
+            $sql = "SELECT id_venta, metodo_pago, monto FROM venta_pagos WHERE id_venta IN ($placeholders)";
+            // Usamos el core database directamente para fetchAll batch
+            $pagos_raw = \App\Core\Database::getInstance()->fetchAll($sql, $venta_ids);
+
+            // Indexar pagos por ID de venta
+            foreach ($pagos_raw as $pago) {
+                $todos_los_pagos[$pago['id_venta']][] = $pago;
+            }
+        }
+
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = $this->ventaModel->getPagosPorVentas($venta_ids);
+
+        // Agrupar pagos por id_venta
+        $pagos_agrupados = [];
+        foreach ($todos_los_pagos as $p) {
+            $pagos_agrupados[$p['id_venta']][] = $p;
+        }
+
+        // Optimización Bolt: Batch retrieval de pagos para evitar N+1 queries
+        $ventaIds = array_column($ventas, 'id');
+        $todosLosPagos = $this->ventaModel->getPagosByVentaIds($ventaIds);
+
+        // Agrupar pagos por ID de venta para O(1) lookup
+        $pagosPorVenta = [];
+        foreach ($todosLosPagos as $pago) {
+            $pagosPorVenta[$pago['id_venta']][] = $pago;
+        }
 
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            // Buscar pagos de esta venta
-            // Asumimos que ventaModel tiene metodo getPagos, si no, usaremos db directo
-            $sql = "SELECT metodo_pago, monto FROM venta_pagos WHERE id_venta = ?";
-            // Acceso "truco" al db del modelo si es protected, pero mejor instanciar modelo Venta si tiene el metodo
-            // Si Venta no tiene getPagos, lo agregamos rapido o usamos query directo
-            // Usaremos el modelo venta para ser limpios, asumiendo getPagos existe o lo creamos.
-            // Si no existe, fallback a 'metodo_pago' de la tabla ventas.
-
-            $pagos = $this->ventaModel->getPagos($venta['id']); // Necesitamos crear este metodo
+            $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
                 // Sumar del detalle
@@ -101,9 +135,7 @@ class ReportesController
             } else {
                 // Usar el metodo principal (compatibilidad anterior)
                 $m = $venta['metodo_pago'];
-                if ($m == 'mixto') {
-                    // Si es mixto pero no tiene pagos en tabla (error data antigua), no sumamos al desglose especifico o lo ponemos en otros
-                } else {
+                if ($m !== 'mixto') {
                     if (isset($desglose_medios[$m])) {
                         $desglose_medios[$m] += $venta['total'];
                     }
@@ -291,8 +323,7 @@ class ReportesController
 
     public function clientes()
     {
-        // Optimización Bolt: Se usa getBySucursalWithStats para obtener datos y estadísticas en un solo query
-        // eliminando el problema de N+1 consultas.
+        // Optimización Bolt: Usar método que trae estadísticas en una sola consulta
         $clientes = $this->clienteModel->getBySucursalWithStats($_SESSION['sucursal_id']);
         $formato = $_GET['formato'] ?? 'html';
 
