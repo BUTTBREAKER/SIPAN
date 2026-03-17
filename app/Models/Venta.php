@@ -8,6 +8,10 @@ class Venta extends BaseModel
 
     public function createWithProducts($venta_data, $productos, $pagos = [])
     {
+        if (empty($productos)) {
+            throw new \Exception("Debe agregar al menos un producto");
+        }
+
         try {
             $this->db->beginTransaction();
 
@@ -32,32 +36,32 @@ class Venta extends BaseModel
             }
 
             // Crear venta maestra
-            // Si hay múltiples pagos, podemos poner 'mixto' o el primero en el campo legacy
             $venta_id = $this->create($venta_data);
 
             if (!$venta_id) {
                 throw new \Exception("Error al crear la venta");
             }
 
-            // Registrar Pagos Múltiples
+            // Optimización Bolt: Batch Payment Insertion (1 query en lugar de N)
             if (!empty($pagos)) {
-                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
+                $pago_values = [];
+                $pago_params = [];
                 foreach ($pagos as $pago) {
-                    $this->db->execute($sql_pago, [
-                    $venta_id,
-                    $pago['metodo'],
-                    $pago['monto'],
-                    $pago['referencia'] ?? null
-                    ]);
+                    $pago_values[] = "(?, ?, ?, ?)";
+                    $pago_params[] = $venta_id;
+                    $pago_params[] = $pago['metodo'];
+                    $pago_params[] = $pago['monto'];
+                    $pago_params[] = $pago['referencia'] ?? null;
                 }
+                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $pago_values);
+                $this->db->execute($sql_pago, $pago_params);
             } else {
-                // Compatibilidad hacia atrás: si no vienen pagos detallados, crear uno con el método global
                 $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
                 $this->db->execute($sql_pago, [
-                $venta_id,
-                $venta_data['metodo_pago'],
-                $venta_data['total'],
-                null
+                    $venta_id,
+                    $venta_data['metodo_pago'],
+                    $venta_data['total'],
+                    null
                 ]);
             }
 
