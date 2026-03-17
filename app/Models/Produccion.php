@@ -45,7 +45,9 @@ class Produccion extends BaseModel
                 // Note: This must remain in the loop as it handles complex FIFO logic across multiple rows
                 $loteModel->descontarStock('insumo', $id_insumo, $cantidad, $produccion_data['id_sucursal']);
 
-                // Note: Manual Insumo::updateStock removed as it's handled by database trigger 'tr_descontar_insumos_produccion'
+                // Optimización Bolt: Eliminada actualización manual del stock total del insumo.
+                // El trigger 'tr_descontar_insumos_produccion' en la DB ya realiza este descuento automáticamente
+                // al insertar en la tabla 'produccion_insumos'.
             }
 
             // Since we already have a guard clause at the top, $insumo_values won't be empty here
