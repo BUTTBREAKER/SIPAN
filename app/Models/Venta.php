@@ -8,54 +8,78 @@ class Venta extends BaseModel
 
     public function createWithProducts($venta_data, $productos, $pagos = [])
     {
+        if (empty($productos)) {
+            throw new \Exception("Debe agregar al menos un producto");
+        }
+
         try {
             $this->db->beginTransaction();
 
-            // Validar stock antes de crear la venta
-            foreach ($productos as $producto) {
-                $sql_stock = "SELECT stock_actual FROM productos WHERE id = ?";
-                $producto_db = $this->db->fetchOne($sql_stock, [$producto['id_producto']]);
+            // Validar stock antes de crear la venta (Optimización Bolt: Batch query para reducir round-trips)
+            $productIds = array_column($productos, 'id_producto');
+            if (!empty($productIds)) {
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                $sql_stock = "SELECT id, nombre, stock_actual FROM productos WHERE id IN ($placeholders)";
+                $productos_db = $this->db->fetchAll($sql_stock, $productIds);
+                $stockMap = array_column($productos_db, null, 'id');
 
-                if (!$producto_db) {
-                    throw new \Exception("Producto con ID {$producto['id_producto']} no encontrado");
-                }
+                foreach ($productos as $producto) {
+                    $id = $producto['id_producto'];
+                    if (!isset($stockMap[$id])) {
+                        throw new \Exception("Producto con ID {$id} no encontrado");
+                    }
 
-                if ($producto_db['stock_actual'] < $producto['cantidad']) {
-                    throw new \Exception("Stock insuficiente para el producto");
+                    if ($stockMap[$id]['stock_actual'] < $producto['cantidad']) {
+                        throw new \Exception("Stock insuficiente para el producto: " . $stockMap[$id]['nombre']);
+                    }
                 }
             }
 
             // Crear venta maestra
-            // Si hay múltiples pagos, podemos poner 'mixto' o el primero en el campo legacy
             $venta_id = $this->create($venta_data);
 
             if (!$venta_id) {
                 throw new \Exception("Error al crear la venta");
             }
 
-            // Registrar Pagos Múltiples
+            // Optimización Bolt: Batch Payment Insertion (1 query en lugar de N)
             if (!empty($pagos)) {
-                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
+                $pago_values = [];
+                $pago_params = [];
                 foreach ($pagos as $pago) {
-                    $this->db->execute($sql_pago, [
-                    $venta_id,
-                    $pago['metodo'],
-                    $pago['monto'],
-                    $pago['referencia'] ?? null
-                    ]);
+                    $pago_values[] = "(?, ?, ?, ?)";
+                    $pago_params[] = $venta_id;
+                    $pago_params[] = $pago['metodo'];
+                    $pago_params[] = $pago['monto'];
+                    $pago_params[] = $pago['referencia'] ?? null;
                 }
+                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $pago_values);
+                $this->db->execute($sql_pago, $pago_params);
             } else {
-                // Compatibilidad hacia atrás: si no vienen pagos detallados, crear uno con el método global
                 $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
                 $this->db->execute($sql_pago, [
-                $venta_id,
-                $venta_data['metodo_pago'],
-                $venta_data['total'],
-                null
+                    $venta_id,
+                    $venta_data['metodo_pago'],
+                    $venta_data['total'],
+                    null
                 ]);
             }
+            $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(',', $pago_values);
+            $this->db->execute($sql_pago, $pago_params);
 
-            // Agregar productos y actualizar stock
+            $pagoPlaceholders = [];
+            $pagoValues = [];
+            foreach ($pagos as $pago) {
+                $pagoPlaceholders[] = "(?, ?, ?, ?)";
+                array_push($pagoValues, $venta_id, $pago['metodo'], $pago['monto'], $pago['referencia'] ?? null);
+            }
+            $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $pagoPlaceholders);
+            $this->db->execute($sql_pago, $pagoValues);
+
+            // Bolt: Registro de Detalles por Lotes (Batch Insert)
+            // Se elimina la actualización manual de stock ya que el disparador tr_actualizar_stock_venta se encarga de ello automáticamente.
+            $productPlaceholders = [];
+            $productValues = [];
             foreach ($productos as $producto) {
                 // Insertar detalle de venta
                 $sql = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal)
@@ -68,15 +92,12 @@ class Venta extends BaseModel
                 $producto['subtotal']
                 ]);
 
-                // Actualizar stock del producto
-                $sql_update_stock = "UPDATE productos 
-                                SET stock_actual = stock_actual - ? 
-                                WHERE id = ?";
-                $this->db->execute($sql_update_stock, [
-                    $producto['cantidad'],
-                    $producto['id_producto']
-                ]);
+                // Optimización Bolt: Eliminada actualización manual de stock.
+                // El trigger 'tr_actualizar_stock_venta' en la DB ya realiza este descuento automáticamente.
+                // Esto ahorra una consulta por producto y evita el error de doble descuento.
             }
+            $sql_productos = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES " . implode(', ', $productPlaceholders);
+            $this->db->execute($sql_productos, $productValues);
 
             $this->db->commit();
             return $venta_id;

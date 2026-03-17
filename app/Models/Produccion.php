@@ -8,6 +8,10 @@ class Produccion extends BaseModel
 
     public function createWithInsumos($produccion_data, $insumos)
     {
+        if (empty($insumos)) {
+            throw new \Exception("Debe agregar al menos un insumo");
+        }
+
         try {
             $this->db->beginTransaction();
 
@@ -21,6 +25,10 @@ class Produccion extends BaseModel
             $batch_params = [];
 
             // 2. Procesar insumos
+            // Bolt Optimization: Multi-row INSERT for production insumos (O(1) round-trip)
+            $insumo_values = [];
+            $insumo_params = [];
+
             foreach ($insumos as $insumo) {
                 if (!isset($insumo['id_insumo']) || !isset($insumo['cantidad_utilizada'])) {
                     throw new \Exception('Estructura de insumo inválida: ' . print_r($insumo, true));
@@ -29,24 +37,22 @@ class Produccion extends BaseModel
                 $id_insumo = $insumo['id_insumo'];
                 $cantidad = $insumo['cantidad_utilizada'];
 
-                // A. Preparar para inserción batch en produccion_insumos
-                // Bolt Optimization: Reduce database round-trips from O(N) to O(1)
-                $batch_values[] = "(?, ?, ?)";
-                array_push($batch_params, $produccion_id, $id_insumo, $cantidad);
+                // A. Registrar consumo en tabla produccion_insumos
+                $insumo_values[] = "(?, ?, ?)";
+                array_push($insumo_params, $produccion_id, $id_insumo, $cantidad);
 
-                // B. Descontar de Lotes (FIFO) - Mantenemos en bucle por complejidad lógica de selección de lotes
+                // B. Descontar de Lotes (FIFO)
+                // Note: This must remain in the loop as it handles complex FIFO logic across multiple rows
                 $loteModel->descontarStock('insumo', $id_insumo, $cantidad, $produccion_data['id_sucursal']);
 
-                // C. Redundancia Eliminada: El stock total de insumos se descuenta automáticamente
-                // mediante el trigger 'tr_descontar_insumos_produccion' (see 001.sql:547)
-                // upon insertion into produccion_insumos.
+                // Optimización Bolt: Eliminada actualización manual del stock total del insumo.
+                // El trigger 'tr_descontar_insumos_produccion' en la DB ya realiza este descuento automáticamente
+                // al insertar en la tabla 'produccion_insumos'.
             }
 
-            // Ejecutar inserción batch de insumos
-            if (!empty($batch_values)) {
-                $sql_batch = "INSERT INTO produccion_insumos (id_produccion, id_insumo, cantidad_utilizada) VALUES " . implode(', ', $batch_values);
-                $this->db->execute($sql_batch, $batch_params);
-            }
+            // Since we already have a guard clause at the top, $insumo_values won't be empty here
+            $sql = "INSERT INTO produccion_insumos (id_produccion, id_insumo, cantidad_utilizada) VALUES " . implode(',', $insumo_values);
+            $this->db->execute($sql, $insumo_params);
 
             $this->db->commit();
             return $produccion_id;
