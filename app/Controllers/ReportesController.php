@@ -99,6 +99,16 @@ class ReportesController
             $pagos_agrupados[$p['id_venta']][] = $p;
         }
 
+        // Optimización Bolt: Batch retrieval de pagos para evitar N+1 queries
+        $ventaIds = array_column($ventas, 'id');
+        $todosLosPagos = $this->ventaModel->getPagosByVentaIds($ventaIds);
+
+        // Agrupar pagos por ID de venta para O(1) lookup
+        $pagosPorVenta = [];
+        foreach ($todosLosPagos as $pago) {
+            $pagosPorVenta[$pago['id_venta']][] = $pago;
+        }
+
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
