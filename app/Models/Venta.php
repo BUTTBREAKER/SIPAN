@@ -65,7 +65,19 @@ class Venta extends BaseModel
                 ]);
             }
 
-            // Agregar productos y actualizar stock
+            $pagoPlaceholders = [];
+            $pagoValues = [];
+            foreach ($pagos as $pago) {
+                $pagoPlaceholders[] = "(?, ?, ?, ?)";
+                array_push($pagoValues, $venta_id, $pago['metodo'], $pago['monto'], $pago['referencia'] ?? null);
+            }
+            $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $pagoPlaceholders);
+            $this->db->execute($sql_pago, $pagoValues);
+
+            // Bolt: Registro de Detalles por Lotes (Batch Insert)
+            // Se elimina la actualización manual de stock ya que el disparador tr_actualizar_stock_venta se encarga de ello automáticamente.
+            $productPlaceholders = [];
+            $productValues = [];
             foreach ($productos as $producto) {
                 // Insertar detalle de venta
                 $sql = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal)
@@ -82,6 +94,8 @@ class Venta extends BaseModel
                 // El trigger 'tr_actualizar_stock_venta' en la DB ya realiza este descuento automáticamente.
                 // Esto ahorra una consulta por producto y evita el error de doble descuento.
             }
+            $sql_productos = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES " . implode(', ', $productPlaceholders);
+            $this->db->execute($sql_productos, $productValues);
 
             $this->db->commit();
             return $venta_id;
