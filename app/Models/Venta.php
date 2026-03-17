@@ -212,7 +212,6 @@ class Venta extends BaseModel
             $ventas[] = [
                 'fecha' => date('d/m', strtotime($fecha)),
                 'total' => (float)($indexedResult[$fecha] ?? 0)
-                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
             ];
         }
 

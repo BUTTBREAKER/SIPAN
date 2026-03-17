@@ -14,16 +14,14 @@ class Produccion extends BaseModel
             // 1. Crear producción
             $produccion_id = $this->create($produccion_data);
 
-            error_log('Producción creada con ID: ' . $produccion_id); // LOG
-
             // Instanciar modelos para descontar stock
             $loteModel = new Lote();
-            $insumoModel = new Insumo();
+
+            $batch_values = [];
+            $batch_params = [];
 
             // 2. Procesar insumos
             foreach ($insumos as $insumo) {
-                error_log('Procesando insumo: ' . print_r($insumo, true)); // LOG
-
                 if (!isset($insumo['id_insumo']) || !isset($insumo['cantidad_utilizada'])) {
                     throw new \Exception('Estructura de insumo inválida: ' . print_r($insumo, true));
                 }
@@ -31,29 +29,29 @@ class Produccion extends BaseModel
                 $id_insumo = $insumo['id_insumo'];
                 $cantidad = $insumo['cantidad_utilizada'];
 
-                // A. Registrar consumo en tabla produccion_insumos
-                $sql = "INSERT INTO produccion_insumos (id_produccion, id_insumo, cantidad_utilizada)
-                    VALUES (?, ?, ?)";
-                $this->db->execute($sql, [
-                    $produccion_id,
-                    $id_insumo,
-                    $cantidad
-                ]);
+                // A. Preparar para inserción batch en produccion_insumos
+                // Bolt Optimization: Reduce database round-trips from O(N) to O(1)
+                $batch_values[] = "(?, ?, ?)";
+                array_push($batch_params, $produccion_id, $id_insumo, $cantidad);
 
-                // B. Descontar de Lotes (FIFO)
-                // Esto busca lotes activos y los consume en orden de vencimiento
+                // B. Descontar de Lotes (FIFO) - Mantenemos en bucle por complejidad lógica de selección de lotes
                 $loteModel->descontarStock('insumo', $id_insumo, $cantidad, $produccion_data['id_sucursal']);
 
-                // C. Descontar Stock Total del Insumo
-                // Se asume que Insumo::updateStock maneja la resta
-                $insumoModel->updateStock($id_insumo, $cantidad, 'subtract');
+                // C. Redundancia Eliminada: El stock total de insumos se descuenta automáticamente
+                // mediante el trigger 'tr_descontar_insumos_produccion' (see 001.sql:547)
+                // upon insertion into produccion_insumos.
+            }
+
+            // Ejecutar inserción batch de insumos
+            if (!empty($batch_values)) {
+                $sql_batch = "INSERT INTO produccion_insumos (id_produccion, id_insumo, cantidad_utilizada) VALUES " . implode(', ', $batch_values);
+                $this->db->execute($sql_batch, $batch_params);
             }
 
             $this->db->commit();
             return $produccion_id;
         } catch (\Exception $e) {
             $this->db->rollback();
-            error_log('Error en createWithInsumos: ' . $e->getMessage());
             throw $e;
         }
     }
