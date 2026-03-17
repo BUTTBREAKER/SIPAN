@@ -73,6 +73,21 @@ class ReportesController
         ];
 
         $total_ventas = 0;
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = [];
+
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries
+        if (!empty($venta_ids)) {
+            $placeholders = implode(',', array_fill(0, count($venta_ids), '?'));
+            $sql = "SELECT id_venta, metodo_pago, monto FROM venta_pagos WHERE id_venta IN ($placeholders)";
+            // Usamos el core database directamente para fetchAll batch
+            $pagos_raw = \App\Core\Database::getInstance()->fetchAll($sql, $venta_ids);
+
+            // Indexar pagos por ID de venta
+            foreach ($pagos_raw as $pago) {
+                $todos_los_pagos[$pago['id_venta']][] = $pago;
+            }
+        }
 
         // Optimización Bolt: Batch fetch de pagos para evitar N+1
         $venta_ids = array_column($ventas, 'id');
@@ -298,15 +313,9 @@ class ReportesController
 
     public function clientes()
     {
-        $clientes = $this->clienteModel->getBySucursal($_SESSION['sucursal_id']);
+        // Optimización Bolt: Usar método que trae estadísticas en una sola consulta
+        $clientes = $this->clienteModel->getBySucursalWithStats($_SESSION['sucursal_id']);
         $formato = $_GET['formato'] ?? 'html';
-
-        // Obtener estadísticas de cada cliente
-        foreach ($clientes as &$cliente) {
-            $stats = $this->ventaModel->getClienteStats($cliente['id']);
-            $cliente['total_compras'] = $stats['total_compras'] ?? 0;
-            $cliente['monto_total'] = $stats['monto_total'] ?? 0;
-        }
 
         $data = [
             'clientes' => $clientes
