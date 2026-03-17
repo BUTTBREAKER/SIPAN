@@ -18,19 +18,23 @@ class Pedido extends BaseModel
             $pedido_id = $this->create($pedido_data);
 
 
-            /// Agregar productos
-            foreach ($productos as $producto) {
-                $subtotal = $producto['precio'] * $producto['cantidad'];  // Calcular aquí
+            // 3. Batch insert productos
+            if (!empty($productos)) {
+                $placeholders = [];
+                $values = [];
+                foreach ($productos as $producto) {
+                    $subtotal = $producto['precio'] * $producto['cantidad'];
+                    $placeholders[] = "(?, ?, ?, ?, ?)";
+                    $values[] = $pedido_id;
+                    $values[] = $producto['id'];
+                    $values[] = $producto['cantidad'];
+                    $values[] = $producto['precio'];
+                    $values[] = $subtotal;
+                }
 
                 $sql = "INSERT INTO pedido_productos (id_pedido, id_producto, cantidad, precio_unitario, subtotal)
-            VALUES (?, ?, ?, ?, ?)";
-                $this->db->execute($sql, [
-                    $pedido_id,
-                    $producto['id'],  // Cambiado a 'id'
-                    $producto['cantidad'],
-                    $producto['precio'],  // Cambiado a 'precio'
-                    $subtotal
-                ]);
+                        VALUES " . implode(', ', $placeholders);
+                $this->db->execute($sql, $values);
             }
 
             $this->db->commit();
