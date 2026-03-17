@@ -50,10 +50,17 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $ventaIds = array_column($ventas, 'id');
+
+        // Batch fetch payments - Bolt Optimization
+        $allPagos = !empty($ventaIds) ? $this->ventaModel->getPagosByVentaIds($ventaIds) : [];
+        $groupedPagos = [];
+        foreach ($allPagos as $pago) {
+            $groupedPagos[$pago['id_venta']][] = $pago;
+        }
 
         // Obtener desglose de pagos detallado
-        // Necesitamos iterar ventas y buscar sus pagos si es mixto, o si queremos precision total
-        // Lo ideal sería un query agrupado en venta_pagos, pero lo haremos iterativo por simplicidad
+        // Bolt Optimization: Batch fetched payments to avoid N+1 queries
 
         $desglose_medios = [
             'efectivo_bs' => 0,
@@ -82,10 +89,20 @@ class ReportesController
             }
         }
 
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1
+        $venta_ids = array_column($ventas, 'id');
+        $todos_los_pagos = $this->ventaModel->getPagosPorVentas($venta_ids);
+
+        // Agrupar pagos por id_venta
+        $pagos_agrupados = [];
+        foreach ($todos_los_pagos as $p) {
+            $pagos_agrupados[$p['id_venta']][] = $p;
+        }
+
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
-            $pagos = $todos_los_pagos[$venta['id']] ?? [];
+            $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
                 // Sumar del detalle
@@ -510,7 +527,7 @@ class ReportesController
     private function getHTMLInsumos($data)
     {
         ob_start();
-?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -568,7 +585,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -584,7 +601,7 @@ class ReportesController
     private function getHTMLProducciones($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -644,7 +661,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -660,7 +677,7 @@ class ReportesController
     private function getHTMLPedidos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -722,7 +739,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
     private function generarPDFCompras($data)
@@ -737,7 +754,7 @@ class ReportesController
     private function getHTMLCompras($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -805,7 +822,7 @@ class ReportesController
         </body>
 
         </html>
-    <?php
+        <?php
         return ob_get_clean();
     }
 
@@ -821,7 +838,7 @@ class ReportesController
     private function getHTMLVencimientos($data)
     {
         ob_start();
-    ?>
+        ?>
         <!DOCTYPE html>
         <html>
 
@@ -876,7 +893,7 @@ class ReportesController
                 <tbody>
                     <?php foreach ($data['lotes'] as $l) :
                         $dias = ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
-                    ?>
+                        ?>
                         <tr>
                             <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
                             <td><?= htmlspecialchars($l['nombre_item']) ?></td>
@@ -890,7 +907,7 @@ class ReportesController
         </body>
 
         </html>
-<?php
+        <?php
         return ob_get_clean();
     }
 }
