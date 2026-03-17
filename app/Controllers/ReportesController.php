@@ -109,6 +109,17 @@ class ReportesController
             $pagosPorVenta[$pago['id_venta']][] = $pago;
         }
 
+        // Batch fetch de pagos para evitar N+1 queries
+        $ventaIds = array_column($ventas, 'id');
+        $allPagos = [];
+        if (!empty($ventaIds)) {
+            $pagosRaw = $this->ventaModel->getPagosByBatch($ventaIds);
+
+            foreach ($pagosRaw as $pago) {
+                $allPagos[$pago['id_venta']][] = $pago;
+            }
+        }
+
         foreach ($ventas as &$venta) {
             $total_ventas += $venta['total'];
 
