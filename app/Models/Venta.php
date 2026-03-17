@@ -64,6 +64,8 @@ class Venta extends BaseModel
                     null
                 ]);
             }
+            $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(',', $pago_values);
+            $this->db->execute($sql_pago, $pago_params);
 
             $pagoPlaceholders = [];
             $pagoValues = [];
