@@ -8,33 +8,30 @@ class Venta extends BaseModel
 
     public function createWithProducts($venta_data, $productos, $pagos = [])
     {
+        if (empty($productos)) {
+            throw new \Exception("Debe agregar al menos un producto");
+        }
+
         try {
             $this->db->beginTransaction();
 
-            // Bolt: Optimización de validación de stock - Consulta única (N+1 evitado)
-            // Agrupar cantidades por producto para validar correctamente si hay duplicados en el array
-            $cantidadesTotales = [];
-            foreach ($productos as $producto) {
-                $id = $producto['id_producto'];
-                $cantidadesTotales[$id] = ($cantidadesTotales[$id] ?? 0) + $producto['cantidad'];
-            }
+            // Validar stock antes de crear la venta (Optimización Bolt: Batch query para reducir round-trips)
+            $productIds = array_column($productos, 'id_producto');
+            if (!empty($productIds)) {
+                $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+                $sql_stock = "SELECT id, nombre, stock_actual FROM productos WHERE id IN ($placeholders)";
+                $productos_db = $this->db->fetchAll($sql_stock, $productIds);
+                $stockMap = array_column($productos_db, null, 'id');
 
-            $productIds = array_keys($cantidadesTotales);
-            if (empty($productIds)) {
-                throw new \Exception("No hay productos en la venta");
-            }
+                foreach ($productos as $producto) {
+                    $id = $producto['id_producto'];
+                    if (!isset($stockMap[$id])) {
+                        throw new \Exception("Producto con ID {$id} no encontrado");
+                    }
 
-            $placeholders = implode(',', array_fill(0, count($productIds), '?'));
-            $sql_stock = "SELECT id, stock_actual FROM productos WHERE id IN ($placeholders)";
-            $productos_db = $this->db->fetchAll($sql_stock, $productIds);
-            $stockMap = array_column($productos_db, 'stock_actual', 'id');
-
-            foreach ($cantidadesTotales as $id => $cantidadTotal) {
-                if (!isset($stockMap[$id])) {
-                    throw new \Exception("Producto con ID {$id} no encontrado");
-                }
-                if ($stockMap[$id] < $cantidadTotal) {
-                    throw new \Exception("Stock insuficiente para el producto ID {$id}. Requerido: $cantidadTotal, Disponible: {$stockMap[$id]}");
+                    if ($stockMap[$id]['stock_actual'] < $producto['cantidad']) {
+                        throw new \Exception("Stock insuficiente para el producto: " . $stockMap[$id]['nombre']);
+                    }
                 }
             }
 
@@ -45,13 +42,27 @@ class Venta extends BaseModel
                 throw new \Exception("Error al crear la venta");
             }
 
-            // Bolt: Registro de Pagos por Lotes (Batch Insert)
-            if (empty($pagos)) {
-                $pagos = [[
-                    'metodo' => $venta_data['metodo_pago'] ?? 'efectivo',
-                    'monto' => $venta_data['total'],
-                    'referencia' => null
-                ]];
+            // Optimización Bolt: Batch Payment Insertion (1 query en lugar de N)
+            if (!empty($pagos)) {
+                $pago_values = [];
+                $pago_params = [];
+                foreach ($pagos as $pago) {
+                    $pago_values[] = "(?, ?, ?, ?)";
+                    $pago_params[] = $venta_id;
+                    $pago_params[] = $pago['metodo'];
+                    $pago_params[] = $pago['monto'];
+                    $pago_params[] = $pago['referencia'] ?? null;
+                }
+                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES " . implode(', ', $pago_values);
+                $this->db->execute($sql_pago, $pago_params);
+            } else {
+                $sql_pago = "INSERT INTO venta_pagos (id_venta, metodo_pago, monto, referencia) VALUES (?, ?, ?, ?)";
+                $this->db->execute($sql_pago, [
+                    $venta_id,
+                    $venta_data['metodo_pago'],
+                    $venta_data['total'],
+                    null
+                ]);
             }
 
             $pagoPlaceholders = [];
@@ -68,15 +79,20 @@ class Venta extends BaseModel
             $productPlaceholders = [];
             $productValues = [];
             foreach ($productos as $producto) {
-                $productPlaceholders[] = "(?, ?, ?, ?, ?)";
-                array_push(
-                    $productValues,
-                    $venta_id,
-                    $producto['id_producto'],
-                    $producto['cantidad'],
-                    $producto['precio_unitario'],
-                    $producto['subtotal']
-                );
+                // Insertar detalle de venta
+                $sql = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal)
+                    VALUES (?, ?, ?, ?, ?)";
+                $this->db->execute($sql, [
+                $venta_id,
+                $producto['id_producto'],
+                $producto['cantidad'],
+                $producto['precio_unitario'],
+                $producto['subtotal']
+                ]);
+
+                // Optimización Bolt: Eliminada actualización manual de stock.
+                // El trigger 'tr_actualizar_stock_venta' en la DB ya realiza este descuento automáticamente.
+                // Esto ahorra una consulta por producto y evita el error de doble descuento.
             }
             $sql_productos = "INSERT INTO venta_productos (id_venta, id_producto, cantidad, precio_unitario, subtotal) VALUES " . implode(', ', $productPlaceholders);
             $this->db->execute($sql_productos, $productValues);
@@ -101,6 +117,24 @@ class Venta extends BaseModel
     {
         $sql = "SELECT * FROM venta_pagos WHERE id_venta = ?";
         return $this->db->fetchAll($sql, [$venta_id]);
+    }
+
+    /**
+     * Obtiene los pagos de múltiples ventas en una sola consulta (Optimización Bolt)
+     *
+     * @param array $venta_ids
+     * @return array
+     */
+    public function getPagosPorVentas(array $venta_ids)
+    {
+        if (empty($venta_ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($venta_ids), '?'));
+        $sql = "SELECT * FROM venta_pagos WHERE id_venta IN ($placeholders)";
+
+        return $this->db->fetchAll($sql, $venta_ids);
     }
 
     public function getWithDetails($sucursal_id, $fecha_inicio = null, $fecha_fin = null)
@@ -187,15 +221,16 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Asegurar que todos los días estén presentes
-        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
-        $indexedResults = array_column($result, 'total', 'fecha');
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
+
         $ventas = [];
 
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => date('d/m', strtotime($fecha)),
+                'total' => (float)($indexedResult[$fecha] ?? 0)
                 'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
             ];
         }
@@ -213,18 +248,15 @@ class Venta extends BaseModel
 
         $result = $this->db->fetchAll($sql, [$sucursal_id, $dias]);
 
-        // Llenar huecos de días sin ventas
-        // Empezar desde hace $dias hasta hoy
-        // La lógica del bucle anterior era backwards, aquí lo hacemos igual para mantener consistencia
-        // Optimización Bolt: Usar hash map (O(N+M)) en lugar de bucle anidado (O(N*M))
-        $indexedResults = array_column($result, 'total', 'fecha');
-        $ventas = [];
+        // Indexar resultados por fecha para evitar búsqueda O(N^2)
+        $indexedResult = array_column($result, 'total', 'fecha');
 
+        $ventas = [];
         for ($i = $dias - 1; $i >= 0; $i--) {
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => $fecha,
-                'total' => isset($indexedResults[$fecha]) ? (float)$indexedResults[$fecha] : 0.0
+                'total' => (float)($indexedResult[$fecha] ?? 0)
             ];
         }
 
