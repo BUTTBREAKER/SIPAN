@@ -58,6 +58,21 @@ $path = parse_url($request_uri, PHP_URL_PATH);
 if (!str_starts_with($path, '/')) {
     $path = "/$path";
 }
+// ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
+// Si la ruta empieza con /delivery y no es un archivo físico (ya manejado por el servidor)
+if (stripos($path, '/delivery') === 0) {
+    if (file_exists(__DIR__ . '/../delivery/index.php')) {
+        require_once __DIR__ . '/../delivery/index.php';
+        exit;
+    }
+}
+// ---------------------------------------------------------------
+
+// Remover el subdirectorio base si no estamos en la raíz
+$script_name = dirname($_SERVER['SCRIPT_NAME']);
+if ($script_name !== '/' && $script_name !== '\\') {
+    $path = str_replace($script_name, '', $path);
+}
 
 // Remover index.php si está presente
 $path = str_replace('/index.php', '', $path);

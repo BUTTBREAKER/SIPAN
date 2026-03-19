@@ -139,6 +139,107 @@ require_once __DIR__ . '/../layouts/header.php';
 </div>
     <?php endif; ?>
 
+<!-- ESTADO DE CUENTA Y PEDIDOS -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title text-primary"><i class="fas fa-file-invoice-dollar"></i> Estado de Cuenta & Historial de Pedidos</h3>
+            </div>
+            <div class="card-body">
+                <?php
+                // Calcular totales de los pedidos que pasamos desde el controlador
+                $resumen_comprado = 0;
+                $resumen_pagado = 0;
+                $resumen_deuda = 0;
+                
+                if (isset($pedidos) && is_array($pedidos)) {
+                    foreach ($pedidos as $p) {
+                        $resumen_comprado += $p['total'] ?? 0;
+                        $resumen_pagado += $p['monto_pagado'] ?? 0;
+                        $resumen_deuda += $p['monto_deuda'] ?? 0;
+                    }
+                }
+                ?>
+                <div class="row mb-4 text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <h6 class="text-secondary mb-1">Total Comprado</h6>
+                            <h4 class="mb-0">$ <?= number_format($resumen_comprado, 2) ?></h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded bg-light">
+                            <h6 class="text-secondary mb-1">Total Pagado</h6>
+                            <h4 class="mb-0 text-success">$ <?= number_format($resumen_pagado, 2) ?></h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded <?= $resumen_deuda > 0 ? 'bg-danger text-white' : 'bg-light' ?>">
+                            <h6 class="<?= $resumen_deuda > 0 ? 'text-white-50' : 'text-secondary' ?> mb-1">Deuda Pendiente</h6>
+                            <h4 class="mb-0 fw-bold">$ <?= number_format($resumen_deuda, 2) ?></h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Pedido #</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Pagado</th>
+                                <th>Deuda</th>
+                                <th>Estado Gral</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($pedidos)) : ?>
+                                <tr>
+                                    <td colspan="7" class="text-center">El cliente no tiene pedidos registrados.</td>
+                                </tr>
+                            <?php else : ?>
+                                <?php foreach ($pedidos as $p) : ?>
+                                    <tr class="<?= ($p['monto_deuda'] ?? 0) > 0 ? 'table-warning' : '' ?>">
+                                        <td><strong>#<?= str_pad($p['id'], 6, '0', STR_PAD_LEFT) ?></strong></td>
+                                        <td><?= date('d/m/Y H:i', strtotime($p['fecha_pedido'])) ?></td>
+                                        <td>$ <?= number_format($p['total'], 2) ?></td>
+                                        <td>$ <?= number_format($p['monto_pagado'] ?? 0, 2) ?></td>
+                                        <td>
+                                            <?php if (($p['monto_deuda'] ?? 0) > 0) : ?>
+                                                <strong class="text-danger">$ <?= number_format($p['monto_deuda'], 2) ?></strong>
+                                            <?php else: ?>
+                                                <span class="text-success">$ 0.00</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            $badge_colors = [
+                                                'pendiente' => 'warning', 'en_proceso' => 'info', 'en_camino' => 'primary',
+                                                'completado' => 'success', 'entregado' => 'success',
+                                                'no_entregado' => 'danger', 'cancelado' => 'danger'
+                                            ];
+                                            $color = $badge_colors[$p['estado_pedido']] ?? 'secondary';
+                                            echo "<span class='badge bg-{$color}'>" . ucfirst(str_replace('_', ' ', $p['estado_pedido'])) . "</span>";
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <a href="/pedidos/show/<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php else : ?>
 <div class="card">
     <div class="card-body text-center">

@@ -57,6 +57,7 @@ class PedidosController
 
         $pedido_data = [
             'id_cliente' => $_POST['id_cliente'] ?? 0,
+            'id_repartidor' => !empty($_POST['id_repartidor']) ? $_POST['id_repartidor'] : null,
             'id_sucursal' => $sucursal_id,
             'id_usuario' => $user['id'],
             'fecha_entrega' => $_POST['fecha_entrega'] ?? null,
@@ -101,6 +102,13 @@ class PedidosController
         $cliente = $this->clienteModel->find($pedido['id_cliente']);
         $productos = $this->pedidoModel->getProductos($id);
         $pagos = $this->pedidoModel->getPagos($id);
+
+        // Obtener repartidores de la sucursal
+        require_once __DIR__ . '/../Models/Usuario.php';
+        $usuarioModel = new \App\Models\Usuario();
+        $sucursal_id = $_SESSION['sucursal_id'] ?? $pedido['id_sucursal'];
+        
+        $repartidores = $usuarioModel->getRepartidoresBySucursal($sucursal_id);
 
         require_once __DIR__ . '/../Views/pedidos/show.php';
     }
@@ -243,6 +251,29 @@ class PedidosController
             ]);
         }
 
+        exit;
+    }
+
+    // ==========================================
+    // MÉTODOS PARA REPARTIDORES (SIPAN DELIVERY)
+    // ==========================================
+
+    public function asignarRepartidor($id)
+    {
+        AuthMiddleware::checkRole(['administrador', 'empleado']);
+        
+        header('Content-Type: application/json');
+        
+        $id_repartidor = $_POST['id_repartidor'] ?? null;
+        
+        try {
+            // Actualizar solo el id_repartidor
+            $this->pedidoModel->update($id, ['id_repartidor' => $id_repartidor]);
+            
+            echo json_encode(['success' => true, 'message' => 'Repartidor asignado correctamente']);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al asignar repartidor: ' . $e->getMessage()]);
+        }
         exit;
     }
 }

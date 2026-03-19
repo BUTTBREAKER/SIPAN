@@ -242,7 +242,7 @@
             <div class="step-item" :class="{'active': step === 3}" @click="goToStep(3)" id="step-3-btn">3</div>
         </div>
 
-        <form @submit.prevent="handleSubmit" id="registerForm">
+        <form @submit.prevent="handleSubmit" id="registerForm" novalidate>
             <?php
             require_once __DIR__ . '/../../Helpers/CSRF.php';
             echo \App\Helpers\CSRF::field();
@@ -254,19 +254,19 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Primer Nombre *</label>
-                        <input type="text" class="form-control" x-model="formData.primer_nombre" required placeholder="Ej: Maria">
+                        <input type="text" name="primer_nombre" class="form-control" x-model="formData.primer_nombre" required placeholder="Ej: Maria">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Apellido Paterno *</label>
-                        <input type="text" class="form-control" x-model="formData.apellido_paterno" required placeholder="Ej: Garcia">
+                        <input type="text" name="apellido_paterno" class="form-control" x-model="formData.apellido_paterno" required placeholder="Ej: Garcia">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Cédula / RIF *</label>
-                        <input type="text" class="form-control" x-model="formData.dni" required placeholder="V-12345678" pattern="^[V|E|J|G]-[0-9]{7,9}$">
+                        <input type="text" name="dni" class="form-control" x-model="formData.dni" required placeholder="V-12345678" pattern="^[VEJG]-[0-9]{7,9}$">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Teléfono *</label>
-                        <input type="text" class="form-control" x-model="formData.telefono" required placeholder="0412-1234567" pattern="^0[0-9]{3}-[0-9]{7}$">
+                        <input type="text" name="telefono" class="form-control" x-model="formData.telefono" required placeholder="0412-1234567" pattern="^0[0-9]{3}-[0-9]{7}$">
                     </div>
                 </div>
                 <div class="d-flex justify-content-end mt-5">
@@ -282,7 +282,7 @@
                 <div class="mb-4">
                     <label class="form-label">Clave de Sucursal *</label>
                     <div class="input-group">
-                        <input type="text" class="form-control text-uppercase" maxlength="8" x-model="formData.clave_sucursal" placeholder="ABC12345" id="input-clave-sucursal">
+                        <input type="text" name="clave_sucursal" class="form-control text-uppercase" maxlength="8" x-model="formData.clave_sucursal" placeholder="ABC12345" id="input-clave-sucursal">
                         <button class="btn btn-outline-secondary" type="button" @click="verificarClave" id="btn-verificar-clave">
                             <i class="fas fa-search me-1"></i> Verificar
                         </button>
@@ -311,18 +311,19 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label">Correo Electrónico *</label>
-                        <input type="email" class="form-control" x-model="formData.correo" required placeholder="user@example.com">
+                        <input type="email" name="correo" class="form-control" x-model="formData.correo" required placeholder="user@example.com">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Contraseña *</label>
-                        <input type="password" class="form-control" x-model="formData.clave" required placeholder="••••••••">
+                        <input type="password" name="clave" class="form-control" x-model="formData.clave" required placeholder="••••••••">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Rol *</label>
-                        <select class="form-select" x-model="formData.rol" required id="select-rol">
+                        <select name="rol" class="form-select" x-model="formData.rol" required id="select-rol">
                             <option value="">Seleccione...</option>
                             <option value="cajero">Cajero</option>
                             <option value="empleado">Empleado</option>
+                            <option value="repartidor">Repartidor</option>
                         </select>
                     </div>
                 </div>
@@ -361,11 +362,24 @@
 
                 nextStep() {
                     if (this.step === 1) {
-                        if (!this.formData.primer_nombre || !this.formData.apellido_paterno || !this.formData.dni) {
+                        if (!this.formData.primer_nombre || !this.formData.apellido_paterno || !this.formData.dni || !this.formData.telefono) {
                             return Swal.fire('Error', 'Completa los campos obligatorios', 'error');
                         }
+                        
+                        // Validación de Regex manual ya que usamos novalidate
+                        const dniRegex = /^[VEJG]-[0-9]{7,9}$/;
+                        if (!dniRegex.test(this.formData.dni)) {
+                            return Swal.fire('Error', 'Formato de Cédula/RIF inválido (Ej: V-12345678)', 'error');
+                        }
+                        
+                        const telRegex = /^0[0-9]{3}-[0-9]{7}$/;
+                        if (!telRegex.test(this.formData.telefono)) {
+                            return Swal.fire('Error', 'Formato de Teléfono inválido (Ej: 0412-1234567)', 'error');
+                        }
                     }
-                    if (this.step === 2 && !this.sucursalVerificada) return;
+                    if (this.step === 2 && !this.sucursalVerificada) {
+                        return Swal.fire('Error', 'Debes verificar la clave de sucursal', 'error');
+                    }
                     this.step++;
                 },
 
@@ -415,7 +429,8 @@
                             Swal.fire('Error', result.message, 'error');
                         }
                     } catch (e) {
-                        Swal.fire('Error', 'Falló la conexión', 'error');
+                        console.error('Submit error:', e);
+                        Swal.fire('Error', 'Falló la conexión o el servidor devolvió un error', 'error');
                     } finally {
                         this.isSubmitting = false;
                     }

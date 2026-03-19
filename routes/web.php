@@ -86,6 +86,7 @@ return [
     'GET|/pedidos/show/{id}' => ['PedidosController', 'show'],
     'POST|/pedidos/update/{id}' => ['PedidosController', 'update'],
     'POST|/pedidos/registrar-pago' => ['PedidosController', 'registrarPago'],
+    'POST|/pedidos/asignar-repartidor/{id}' => ['PedidosController', 'asignarRepartidor'],
 
     // Producciones
     'GET|/producciones' => ['ProduccionesController', 'index'],

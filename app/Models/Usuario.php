@@ -24,6 +24,23 @@ class Usuario extends BaseModel
         return $this->db->fetchOne($sql, [$telefono]);
     }
 
+    public function toggleEstado($id)
+    {
+        $usuario = $this->find($id);
+        if ($usuario) {
+            $nuevo_estado = $usuario['estado'] === 'activo' ? 'inactivo' : 'activo';
+            $this->update($id, ['estado' => $nuevo_estado]);
+            return $nuevo_estado;
+        }
+        return false;
+    }
+
+    public function getRepartidoresBySucursal($sucursal_id)
+    {
+        $sql = "SELECT id, primer_nombre, apellido_paterno FROM {$this->table} WHERE id_sucursal = ? AND rol = 'repartidor' AND estado = 'activo'";
+        return $this->db->fetchAll($sql, [$sucursal_id]);
+    }
+
     public function authenticate($correo, $clave)
     {
         $user = $this->findByEmail($correo);

@@ -179,7 +179,7 @@ class AuthController
             exit;
         }
 
-        if (!in_array($input['rol'], ['cajero', 'empleado'])) {
+        if (!in_array($input['rol'], ['cajero', 'empleado', 'repartidor'])) {
             echo json_encode(['success' => false, 'message' => 'Rol no válido']);
             exit;
         }

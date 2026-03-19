@@ -26,13 +26,13 @@ class Respaldo extends BaseModel
     public function generarRespaldo($usuario_id)
     {
         $config = $_ENV;
-
+        $base_path = $config['base_path'] ?? dirname(__DIR__, 2);
         $fecha = date('Y-m-d_H-i-s');
         $nombre_archivo = "sipan_backup_{$fecha}.sql";
-        $ruta_completa = $config['base_path'] . "/backups/{$nombre_archivo}";
+        $ruta_completa = $base_path . "/backups/{$nombre_archivo}";
 
         // Crear directorio de respaldos si no existe
-        $backup_dir = $config['base_path'] . "/backups";
+        $backup_dir = $base_path . "/backups";
         if (!is_dir($backup_dir)) {
             mkdir($backup_dir, 0755, true);
         }
@@ -48,10 +48,10 @@ class Respaldo extends BaseModel
         $comando = sprintf(
             '"%s" --host=%s --user=%s --password=%s --no-tablespaces %s > "%s" 2>&1',
             $mysqldump_path,
-            $config['db_host'],
-            $config['db_user'],
-            $config['db_pass'],
-            $config['db_name'],
+            $config['DB_HOST'] ?? 'localhost',
+            $config['DB_USER'] ?? 'root',
+            $config['DB_PASS'] ?? '',
+            $config['DB_NAME'] ?? 'sipan',
             $ruta_completa
         );
 

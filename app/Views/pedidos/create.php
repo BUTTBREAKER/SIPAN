@@ -20,7 +20,7 @@ require_once __DIR__ . '/../layouts/header.php';
         <form @submit.prevent="guardarPedido()">
             <!-- Información del Cliente y Fechas -->
             <div class="row mb-4">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label class="form-label">Cliente <span class="text-danger">*</span></label>
                         <select x-model="id_cliente" class="form-control" required>
@@ -39,16 +39,35 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
-                        <label class="form-label">Fecha de Entrega <span class="text-danger">*</span></label>
+                        <label class="form-label">Repartidor (Opcional)</label>
+                        <select x-model="id_repartidor" class="form-control">
+                            <option value="">Sin asignar</option>
+                            <?php
+                            require_once __DIR__ . '/../../Models/Usuario.php';
+                            $usuarioModel = new \App\Models\Usuario();
+                            $repartidores = $usuarioModel->getRepartidoresBySucursal($_SESSION['sucursal_id']);
+                            foreach ($repartidores as $rep) :
+                                ?>
+                            <option value="<?= $rep['id'] ?>">
+                                <?= htmlspecialchars($rep['primer_nombre'] . ' ' . $rep['apellido_paterno']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Fecha Entrega <span class="text-danger">*</span></label>
                         <input type="date" x-model="fecha_entrega" class="form-control" required :min="minDate">
                     </div>
                 </div>
                 
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
-                        <label class="form-label">Hora de Entrega</label>
+                        <label class="form-label">Hora Entrega</label>
                         <input type="time" x-model="hora_entrega" class="form-control">
                     </div>
                 </div>
@@ -187,6 +206,7 @@ require_once __DIR__ . '/../layouts/header.php';
 function pedidoApp() {
     return {
         id_cliente: '',
+        id_repartidor: '',
         fecha_entrega: '',
         hora_entrega: '',
         busqueda: '',
@@ -283,6 +303,7 @@ function pedidoApp() {
             
             const formData = new FormData();
             formData.append('id_cliente', this.id_cliente);
+            if (this.id_repartidor) formData.append('id_repartidor', this.id_repartidor);
             formData.append('fecha_entrega', this.fecha_entrega + (this.hora_entrega ? ' ' + this.hora_entrega : ' 12:00:00'));
             formData.append('total', this.total);
             formData.append('abono_inicial', this.abono_inicial || 0);

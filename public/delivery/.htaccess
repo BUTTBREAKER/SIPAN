@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteBase /delivery/
+RewriteRule ^(.*)$ ../index.php [QSA,L]

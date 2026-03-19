@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         p.id, // Display ID
         p.fecha_pedido,
         p.cliente_nombre || 'Cliente #' + p.id_cliente,
+        (p.rep_nombre) ? `${p.rep_nombre} ${p.rep_apellido || ''}`.trim() : 'Sin asignar',
         parseFloat(p.total).toFixed(2),
         p.estado_pedido,
         p.estado_pago,
@@ -55,6 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             { name: 'Cliente' },
             { 
+               name: 'Repartidor',
+               formatter: (cell) => gridjs.html((cell === 'Sin asignar') ? `<span class="text-muted fst-italic"><i class="fas fa-user-times me-1"></i>${cell}</span>` : `<span class="text-primary"><i class="fas fa-motorcycle me-1"></i>${cell}</span>`)
+            },
+            { 
                 name: 'Total ($)',
                 formatter: (cell) => gridjs.html(`<span class="fw-bold text-success">$ ${cell}</span>`)
             },
@@ -64,8 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const statusColors = {
                         'pendiente': 'warning',
                         'en_proceso': 'info',
+                        'en_camino': 'primary',
                         'completado': 'success',
-                        'cancelado': 'danger'
+                        'entregado': 'success',
+                        'cancelado': 'danger',
+                        'no_entregado': 'danger'
                     };
                     const color = statusColors[cell] || 'secondary';
                     const text = cell.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -87,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             { 
                 name: 'Entrega',
-                formatter: (cell) => new Date(cell).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                formatter: (cell) => cell ? new Date(cell).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'
             },
             { 
                 name: 'Acciones',

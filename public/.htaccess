@@ -1,5 +1,8 @@
 RewriteEngine On
 
+# Forzar rutas de delivery a index.php
+RewriteRule ^delivery/(.*)$ index.php [QSA,L]
+
 # Redirigir todo a index.php excepto archivos y directorios existentes
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

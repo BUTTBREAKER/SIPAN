@@ -78,10 +78,12 @@ class Pedido extends BaseModel
     public function getWithDetails($sucursal_id, $estado_pedido = null, $estado_pago = null)
     {
         $sql = "SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido,
-                       u.primer_nombre, u.apellido_paterno
+                       u.primer_nombre, u.apellido_paterno,
+                       rep.primer_nombre as rep_nombre, rep.apellido_paterno as rep_apellido
                 FROM {$this->table} p
                 INNER JOIN clientes c ON p.id_cliente = c.id
                 LEFT JOIN usuarios u ON p.id_usuario = u.id
+                LEFT JOIN usuarios rep ON p.id_repartidor = rep.id
                 WHERE p.id_sucursal = ?";
 
         $params = [$sucursal_id];
@@ -108,5 +110,44 @@ class Pedido extends BaseModel
         $result = $this->db->fetchOne($sql);
         $numero = ($result['total'] ?? 0) + 1;
         return "PED-{$fecha}-" . str_pad($numero, 4, '0', STR_PAD_LEFT);
+    }
+
+    // ==========================================
+    // MÉTODOS PARA REPARTIDORES (SIPAN DELIVERY)
+    // ==========================================
+
+    public function getByRepartidor($repartidor_id, $estado = null)
+    {
+        $sql = "SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido, 
+                       c.direccion as cliente_direccion, c.telefono as cliente_telefono 
+                FROM {$this->table} p
+                INNER JOIN clientes c ON p.id_cliente = c.id
+                WHERE p.id_repartidor = ?";
+
+        $params = [$repartidor_id];
+
+        if ($estado) {
+            $sql .= " AND p.estado_pedido = ?";
+            $params[] = $estado;
+        }
+
+        $sql .= " ORDER BY p.fecha_pedido DESC";
+        
+        return $this->db->fetchAll($sql, $params);
+    }
+
+    public function updateEstadoEntrega($id, $estado, $observaciones = null)
+    {
+        $data = ['estado_pedido' => $estado];
+        
+        if ($estado === 'entregado' || $estado === 'completado') {
+            $data['fecha_entrega'] = date('Y-m-d H:i:s');
+        }
+        
+        if ($observaciones !== null) {
+            $data['observaciones'] = $observaciones;
+        }
+
+        return $this->update($id, $data);
     }
 }

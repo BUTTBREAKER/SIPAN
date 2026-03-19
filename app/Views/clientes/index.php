@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
         `${c.nombre} ${c.apellido}`,
         c.documento_tipo ? `${c.documento_tipo}: ${c.documento_numero}` : '-',
         c.telefono || '-',
-        c.correo || '-',
+        parseFloat(c.total_comprado || 0).toFixed(2),
+        parseFloat(c.total_deuda || 0).toFixed(2),
         c.estado,
         c.id // Action ID
     ]);
@@ -50,7 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             { name: 'Documento' },
             { name: 'Teléfono' },
-            { name: 'Correo' },
+            { 
+                name: 'Total Comprado',
+                formatter: (cell) => gridjs.html(`<span class="text-secondary">$ ${cell}</span>`)
+            },
+            { 
+                name: 'Deuda Pendiente',
+                formatter: (cell) => gridjs.html((cell > 0) ? `<span class="fw-bold text-danger">$ ${cell}</span>` : `<span class="text-success">$ 0.00</span>`)
+            },
             { 
                 name: 'Estado',
                 formatter: (cell) => {
