@@ -14,54 +14,139 @@ class Compra extends BaseModel
             // 1. Crear Compra
             $compraId = $this->create($compraData);
 
-            // 2. Insertar Detalles y Actualizar Stock/Lotes
-            $sqlDetalle = "INSERT INTO compra_detalles (id_compra, tipo_item, id_item, cantidad, costo_unitario, subtotal, lote_codigo, fecha_vencimiento) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            if (empty($detalles)) {
+                $this->db->commit();
+                return $compraId;
+            }
 
-            $loteModel = new Lote();
-            $insumoModel = new Insumo();
+            // 2. Pre-fetch stock and price data for items (O(1) database round-trips)
+            $insumoIds = [];
+            $productoIds = [];
+            foreach ($detalles as $detalle) {
+                if ($detalle['tipo_item'] === 'insumo') {
+                    $insumoIds[] = $detalle['id_item'];
+                } elseif ($detalle['tipo_item'] === 'producto') {
+                    $productoIds[] = $detalle['id_item'];
+                }
+            }
+
+            $insumoData = [];
+            if (!empty($insumoIds)) {
+                $uniqueIds = array_unique($insumoIds);
+                $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
+                $sql = "SELECT id, stock_actual, precio_unitario FROM insumos WHERE id IN ($placeholders)";
+                $rows = $this->db->fetchAll($sql, array_values($uniqueIds));
+                foreach ($rows as $row) {
+                    $insumoData[$row['id']] = $row;
+                }
+            }
+
+            $productoData = [];
+            if (!empty($productoIds)) {
+                $uniqueIds = array_unique($productoIds);
+                $placeholders = implode(',', array_fill(0, count($uniqueIds), '?'));
+                $sql = "SELECT id, stock_actual FROM productos WHERE id IN ($placeholders)";
+                $rows = $this->db->fetchAll($sql, array_values($uniqueIds));
+                foreach ($rows as $row) {
+                    $productoData[$row['id']] = $row;
+                }
+            }
+
+            // 3. Preparar Batch Inserts and Updates
+            $detallesBatch = [];
+            $lotesBatch = [];
+            $insumosUpdates = [];
+            $productosUpdates = [];
+
+            $loteModel = $this->loteModel ?? new Lote();
 
             foreach ($detalles as $detalle) {
-                // Insertar detalle
-                $this->db->execute($sqlDetalle, [
+                $id_item = $detalle['id_item'];
+                $tipo = $detalle['tipo_item'];
+                $cantidad = floatval($detalle['cantidad']);
+                $costo = floatval($detalle['costo_unitario']);
+
+                // Collect details for batch insert
+                $detallesBatch[] = [
                     $compraId,
-                    $detalle['tipo_item'],
-                    $detalle['id_item'],
-                    $detalle['cantidad'],
-                    $detalle['costo_unitario'],
+                    $tipo,
+                    $id_item,
+                    $cantidad,
+                    $costo,
                     $detalle['subtotal'],
                     $detalle['lote_codigo'] ?? null,
                     $detalle['fecha_vencimiento'] ?? null
-                ]);
+                ];
 
-                // Crear Lote si aplica
+                // Collect lotes for batch insert
                 if (!empty($detalle['lote_codigo'])) {
-                    $loteData = [
+                    $lotesBatch[] = [
                         'id_sucursal' => $compraData['id_sucursal'],
-                        'tipo' => $detalle['tipo_item'],
-                        'id_item' => $detalle['id_item'],
+                        'tipo' => $tipo,
+                        'id_item' => $id_item,
                         'codigo_lote' => $detalle['lote_codigo'],
                         'fecha_entrada' => date('Y-m-d'),
                         'fecha_vencimiento' => $detalle['fecha_vencimiento'],
-                        'cantidad_inicial' => $detalle['cantidad'],
-                        'cantidad_actual' => $detalle['cantidad'], // Inicialmente igual
-                        'costo_unitario' => $detalle['costo_unitario']
+                        'cantidad_inicial' => $cantidad,
+                        'costo_unitario' => $costo
                     ];
-                    $loteModel->registrar($loteData);
                 }
 
-                // Actualizar Stock con Costo Promedio Ponderado
-                if ($detalle['tipo_item'] === 'insumo') {
-                    $this->updateStockWithWeightedAverage(
-                        $detalle['id_item'],
-                        $detalle['cantidad'],
-                        $detalle['costo_unitario']
-                    );
-                } elseif ($detalle['tipo_item'] === 'producto') {
-                   // Si compramos productos terminados (revender)
-                    $prodModel = new Producto();
-                    $prodModel->updateStock($detalle['id_item'], $detalle['cantidad'], 'add');
+                // Calculate stock updates in-memory
+                if ($tipo === 'insumo' && isset($insumoData[$id_item])) {
+                    $stock_actual = floatval($insumoData[$id_item]['stock_actual']);
+                    $costo_actual = floatval($insumoData[$id_item]['precio_unitario']);
+
+                    $valor_actual = $stock_actual * $costo_actual;
+                    $valor_nuevo = $cantidad * $costo;
+                    $stock_total = $stock_actual + $cantidad;
+
+                    $costo_promedio = $stock_total > 0 ? ($valor_actual + $valor_nuevo) / $stock_total : $costo;
+
+                    // Update local state for subsequent items of same id if any
+                    $insumoData[$id_item]['stock_actual'] = $stock_total;
+                    $insumoData[$id_item]['precio_unitario'] = $costo_promedio;
+
+                    $insumosUpdates[$id_item] = [
+                        'stock_actual' => $stock_total,
+                        'precio_unitario' => $costo_promedio
+                    ];
+                } elseif ($tipo === 'producto' && isset($productoData[$id_item])) {
+                    $stock_total = floatval($productoData[$id_item]['stock_actual']) + $cantidad;
+                    $productoData[$id_item]['stock_actual'] = $stock_total;
+                    $productosUpdates[$id_item] = $stock_total;
                 }
+            }
+
+            // 4. Execute Batch Operations
+
+            // 4a. Batch insert details
+            if (!empty($detallesBatch)) {
+                $placeholders = implode(', ', array_fill(0, count($detallesBatch), '(?, ?, ?, ?, ?, ?, ?, ?)'));
+                $values = [];
+                foreach ($detallesBatch as $d) {
+                    $values = array_merge($values, $d);
+                }
+                $sqlDetalle = "INSERT INTO compra_detalles (id_compra, tipo_item, id_item, cantidad, costo_unitario, subtotal, lote_codigo, fecha_vencimiento)
+                               VALUES $placeholders";
+                $this->db->execute($sqlDetalle, $values);
+            }
+
+            // 4b. Batch register lotes
+            if (!empty($lotesBatch)) {
+                $loteModel->registrarBatch($lotesBatch);
+            }
+
+            // 4c. Batch update insumos (O(N_unique_items) database round-trips, still better than O(N_items))
+            foreach ($insumosUpdates as $id => $data) {
+                $sql = "UPDATE insumos SET stock_actual = ?, precio_unitario = ? WHERE id = ?";
+                $this->db->execute($sql, [$data['stock_actual'], $data['precio_unitario'], $id]);
+            }
+
+            // 4d. Batch update productos
+            foreach ($productosUpdates as $id => $stock) {
+                $sql = "UPDATE productos SET stock_actual = ? WHERE id = ?";
+                $this->db->execute($sql, [$stock, $id]);
             }
 
             $this->db->commit();

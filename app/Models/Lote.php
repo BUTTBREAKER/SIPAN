@@ -31,6 +31,38 @@ class Lote extends BaseModel
     }
 
     /**
+     * Registrar múltiples lotes en una sola operación
+     */
+    public function registrarBatch($data_batch)
+    {
+        if (empty($data_batch)) {
+            return true;
+        }
+
+        $placeholders = [];
+        $values = [];
+
+        foreach ($data_batch as $data) {
+            $placeholders[] = "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $values[] = $data['id_sucursal'];
+            $values[] = $data['tipo'];
+            $values[] = $data['id_item'];
+            $values[] = $data['codigo_lote'];
+            $values[] = $data['fecha_entrada'];
+            $values[] = $data['fecha_vencimiento'] ?: null;
+            $values[] = $data['cantidad_inicial'];
+            $values[] = $data['cantidad_inicial']; // Al inicio actual = inicial
+            $values[] = $data['costo_unitario'];
+        }
+
+        $sql = "INSERT INTO {$this->table}
+                (id_sucursal, tipo, id_item, codigo_lote, fecha_entrada, fecha_vencimiento, cantidad_inicial, cantidad_actual, costo_unitario)
+                VALUES " . implode(', ', $placeholders);
+
+        return $this->db->execute($sql, $values);
+    }
+
+    /**
      * Obtener lotes por vencer en X días
      */
     public function getPorVencer($sucursal_id, $dias = 30)
