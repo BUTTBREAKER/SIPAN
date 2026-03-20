@@ -36,6 +36,13 @@ class AuthController
         $correo = $_POST['correo'] ?? '';
         $clave = $_POST['clave'] ?? '';
 
+        // Validar CSRF
+        require_once __DIR__ . '/../../app/Helpers/CSRF.php';
+        if (!\App\Helpers\CSRF::validateRequest()) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido. Por favor, recarga la página.']);
+            return;
+        }
+
         if (empty($correo) || empty($clave)) {
             echo json_encode(['success' => false, 'message' => 'Por favor, complete todos los campos']);
             return;

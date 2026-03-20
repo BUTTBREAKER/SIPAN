@@ -51,7 +51,7 @@ if (session_status() === PHP_SESSION_NONE) {
         'httponly' => true,
         'samesite' => 'Lax'
     ]);
-    session_name('SIPAN_DELIVERY_SESSION');
+    session_name('SIPAN_SESSION_DELIVERY');
     session_start();
 }
 

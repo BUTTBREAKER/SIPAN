@@ -18,6 +18,10 @@ ob_start();
         <h2 class="login-card__title">Bienvenido</h2>
 
         <form id="loginForm" novalidate>
+            <?php
+            require_once __DIR__ . '/../../app/Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
 
             <div class="form-group">
                 <label class="form-label" for="correo">Correo Electrónico</label>
@@ -64,6 +68,9 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             var response = await fetch('/delivery/login', {
                 method: 'POST',
+                headers: {
+                    'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value
+                },
                 body:   new FormData(form)
             });
             var data = await response.json();
