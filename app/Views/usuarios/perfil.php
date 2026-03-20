@@ -106,7 +106,7 @@ require_once __DIR__ . '/../layouts/header.php';
 
                     <div class="form-group">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" name="telefono" class="form-control" value="<?= htmlspecialchars($usuario['telefono'] ?? '') ?>">
+                        <input type="text" name="telefono" class="form-control" value="<?= htmlspecialchars($usuario['telefono'] ?? '') ?>" oninput="this.value = SIPAN.formatPhone(this.value)">
                     </div>
 
                     <hr class="my-4">

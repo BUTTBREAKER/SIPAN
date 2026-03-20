@@ -21,8 +21,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <!-- Driver.js para el Tour -->
-    <link rel="stylesheet" href="/assets/css/driver.css">
-    <script src="/assets/js/driver.js.iife.js"></script>
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/driver.css">
+    <script src="<?= BASE_URL ?>assets/js/driver.js.iife.js"></script>
+    <!-- SIPAN Helpers -->
+    <script src="<?= BASE_URL ?>assets/js/app.js"></script>
 
     <style>
         :root {
@@ -262,11 +264,11 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Cédula / RIF *</label>
-                        <input type="text" name="dni" class="form-control" x-model="formData.dni" required placeholder="V-12345678" pattern="^[VEJG]-[0-9]{7,9}$">
+                        <input type="text" name="dni" class="form-control" x-model="formData.dni" required placeholder="V-12345678" pattern="^[VEJG]-[0-9]{7,9}$" @input="formData.dni = SIPAN.formatDNI($event.target.value); $event.target.value = formData.dni">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Teléfono *</label>
-                        <input type="text" name="telefono" class="form-control" x-model="formData.telefono" required placeholder="0412-1234567" pattern="^0[0-9]{3}-[0-9]{7}$">
+                        <input type="text" name="telefono" class="form-control" x-model="formData.telefono" required placeholder="0412-1234567" pattern="^0[0-9]{3}-[0-9]{7}$" @input="formData.telefono = SIPAN.formatPhone($event.target.value); $event.target.value = formData.telefono">
                     </div>
                 </div>
                 <div class="d-flex justify-content-end mt-5">
@@ -315,9 +317,13 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Contraseña *</label>
-                        <input type="password" name="clave" class="form-control" x-model="formData.clave" required placeholder="••••••••">
+                        <input type="password" name="clave" class="form-control" x-model="formData.clave" required placeholder="• Mínimo 6 caracteres" minlength="6">
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label">Confirmar Contraseña *</label>
+                        <input type="password" name="confirmar_clave" class="form-control" x-model="formData.confirmar_clave" required placeholder="••••••••">
+                    </div>
+                    <div class="col-md-12">
                         <label class="form-label">Rol *</label>
                         <select name="rol" class="form-select" x-model="formData.rol" required id="select-rol">
                             <option value="">Seleccione...</option>
@@ -357,7 +363,7 @@
                 isSubmitting: false,
                 formData: {
                     primer_nombre: '', apellido_paterno: '', dni: '', telefono: '',
-                    clave_sucursal: '', id_sucursal: '', correo: '', clave: '', rol: ''
+                    clave_sucursal: '', id_sucursal: '', correo: '', clave: '', confirmar_clave: '', rol: ''
                 },
 
                 nextStep() {
@@ -379,6 +385,10 @@
                     }
                     if (this.step === 2 && !this.sucursalVerificada) {
                         return Swal.fire('Error', 'Debes verificar la clave de sucursal', 'error');
+                    }
+                    if (this.step === 3) {
+                        // Not usually reached via nextStep because it's the last step, 
+                        // but good for tab navigation or similar
                     }
                     this.step++;
                 },
@@ -409,6 +419,17 @@
                 },
 
                 async handleSubmit() {
+                    // Validaciones finales
+                    if (this.formData.clave.length < 6) {
+                        return Swal.fire('Error', 'La contraseña debe tener al menos 6 caracteres', 'error');
+                    }
+                    if (this.formData.clave !== this.formData.confirmar_clave) {
+                        return Swal.fire('Error', 'Las contraseñas no coinciden', 'error');
+                    }
+                    if (!this.formData.rol) {
+                        return Swal.fire('Error', 'Debes seleccionar un rol', 'error');
+                    }
+
                     this.isSubmitting = true;
                     try {
                         // Obtener CSRF token del campo oculto

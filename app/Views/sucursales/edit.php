@@ -41,7 +41,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" class="form-control" x-model="formData.telefono">
+                        <input type="text" class="form-control" x-model="formData.telefono" @input="formData.telefono = SIPAN.formatPhone($event.target.value)">
                     </div>
                     
                     <div class="col-md-6 mb-3">

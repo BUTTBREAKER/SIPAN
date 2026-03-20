@@ -18,6 +18,10 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form id="formSucursal">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -29,7 +33,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" name="telefono" class="form-control" placeholder="Ej: 0212-1234567">
+                        <input type="text" name="telefono" class="form-control" placeholder="Ej: 0212-1234567" pattern="^0[0-9]{3}-[0-9]{7}$" oninput="this.value = SIPAN.formatPhone(this.value)">
                     </div>
                 </div>
             </div>
@@ -56,7 +60,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             
             <div class="form-group mt-4">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary" id="btnSubmit">
                     <i class="fas fa-save"></i> Crear Sucursal
                 </button>
             </div>
@@ -68,6 +72,11 @@ require_once __DIR__ . '/../layouts/header.php';
 document.getElementById('formSucursal').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const btn = document.getElementById('btnSubmit');
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
     
@@ -103,7 +112,11 @@ document.getElementById('formSucursal').addEventListener('submit', async (e) => 
             Swal.fire('Error', result.message, 'error');
         }
     } catch (error) {
+        console.error(error);
         Swal.fire('Error', 'Error al crear la sucursal', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
     }
 });
 </script>

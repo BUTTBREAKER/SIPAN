@@ -18,6 +18,10 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form id="formCliente" action="/clientes/store" method="POST">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -49,14 +53,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Número de Documento <span class="text-danger">*</span></label>
-                        <input type="text" name="documento_numero" class="form-control" required placeholder="Ej: V-12345678 o J-12345678">
+                        <input type="text" name="documento_numero" class="form-control" required placeholder="Ej: V-12345678" pattern="^[VEJG]-[0-9]{7,9}$" oninput="this.value = SIPAN.formatDNI(this.value)">
                     </div>
                 </div>
                 
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                        <input type="text" name="telefono" class="form-control" required placeholder="Ej: 0414-1234567">
+                        <input type="text" name="telefono" class="form-control" required placeholder="Ej: 0414-1234567" pattern="^0[0-9]{3}-[0-9]{7}$" oninput="this.value = SIPAN.formatPhone(this.value)">
                     </div>
                 </div>
             </div>
@@ -78,7 +82,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             
             <div class="form-group mt-4">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary" id="btnSubmitCliente">
                     <i class="fas fa-save"></i> Guardar Cliente
                 </button>
                 <a href="/clientes" class="btn btn-secondary">
@@ -92,17 +96,37 @@ require_once __DIR__ . '/../layouts/header.php';
 <script>
 document.getElementById('formCliente').addEventListener('submit', async function(e) {
     e.preventDefault();
+    const btn = document.getElementById('btnSubmitCliente');
+    const originalContent = btn.innerHTML;
     
-    if (!SIPAN.validateForm(this)) {
-        SIPAN.error('Por favor complete todos los campos requeridos');
-        return;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    const formData = new FormData(this);
+
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            SIPAN.success('Cliente guardado con éxito');
+            setTimeout(() => {
+                window.location.href = '/clientes';
+            }, 1500);
+        } else {
+            SIPAN.error(data.message || 'Error al guardar el cliente');
+        }
+    } catch (error) {
+        console.error(error);
+        SIPAN.error('Error de conexión con el servidor');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
     }
-    
-    const data = await SIPAN.submitForm(this, (response) => {
-        setTimeout(() => {
-            window.location.href = '/clientes';
-        }, 1500);
-    });
 });
 </script>
 

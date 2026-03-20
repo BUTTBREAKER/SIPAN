@@ -51,14 +51,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Número de Documento <span class="text-danger">*</span></label>
-                        <input type="text" name="documento_numero" class="form-control" required value="<?= htmlspecialchars($cliente['documento_numero']) ?>">
+                        <input type="text" name="documento_numero" class="form-control" required value="<?= htmlspecialchars($cliente['documento_numero']) ?>" oninput="this.value = SIPAN.formatDNI(this.value)">
                     </div>
                 </div>
                 
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" name="telefono" class="form-control" value="<?= htmlspecialchars($cliente['telefono'] ?? '') ?>">
+                        <input type="text" name="telefono" class="form-control" value="<?= htmlspecialchars($cliente['telefono'] ?? '') ?>" oninput="this.value = SIPAN.formatPhone(this.value)">
                     </div>
                 </div>
             </div>

@@ -26,6 +26,10 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form id="formVenta" @submit.prevent="procesarVenta()">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <!-- Selección de Cliente con Botón Rápido -->
             <div class="row mb-4">
                 <div class="col-md-5">
@@ -221,8 +225,13 @@ require_once __DIR__ . '/../layouts/header.php';
                 <a href="/ventas" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
                 </a>
-                <button type="submit" class="btn btn-success" :disabled="items.length === 0 || restante > 0.05">
-                    <i class="fas fa-check"></i> Procesar Venta
+                <button type="submit" class="btn btn-success" :disabled="items.length === 0 || restante > 0.05 || isSubmitting">
+                    <template x-if="!isSubmitting">
+                        <span><i class="fas fa-check"></i> Procesar Venta</span>
+                    </template>
+                    <template x-if="isSubmitting">
+                        <span><i class="fas fa-spinner fa-spin"></i> Procesando...</span>
+                    </template>
                 </button>
             </div>
         </form>
@@ -239,6 +248,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             <div class="modal-body">
                 <form id="formNuevoCliente">
+                    <?php echo \App\Helpers\CSRF::field(); ?>
                     <div class="mb-3">
                         <label class="form-label">Nombre</label>
                         <input type="text" class="form-control" name="nombre" required>
@@ -249,17 +259,19 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Cédula / Documento</label>
-                        <input type="text" class="form-control" name="documento_numero" required>
+                        <input type="text" class="form-control" name="documento_numero" required oninput="this.value = SIPAN.formatDNI(this.value)">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" class="form-control" name="telefono">
+                        <input type="text" class="form-control" name="telefono" oninput="this.value = SIPAN.formatPhone(this.value)">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="guardarClienteExpress()">Guardar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarClienteExpress()" id="btnGuardarClienteExpress">
+                    <i class="fas fa-save me-1"></i> Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -282,6 +294,8 @@ function ventaApp() {
             monto_usd_preview: '0.00',
             referencia: ''
         },
+        
+        isSubmitting: false,
         
         esBs: false,
         monedaInput: '$',
@@ -462,9 +476,16 @@ function ventaApp() {
                 formData.append('metodo_pago', 'efectivo_usd'); 
             }
             
+            this.isSubmitting = true;
             try {
+                // Obtener CSRF token
+                const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
                 const response = await fetch('/ventas/store', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    },
                     body: formData
                 });
                 
@@ -487,9 +508,8 @@ function ventaApp() {
                     console.error('Raw content:', rawText);
                     SIPAN.error('Error de servidor: Respuesta inválida');
                 }
-            } catch (error) {
-                SIPAN.error('Error al procesar la venta');
-                console.error('Fetch Error:', error);
+            } finally {
+                this.isSubmitting = false;
             }
         }
     }
@@ -498,12 +518,21 @@ function ventaApp() {
 async function guardarClienteExpress() {
     const form = document.getElementById('formNuevoCliente');
     const formData = new FormData(form);
+    const btn = document.getElementById('btnGuardarClienteExpress');
+    const originalContent = btn.innerHTML;
     
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
     try {
+        const csrfToken = form.querySelector('input[name="csrf_token"]').value;
         const response = await fetch('/clientes/store', { 
             method: 'POST',
             body: formData,
-            headers: { 'Accept': 'application/json' } // Hint to backend if supported
+            headers: { 
+                'Accept': 'application/json',
+                'X-CSRF-Token': csrfToken 
+            }
         });
         
         // Try to parse JSON, if backend redirects (HTML) this might fail or return syntax error
@@ -545,9 +574,11 @@ async function guardarClienteExpress() {
              setTimeout(() => location.reload(), 1000);
         }
 
-    } catch (e) {
         console.error(e);
         SIPAN.error('Error de conexión');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
     }
 }
 </script>
