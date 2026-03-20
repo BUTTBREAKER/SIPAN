@@ -15,10 +15,13 @@ if ($_SESSION['user_rol'] !== 'administrador') {
         <h2 class="page-title">Respaldos de Base de Datos</h2>
         <p class="page-subtitle">Gestión de copias de seguridad</p>
     </div>
-    <button onclick="generarRespaldo()" class="btn btn-success">
+    <button onclick="generarRespaldo()" class="btn btn-success" id="btnGenerar">
         <i class="fas fa-database"></i> Generar Respaldo
     </button>
 </div>
+
+<!-- CSRF Token para AJAX -->
+<input type="hidden" name="csrf_token" value="<?php echo \App\Helpers\CSRF::getToken(); ?>">
 
 <div class="card">
     <div class="card-header">
@@ -116,8 +119,12 @@ if ($_SESSION['user_rol'] !== 'administrador') {
         });
 
         try {
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
             const response = await fetch('/respaldos/generar', {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                }
             });
 
             const data = await response.json();
@@ -190,7 +197,8 @@ if ($_SESSION['user_rol'] !== 'administrador') {
             const response = await fetch('/respaldos/restaurar', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value
                 },
                 body: JSON.stringify({
                     id: id

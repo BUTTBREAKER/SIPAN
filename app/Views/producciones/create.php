@@ -18,6 +18,10 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form @submit.prevent="guardarProduccion()">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -96,8 +100,13 @@ require_once __DIR__ . '/../layouts/header.php';
             </div> -->
 
             <div class="form-group mt-4">
-                <button type="submit" class="btn btn-warning" :disabled="!puede_producir">
-                    <i class="fas fa-industry"></i> Registrar Producción
+                <button type="submit" class="btn btn-warning" :disabled="!puede_producir || isSubmitting">
+                    <template x-if="!isSubmitting">
+                        <span><i class="fas fa-industry"></i> Registrar Producción</span>
+                    </template>
+                    <template x-if="isSubmitting">
+                        <span><i class="fas fa-spinner fa-spin"></i> Procesando...</span>
+                    </template>
                 </button>
                 <a href="/producciones" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
@@ -121,6 +130,7 @@ require_once __DIR__ . '/../layouts/header.php';
             rendimiento: 0,
             insumos_necesarios: [],
             puede_producir: true,
+            isSubmitting: false,
 
             async cargarReceta() {
                 if (!this.id_producto) return;
@@ -151,13 +161,9 @@ require_once __DIR__ . '/../layouts/header.php';
                     const response = await fetch(`/recetas/calcular?id_producto=${this.id_producto}&cantidad=${this.cantidad_producida}`);
                     const data = await response.json();
 
-                    console.log('Respuesta de calcular insumos:', data); // <-- AGREGAR ESTO
-
                     if (data.success) {
                         this.insumos_necesarios = data.insumos;
                         this.puede_producir = data.puede_producir;
-
-                        console.log('Insumos necesarios:', this.insumos_necesarios); // <-- Y ESTO
                     }
                 } catch (error) {
                     console.error('Error al calcular insumos:', error);
@@ -181,22 +187,25 @@ require_once __DIR__ . '/../layouts/header.php';
                     cantidad_utilizada: insumo.cantidad_necesaria
                 }));
 
-                console.log('Insumos formateados a enviar:', insumosFormateados); // <-- LOG IMPORTANTE
-
                 const formData = new FormData();
                 formData.append('id_producto', this.id_producto);
                 formData.append('cantidad_producida', this.cantidad_producida);
                 formData.append('insumos', JSON.stringify(insumosFormateados));
 
+                this.isSubmitting = true;
                 try {
+                    // Obtener CSRF token
+                    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
                     const response = await fetch('/producciones/store', {
                         method: 'POST',
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        },
                         body: formData
                     });
 
                     const data = await response.json();
-
-                    console.log('Respuesta del servidor:', data); // <-- LOG IMPORTANTE
 
                     if (data.success) {
                         SIPAN.success(data.message);
@@ -206,9 +215,8 @@ require_once __DIR__ . '/../layouts/header.php';
                     } else {
                         SIPAN.error(data.message);
                     }
-                } catch (error) {
-                    SIPAN.error('Error al registrar la producción');
-                    console.error('Error:', error);
+                } finally {
+                    this.isSubmitting = false;
                 }
             }
 

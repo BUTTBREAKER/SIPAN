@@ -375,7 +375,7 @@
                 <div class="form-group">
                     <label class="form-label">Correo Electrónico</label>
                     <div class="input-icon">
-                        <input type="email" name="correo" class="form-control" placeholder="tu@correo.com" required>
+                        <input type="email" name="correo" class="form-control" placeholder="tu@correo.com" required autocomplete="username">
                         <i class="fas fa-envelope"></i>
                     </div>
                 </div>
@@ -383,12 +383,12 @@
                 <div class="form-group">
                     <label class="form-label">Contraseña</label>
                     <div class="input-icon">
-                        <input type="password" name="clave" class="form-control" placeholder="••••••••" required>
+                        <input type="password" name="clave" class="form-control" placeholder="••••••••" required autocomplete="current-password">
                         <i class="fas fa-lock"></i>
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-login">
+                <button type="submit" class="btn-login" id="btnLogin">
                     <i class="fas fa-sign-in-alt"></i> Ingresar
                 </button>
             </form>
@@ -448,12 +448,19 @@
 
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+            const btn = document.getElementById('btnLogin');
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
             const formData = new FormData(this);
             
             try {
                 const response = await fetch(this.action, {
                     method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value
+                    },
                     body: formData
                 });
                 
@@ -486,6 +493,9 @@
                     confirmButtonColor: '#F4C4A0'
                 });
                 console.error('Error:', error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
             }
         });
     </script>

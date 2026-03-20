@@ -18,6 +18,10 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form @submit.prevent="guardarReceta()">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -125,8 +129,13 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
 
             <div class="form-group">
-                <button type="submit" class="btn btn-primary" :disabled="insumos_receta.length === 0">
-                    <i class="fas fa-save"></i> Guardar Receta
+                <button type="submit" class="btn btn-primary" :disabled="insumos_receta.length === 0 || isSubmitting">
+                    <template x-if="!isSubmitting">
+                        <span><i class="fas fa-save"></i> Guardar Receta</span>
+                    </template>
+                    <template x-if="isSubmitting">
+                        <span><i class="fas fa-spinner fa-spin"></i> Guardando...</span>
+                    </template>
                 </button>
                 <a href="/recetas" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
@@ -145,6 +154,7 @@ require_once __DIR__ . '/../layouts/header.php';
             insumo_seleccionado: '',
             cantidad_insumo: '',
             insumos_receta: [],
+            isSubmitting: false,
 
             init() {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -206,9 +216,16 @@ require_once __DIR__ . '/../layouts/header.php';
                 formData.append('instrucciones', this.instrucciones);
                 formData.append('insumos', JSON.stringify(this.insumos_receta));
 
+                this.isSubmitting = true;
                 try {
+                    // Obtener CSRF token
+                    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
                     const response = await fetch('/recetas/store', {
                         method: 'POST',
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        },
                         body: formData
                     });
 
@@ -222,9 +239,8 @@ require_once __DIR__ . '/../layouts/header.php';
                     } else {
                         SIPAN.error(data.message);
                     }
-                } catch (error) {
-                    SIPAN.error('Error al guardar la receta');
-                    console.error('Error:', error);
+                } finally {
+                    this.isSubmitting = false;
                 }
             }
         }

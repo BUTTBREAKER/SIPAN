@@ -18,6 +18,10 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form @submit.prevent="guardarPedido()">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <!-- Información del Cliente y Fechas -->
             <div class="row mb-4">
                 <div class="col-md-3">
@@ -194,8 +198,13 @@ require_once __DIR__ . '/../layouts/header.php';
                 <a href="/pedidos" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
                 </a>
-                <button type="submit" class="btn btn-primary" :disabled="items.length === 0 || !id_cliente || !fecha_entrega">
-                    <i class="fas fa-check"></i> Guardar Pedido
+                <button type="submit" class="btn btn-primary" :disabled="items.length === 0 || !id_cliente || !fecha_entrega || isSubmitting">
+                    <template x-if="!isSubmitting">
+                        <span><i class="fas fa-check"></i> Guardar Pedido</span>
+                    </template>
+                    <template x-if="isSubmitting">
+                        <span><i class="fas fa-spinner fa-spin"></i> Guardando...</span>
+                    </template>
                 </button>
             </div>
         </form>
@@ -217,6 +226,7 @@ function pedidoApp() {
         saldo_pendiente: 0,
         estado_pago_texto: 'Pendiente',
         observaciones: '',
+        isSubmitting: false,
         minDate: new Date().toISOString().split('T')[0],
         
         init() {
@@ -310,9 +320,16 @@ function pedidoApp() {
             formData.append('observaciones', this.observaciones);
             formData.append('productos', JSON.stringify(this.items));
             
+            this.isSubmitting = true;
             try {
+                // Obtener CSRF token
+                const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
                 const response = await fetch('/pedidos/store', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    },
                     body: formData
                 });
                 
@@ -326,9 +343,8 @@ function pedidoApp() {
                 } else {
                     SIPAN.error(data.message);
                 }
-            } catch (error) {
-                SIPAN.error('Error al guardar el pedido');
-                console.error('Error:', error);
+            } finally {
+                this.isSubmitting = false;
             }
         }
     }

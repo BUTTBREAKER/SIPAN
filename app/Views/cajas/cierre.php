@@ -43,6 +43,10 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
 
                     <form action="/cajas/cerrar" method="POST" id="cierreForm">
+                        <?php
+                        require_once __DIR__ . '/../../Helpers/CSRF.php';
+                        echo \App\Helpers\CSRF::field();
+                        ?>
                         <input type="hidden" name="id_caja" value="<?php echo $caja['id']; ?>">
                         
                         <div class="mb-4">
@@ -88,7 +92,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </div>
 
                         <div class="d-grid gap-3">
-                            <button type="submit" class="btn btn-danger btn-lg py-3 fw-bold shadow-sm">
+                            <button type="submit" class="btn btn-danger btn-lg py-3 fw-bold shadow-sm" id="btnCerrar">
                                 <i class="fas fa-check-double me-2"></i> Confirmar y Cerrar Turno
                             </button>
                             <a href="/cajas" class="btn btn-link text-muted py-2">
@@ -123,5 +127,29 @@ require_once __DIR__ . '/../layouts/header.php';
     box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.1);
 }
 </style>
+
+<script>
+document.getElementById('cierreForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const result = await Swal.fire({
+        title: '¿Confirmar Cierre de Caja?',
+        text: 'Asegúrate de que los montos ingresados coincidan con el efectivo real. Una vez cerrada, no podrás registrar más ventas en este turno.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, cerrar caja',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        const btn = document.getElementById('btnCerrar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando Cierre...';
+        this.submit();
+    }
+});
+</script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php';

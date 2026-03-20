@@ -18,6 +18,10 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form id="formProducto" action="/productos/store" method="POST" x-data="productoForm()">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -75,8 +79,13 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             
             <div class="form-group mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Guardar Producto
+                <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                    <template x-if="!isSubmitting">
+                        <span><i class="fas fa-save"></i> Guardar Producto</span>
+                    </template>
+                    <template x-if="isSubmitting">
+                        <span><i class="fas fa-spinner fa-spin"></i> Guardando...</span>
+                    </template>
                 </button>
                 <a href="/productos" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancelar
@@ -95,18 +104,22 @@ function productoForm() {
         precio_actual: '',
         stock_actual: '',
         stock_minimo: '',
+        isSubmitting: false,
         
         init() {
             const form = document.getElementById('formProducto');
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
+                this.isSubmitting = true;
                 if (!SIPAN.validateForm(form)) {
                     SIPAN.error('Por favor complete todos los campos requeridos');
+                    this.isSubmitting = false;
                     return;
                 }
                 
-                const data = await SIPAN.submitForm(form, (response) => {
+                try {
+                    const data = await SIPAN.submitForm(form, (response) => {
                     // Preguntar si quiere crear la receta ahora
                      Swal.fire({
                         title: 'Producto creado',
@@ -125,7 +138,12 @@ function productoForm() {
                             window.location.href = '/productos';
                         }
                     });
+                        }
+                    });
                 });
+                } finally {
+                    this.isSubmitting = false;
+                }
             });
         }
     }
