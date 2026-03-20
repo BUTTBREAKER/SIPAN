@@ -15,23 +15,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
-    <link rel="stylesheet" href="/assets/css/driver.css">
-    <link rel="stylesheet" href="/assets/css/tables.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/dashboard.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/driver.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/tables.css">
     
     <!-- Scripts -->
-    <script src="/assets/js/driver.js.iife.js"></script>
-    <script src="/assets/js/tour.js" defer></script>
+    <script src="<?= BASE_URL ?>assets/js/driver.js.iife.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/tour.js" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="/assets/js/notifications.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/notifications.js"></script>
     <!-- app.js moved to footer to prevent duplicate executions -->
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Grid.js -->
     <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
     <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-    <script src="/assets/js/grid-init.js" defer></script>
+    <script src="<?= BASE_URL ?>assets/js/grid-init.js" defer></script>
 </head>
 <body>
     <!-- Page Loader -->

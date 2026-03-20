@@ -27,6 +27,18 @@ if ($_ENV['app_env'] === 'production') {
     ini_set('error_log', __DIR__ . '/../storage/logs/sipan-debug.log');
 }
 
+// Detectar la ruta ANTES de iniciar la sesión para poder variar el nombre de la sesión
+$request_uri = $_SERVER['REQUEST_URI'] ?? '/';
+$path = parse_url($request_uri, PHP_URL_PATH) ?? '/';
+
+// Asegurar que la ruta comience con /
+if (!str_starts_with($path, '/')) {
+    $path = "/$path";
+}
+
+// Detectar si la ruta es para el sistema de delivery
+$isDeliveryPath = (stripos($path, '/delivery') === 0);
+
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
 $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
 
@@ -39,25 +51,22 @@ session_set_cookie_params([
     'domain' => $sessionParams['domain'],
     'secure' => $isSecure,
     'httponly' => true,
-    'samesite' => 'Lax' // Necesario para túneles y navegadores modernos
+    'samesite' => 'Lax'
 ]);
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_name($_ENV['session_name'] ?? 'SIPAN_SESSION');
+    // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
+    $baseSessionName = $_ENV['session_name'] ?? 'SIPAN_SESSION';
+    $finalSessionName = $isDeliveryPath ? $baseSessionName . '_DELIVERY' : $baseSessionName;
+    
+    session_name($finalSessionName);
     session_start();
 }
 
 // Habilitar log de debug
 ini_set('log_errors', true);
 
-// Obtener la ruta solicitada
-$request_uri = $_SERVER['REQUEST_URI'];
-$path = parse_url($request_uri, PHP_URL_PATH);
-
-// Asegurar que la ruta comience con /
-if (!str_starts_with($path, '/')) {
-    $path = "/$path";
-}
+// La ruta ya fue detectada arriba
 // ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
 // Si la ruta empieza con /delivery y no es un archivo físico (ya manejado por el servidor)
 if (stripos($path, '/delivery') === 0) {
@@ -70,6 +79,15 @@ if (stripos($path, '/delivery') === 0) {
 
 // Remover el subdirectorio base si no estamos en la raíz
 $script_name = dirname($_SERVER['SCRIPT_NAME']);
+// Priorizar APP_URL del .env, si no detectarlo por host
+$env_app_url = $_ENV['APP_URL'] ?? null;
+if ($env_app_url) {
+    define('BASE_URL', rtrim($env_app_url, '/\\') . '/');
+} else {
+    $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . $script_name;
+    define('BASE_URL', rtrim($base_url, '/\\') . '/');
+}
+
 if ($script_name !== '/' && $script_name !== '\\') {
     $path = str_replace($script_name, '', $path);
 }

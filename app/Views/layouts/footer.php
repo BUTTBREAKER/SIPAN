@@ -23,8 +23,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Custom JS -->
-    <script src="/assets/js/app.js"></script>
-    <script src="/assets/js/tables.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/app.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/tables.js"></script>
     
     <?php if (isset($additionalScripts)) : ?>
         <?= $additionalScripts ?>
