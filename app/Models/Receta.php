@@ -28,19 +28,27 @@ class Receta extends BaseModel
 
             $id_receta = $this->db->lastInsertId();
 
-            // Agregar los insumos (acepta tanto 'id' como 'id_insumo' en el array)
-            $sqlDetalle = "INSERT INTO receta_insumos (id_receta, id_insumo, cantidad, unidad_medida) VALUES (?, ?, ?, ?)";
-            foreach ($insumos as $insumo) {
-                $insumoId = $insumo['id'] ?? $insumo['id_insumo'] ?? null;
-                $cantidad = isset($insumo['cantidad']) ? $insumo['cantidad'] : 0;
-                $unidad = $insumo['unidad_medida'] ?? ($insumo['unidad'] ?? 'kg');
+            // Agregar los insumos (Optimización Bolt: Batch Insert)
+            if (!empty($insumos)) {
+                $placeholders = [];
+                $values = [];
+                foreach ($insumos as $insumo) {
+                    $insumoId = $insumo['id'] ?? $insumo['id_insumo'] ?? null;
+                    if (!$insumoId) {
+                        continue;
+                    }
 
-                if (!$insumoId) {
-                    // ignorar entradas mal formadas
-                    continue;
+                    $cantidad = $insumo['cantidad'] ?? 0;
+                    $unidad = $insumo['unidad_medida'] ?? ($insumo['unidad'] ?? 'kg');
+
+                    $placeholders[] = "(?, ?, ?, ?)";
+                    array_push($values, $id_receta, $insumoId, $cantidad, $unidad);
                 }
 
-                $this->db->execute($sqlDetalle, [$id_receta, $insumoId, $cantidad, $unidad]);
+                if (!empty($placeholders)) {
+                    $sqlDetalle = "INSERT INTO receta_insumos (id_receta, id_insumo, cantidad, unidad_medida) VALUES " . implode(', ', $placeholders);
+                    $this->db->execute($sqlDetalle, $values);
+                }
             }
 
             $this->db->commit();
@@ -74,7 +82,7 @@ class Receta extends BaseModel
      */
     public function getInsumos($receta_id)
     {
-        $sql = "SELECT ri.*, i.nombre, i.unidad_medida as unidad_insumo, i.stock_actual, i.precio_unitario
+        $sql = "SELECT ri.*, i.nombre, i.unidad_medida as unidad_insumo, i.stock_actual, i.precio_unitario, i.costo_unitario
                 FROM receta_insumos ri
                 INNER JOIN insumos i ON ri.id_insumo = i.id
                 WHERE ri.id_receta = ?";
@@ -113,19 +121,27 @@ class Receta extends BaseModel
             $sqlDel = "DELETE FROM receta_insumos WHERE id_receta = ?";
             $this->db->execute($sqlDel, [$receta_id]);
 
-            // Insertar de nuevo
-            $sqlIns = "INSERT INTO receta_insumos (id_receta, id_insumo, cantidad, unidad_medida)
-                       VALUES (?, ?, ?, ?)";
-            foreach ($insumos as $i) {
-                $insumoId = $i['id'] ?? $i['id_insumo'] ?? null;
-                $cantidad = $i['cantidad'] ?? 0;
-                $unidad = $i['unidad_medida'] ?? ($i['unidad'] ?? 'kg');
+            // Insertar de nuevo (Optimización Bolt: Batch Insert)
+            if (!empty($insumos)) {
+                $placeholders = [];
+                $values = [];
+                foreach ($insumos as $i) {
+                    $insumoId = $i['id'] ?? $i['id_insumo'] ?? null;
+                    if (!$insumoId) {
+                        continue;
+                    }
 
-                if (!$insumoId) {
-                    continue;
+                    $cantidad = $i['cantidad'] ?? 0;
+                    $unidad = $i['unidad_medida'] ?? ($i['unidad'] ?? 'kg');
+
+                    $placeholders[] = "(?, ?, ?, ?)";
+                    array_push($values, $receta_id, $insumoId, $cantidad, $unidad);
                 }
 
-                $this->db->execute($sqlIns, [$receta_id, $insumoId, $cantidad, $unidad]);
+                if (!empty($placeholders)) {
+                    $sqlIns = "INSERT INTO receta_insumos (id_receta, id_insumo, cantidad, unidad_medida) VALUES " . implode(', ', $placeholders);
+                    $this->db->execute($sqlIns, $values);
+                }
             }
 
             $this->db->commit();
@@ -175,7 +191,7 @@ class Receta extends BaseModel
 
     public function getInsumosByReceta($receta_id)
     {
-        $sql = "SELECT ri.*, i.nombre, i.unidad_medida, i.stock_actual, i.precio_unitario
+        $sql = "SELECT ri.*, i.nombre, i.unidad_medida, i.stock_actual, i.precio_unitario, i.costo_unitario
                 FROM receta_insumos ri
                 INNER JOIN insumos i ON ri.id_insumo = i.id
                 WHERE ri.id_receta = ?";
