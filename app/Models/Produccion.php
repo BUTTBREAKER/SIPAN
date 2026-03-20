@@ -82,14 +82,15 @@ class Produccion extends BaseModel
 
         $params = [$sucursal_id];
 
+        // Optimization: Use direct timestamp comparison to keep query SARGable (utilizes index on fecha_produccion)
         if ($fecha_inicio) {
-            $sql .= " AND DATE(pr.fecha_produccion) >= ?";
-            $params[] = $fecha_inicio;
+            $sql .= " AND pr.fecha_produccion >= ?";
+            $params[] = $fecha_inicio . ' 00:00:00';
         }
 
         if ($fecha_fin) {
-            $sql .= " AND DATE(pr.fecha_produccion) <= ?";
-            $params[] = $fecha_fin;
+            $sql .= " AND pr.fecha_produccion <= ?";
+            $params[] = $fecha_fin . ' 23:59:59';
         }
 
         $sql .= " ORDER BY pr.fecha_produccion DESC";

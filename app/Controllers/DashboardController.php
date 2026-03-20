@@ -44,8 +44,6 @@ class DashboardController
             'ventas_hoy' => $this->ventaModel->getTotalVentas($sucursal_id, date('Y-m-d'), date('Y-m-d')),
             'ventas_semana' => $this->ventaModel->getTotalVentas($sucursal_id, date('Y-m-d', strtotime('-7 days')), date('Y-m-d')),
             'ventas_mes' => $this->ventaModel->getTotalVentas($sucursal_id, date('Y-m-01'), date('Y-m-d')),
-            'notificaciones' => $this->notificacionModel->getNoLeidas($sucursal_id, $user['id']),
-            'total_notificaciones' => $this->notificacionModel->countNoLeidas($sucursal_id, $user['id']),
             'ventas_ultimos_dias' => $this->ventaModel->getVentasUltimosDias($sucursal_id, 7),
             'productos_mas_vendidos' => $this->ventaModel->getProductosMasVendidos($sucursal_id, 5),
             'lotes_por_vencer' => $loteModel->getPorVencer($sucursal_id, 30) // Próximos 30 días
