@@ -138,14 +138,15 @@ class Venta extends BaseModel
 
         $params = [$sucursal_id];
 
+        // Optimization: Use direct timestamp comparison to keep query SARGable (utilizes index on fecha_venta)
         if ($fecha_inicio) {
-            $sql .= " AND DATE(v.fecha_venta) >= ?";
-            $params[] = $fecha_inicio;
+            $sql .= " AND v.fecha_venta >= ?";
+            $params[] = $fecha_inicio . ' 00:00:00';
         }
 
         if ($fecha_fin) {
-            $sql .= " AND DATE(v.fecha_venta) <= ?";
-            $params[] = $fecha_fin;
+            $sql .= " AND v.fecha_venta <= ?";
+            $params[] = $fecha_fin . ' 23:59:59';
         }
 
         $sql .= " GROUP BY v.id ORDER BY v.fecha_venta DESC";
@@ -177,16 +178,21 @@ class Venta extends BaseModel
 
     public function getByDateRange($sucursal_id, $fecha_inicio, $fecha_fin)
     {
+        // Optimization: Use direct timestamp comparison to keep query SARGable (utilizes index on fecha_venta)
         $sql = "SELECT v.*, 
                        CONCAT(COALESCE(c.nombre, ''), ' ', COALESCE(c.apellido, '')) as cliente_nombre,
                        CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
                 FROM {$this->table} v
                 LEFT JOIN clientes c ON v.id_cliente = c.id
                 LEFT JOIN usuarios u ON v.id_usuario = u.id
-                WHERE v.id_sucursal = ? AND DATE(v.fecha_venta) BETWEEN ? AND ?
+                WHERE v.id_sucursal = ? AND v.fecha_venta >= ? AND v.fecha_venta <= ?
                 ORDER BY v.fecha_venta DESC";
 
-        return $this->db->fetchAll($sql, [$sucursal_id, $fecha_inicio, $fecha_fin]);
+        return $this->db->fetchAll($sql, [
+            $sucursal_id,
+            $fecha_inicio . ' 00:00:00',
+            $fecha_fin . ' 23:59:59'
+        ]);
     }
 
     public function getClienteStats($cliente_id)
