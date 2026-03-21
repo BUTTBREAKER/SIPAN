@@ -69,31 +69,29 @@ class CalculoInsumosController
         foreach ($insumos_receta as $insumo_receta) {
             $cantidad_necesaria = $insumo_receta['cantidad'] * $factor;
 
-            // Obtener stock actual del insumo
-            $insumo = $this->insumoModel->find($insumo_receta['id_insumo']);
-            $stock_actual = $insumo['stock_actual'];
-
+            // Bolt Optimization: Use stock and metadata already fetched by getInsumosByReceta to avoid N+1 queries
+            $stock_actual = $insumo_receta['stock_actual'];
             $suficiente = $stock_actual >= $cantidad_necesaria;
 
             if (!$suficiente) {
                 $puede_producir = false;
                 $insumos_faltantes[] = [
-                    'nombre' => $insumo['nombre'],
+                    'nombre' => $insumo_receta['nombre'],
                     'necesario' => $cantidad_necesaria,
                     'disponible' => $stock_actual,
                     'faltante' => $cantidad_necesaria - $stock_actual,
-                    'unidad' => $insumo['unidad_medida']
+                    'unidad' => $insumo_receta['unidad_medida']
                 ];
             }
 
             $insumos_necesarios[] = [
-                'id_insumo' => $insumo['id'],
-                'nombre' => $insumo['nombre'],
+                'id_insumo' => $insumo_receta['id_insumo'],
+                'nombre' => $insumo_receta['nombre'],
                 'cantidad_necesaria' => $cantidad_necesaria,
                 'stock_actual' => $stock_actual,
-                'unidad_medida' => $insumo['unidad_medida'],
-                'precio_unitario' => $insumo['precio_unitario'],
-                'costo_total' => $cantidad_necesaria * $insumo['precio_unitario'],
+                'unidad_medida' => $insumo_receta['unidad_medida'],
+                'precio_unitario' => $insumo_receta['precio_unitario'],
+                'costo_total' => $cantidad_necesaria * $insumo_receta['precio_unitario'],
                 'suficiente' => $suficiente
             ];
         }
