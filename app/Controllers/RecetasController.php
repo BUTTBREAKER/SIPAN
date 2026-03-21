@@ -103,13 +103,8 @@ class RecetasController
         $detalles_insumos = [];
 
         foreach ($insumos as $insumo) {
-            // Asumimos que getInsumos ya trae datos básicos, pero necesitamos el costo actual del insumo
-            // Si el modelo Receta no hace join con costo, buscamos el insumo
-            $insumoData = $this->insumoModel->find($insumo['id_insumo']);
-            $costo_unitario = $insumoData['costo_unitario'] ?? 0; // Campo debe existir en insumos o lotes (promedio)
-
-            // Si no existe costo_unitario en insumos, usar promedio ponderado de lotes (pendiente),
-            // por ahora usamos un fallback si no está implementado
+            // Optimización Bolt: El costo_unitario ya viene en la consulta de getInsumos
+            $costo_unitario = $insumo['costo_unitario'] ?? 0;
 
             $subtotal = $insumo['cantidad'] * $costo_unitario;
             $costo_total_receta += $subtotal;
