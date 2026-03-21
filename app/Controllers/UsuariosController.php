@@ -14,7 +14,7 @@ class UsuariosController
     public function __construct()
     {
         AuthMiddleware::checkAuth();
-
+        require_once __DIR__ . '/../../Helpers/CSRF.php';
         $this->usuarioModel = new Usuario();
         $this->auditoriaModel = new Auditoria();
     }
@@ -78,8 +78,23 @@ class UsuariosController
         $user = AuthMiddleware::getUser();
         $input = json_decode(file_get_contents('php://input'), true);
 
+        // Validar CSRF
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
+
         try {
             $data = [];
+
+            // Verificar unicidad de correo si ha cambiado
+            if (isset($input['correo']) && $input['correo'] !== $user['correo']) {
+                $existente = $this->usuarioModel->findByEmail($input['correo']);
+                if ($existente && $existente['id'] != $user['id']) {
+                    echo json_encode(['success' => false, 'message' => 'El correo electrónico ya está en uso por otro usuario']);
+                    exit;
+                }
+            }
 
             // Opción 1: Si se envía "nombre" completo (formulario con un solo campo)
             if (isset($input['nombre']) && !empty($input['nombre'])) {
@@ -165,6 +180,12 @@ class UsuariosController
         $usuario_id = $input['usuario_id'] ?? null;
         $estado = $input['estado'] ?? null;
 
+        // Validar CSRF
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
+
         if (!$usuario_id || !$estado) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
             exit;
@@ -175,6 +196,80 @@ class UsuariosController
             echo json_encode(['success' => true, 'message' => 'Estado actualizado correctamente']);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar estado']);
+        }
+
+        exit;
+    }
+
+    public function edit()
+    {
+        AuthMiddleware::checkRole(['administrador']);
+
+        $user = AuthMiddleware::getUser();
+        $usuario_id = $_GET['id'] ?? null;
+
+        if (!$usuario_id) {
+            header('Location: /usuarios');
+            exit;
+        }
+
+        $usuario = $this->usuarioModel->find($usuario_id);
+        if (!$usuario || $usuario['sucursal_id'] != $user['sucursal_id']) {
+            header('Location: /usuarios');
+            exit;
+        }
+
+        require_once __DIR__ . '/../Views/usuarios/edit.php';
+    }
+
+    public function update()
+    {
+        AuthMiddleware::checkRole(['administrador']);
+
+        header('Content-Type: application/json');
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $usuario_id = $input['id'] ?? null;
+
+        // Validar CSRF
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
+
+        if (!$usuario_id) {
+            echo json_encode(['success' => false, 'message' => 'ID de usuario no proporcionado']);
+            exit;
+        }
+
+        try {
+            $data = [
+                'primer_nombre' => $input['primer_nombre'],
+                'segundo_nombre' => $input['segundo_nombre'] ?? null,
+                'apellido_paterno' => $input['apellido_paterno'],
+                'apellido_materno' => $input['apellido_materno'] ?? null,
+                'correo' => $input['correo'],
+                'rol' => $input['rol'],
+                'telefono' => $input['telefono'] ?? null
+            ];
+
+            // Verificar unicidad de correo
+            $existente = $this->usuarioModel->findByEmail($input['correo']);
+            if ($existente && $existente['id'] != $usuario_id) {
+                echo json_encode(['success' => false, 'message' => 'El correo electrónico ya está en uso por otro usuario']);
+                exit;
+            }
+
+            // Si se proporciona nueva contraseña
+            if (!empty($input['clave_nueva'])) {
+                $data['clave'] = password_hash($input['clave_nueva'], PASSWORD_DEFAULT);
+            }
+
+            $this->usuarioModel->update($usuario_id, $data);
+
+            echo json_encode(['success' => true, 'message' => 'Usuario actualizado correctamente']);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error al actualizar usuario: ' . $e->getMessage()]);
         }
 
         exit;

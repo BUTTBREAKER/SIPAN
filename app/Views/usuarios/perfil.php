@@ -69,6 +69,7 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
             <div class="card-body">
                 <form id="formPerfil">
+                    <?= \App\Helpers\CSRF::field() ?>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -136,8 +137,8 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
 
                     <div class="form-group mt-4">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Guardar Cambios
+                        <button type="submit" class="btn btn-primary" id="btnGuardar">
+                            <i class="fas fa-save me-2"></i> <span>Guardar Cambios</span>
                         </button>
                     </div>
                 </form>
@@ -166,6 +167,12 @@ require_once __DIR__ . '/../layouts/header.php';
     document.getElementById('formPerfil').addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const btn = document.getElementById('btnGuardar');
+        const btnText = btn.querySelector('span');
+        const btnIcon = btn.querySelector('i');
+        const originalText = btnText.innerText;
+        const originalIconClass = btnIcon.className;
+
         const formData = new FormData(e.target);
         const data = Object.fromEntries(formData);
 
@@ -188,10 +195,16 @@ require_once __DIR__ . '/../layouts/header.php';
         }
 
         try {
+            // Activar estado de carga
+            btn.disabled = true;
+            btnText.innerText = 'Guardando...';
+            btnIcon.className = 'fas fa-spinner fa-spin me-2';
+
             const response = await fetch('/usuarios/actualizar-perfil', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value
                 },
                 body: JSON.stringify(data)
             });
@@ -207,6 +220,11 @@ require_once __DIR__ . '/../layouts/header.php';
             }
         } catch (error) {
             Swal.fire('Error', 'Error al actualizar el perfil', 'error');
+        } finally {
+            // Desactivar estado de carga
+            btn.disabled = false;
+            btnText.innerText = originalText;
+            btnIcon.className = originalIconClass;
         }
     });
 </script>

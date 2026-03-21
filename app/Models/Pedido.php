@@ -11,6 +11,30 @@ class Pedido extends BaseModel
         try {
             $this->db->beginTransaction();
 
+            // Validar stock antes de crear el pedido (Batch query optimization)
+            $cantidadesPorProducto = [];
+            foreach ($productos as $producto) {
+                $id = $producto['id'];
+                $cantidadesPorProducto[$id] = ($cantidadesPorProducto[$id] ?? 0) + $producto['cantidad'];
+            }
+
+            $productIds = array_keys($cantidadesPorProducto);
+            if (!empty($productIds)) {
+                $placeholders_stock = implode(',', array_fill(0, count($productIds), '?'));
+                $sql_stock = "SELECT id, nombre, stock_actual FROM productos WHERE id IN ($placeholders_stock)";
+                $productos_db = $this->db->fetchAll($sql_stock, $productIds);
+                $stockMap = array_column($productos_db, null, 'id');
+
+                foreach ($cantidadesPorProducto as $id => $cantidad_solicitada) {
+                    if (!isset($stockMap[$id])) {
+                        throw new \Exception("Producto con ID {$id} no encontrado");
+                    }
+                    if ($stockMap[$id]['stock_actual'] < $cantidad_solicitada) {
+                        throw new \Exception("Stock insuficiente para: " . $stockMap[$id]['nombre'] . " (Solicitado: {$cantidad_solicitada}, Disponible: " . $stockMap[$id]['stock_actual'] . ")");
+                    }
+                }
+            }
+
             // Generar número de pedido único
             $pedido_data['numero_pedido'] = $this->generarNumeroPedido();
 

@@ -15,6 +15,7 @@ class SucursalesController
     {
         AuthMiddleware::checkAuth();
         AuthMiddleware::checkRole(['administrador']);
+        require_once __DIR__ . '/../../Helpers/CSRF.php';
 
         $this->sucursalModel = new Sucursal();
         $this->negocioModel = new Negocio();
@@ -43,6 +44,11 @@ class SucursalesController
     public function store()
     {
         header('Content-Type: application/json');
+
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
 
         try {
             $user = AuthMiddleware::getUser();
@@ -113,6 +119,11 @@ class SucursalesController
     {
         header('Content-Type: application/json');
 
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
+
         try {
             $input = json_decode(file_get_contents('php://input'), true);
 
@@ -151,6 +162,11 @@ class SucursalesController
     {
         header('Content-Type: application/json');
 
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
+
         try {
             $input = json_decode(file_get_contents('php://input'), true);
             $sucursal_id = $input['sucursal_id'] ?? null;
@@ -186,6 +202,11 @@ class SucursalesController
     public function regenerarClave($id)
     {
         header('Content-Type: application/json');
+
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
 
         try {
             $sucursal = $this->sucursalModel->find($id);

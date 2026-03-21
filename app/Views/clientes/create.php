@@ -107,6 +107,7 @@ document.getElementById('formCliente').addEventListener('submit', async function
     try {
         const response = await fetch(this.action, {
             method: 'POST',
+            headers: { 'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value },
             body: formData
         });
 

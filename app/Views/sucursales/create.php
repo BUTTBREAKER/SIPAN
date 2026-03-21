@@ -79,11 +79,15 @@ document.getElementById('formSucursal').addEventListener('submit', async (e) => 
 
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
     
     try {
         const response = await fetch('/sucursales/store', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken
+            },
             body: JSON.stringify(data)
         });
         

@@ -213,6 +213,11 @@ ob_start();
     </div>
 </div>
 
+<?php
+require_once __DIR__ . '/../../app/Helpers/CSRF.php';
+echo \App\Helpers\CSRF::field();
+?>
+
 <script>
 (function () {
     var pendingEstado = null;
@@ -309,10 +314,12 @@ ob_start();
 
         // Loading en el confirmBtn
         var confirmBtn = document.getElementById('confirmBtn');
+        var originalBtnHTML = confirmBtn.innerHTML;
         confirmBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Procesando...';
 
         var id  = document.getElementById('pedido_id').value;
         var formData = new FormData();
+        var csrfToken = document.querySelector('input[name="csrf_token"]').value;
 
         if (accion === 'cobro') {
             formData.append('monto', document.getElementById('cobro_monto').value);
@@ -321,6 +328,7 @@ ob_start();
             try {
                 var response = await fetch('/delivery/pedido/' + id + '/cobro', {
                     method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
                     body:   formData
                 });
                 var data = await response.json();
@@ -330,10 +338,12 @@ ob_start();
                     setTimeout(function () { window.location.reload(); }, 1200);
                 } else {
                     showToast(data.message || 'Error al registrar cobro', 'error');
+                    confirmBtn.innerHTML = originalBtnHTML;
                     document.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
                 }
             } catch (e) {
                 showToast('Error de conexión', 'error');
+                confirmBtn.innerHTML = originalBtnHTML;
                 document.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
             }
         } else {
@@ -345,6 +355,7 @@ ob_start();
             try {
                 var response = await fetch('/delivery/pedido/' + id + '/estado', {
                     method: 'POST',
+                    headers: { 'X-CSRF-Token': csrfToken },
                     body:   formData
                 });
                 var data = await response.json();
@@ -354,10 +365,12 @@ ob_start();
                     setTimeout(function () { window.location.reload(); }, 1200);
                 } else {
                     showToast(data.message || 'Error al actualizar', 'error');
+                    confirmBtn.innerHTML = originalBtnHTML;
                     document.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
                 }
             } catch (e) {
                 showToast('Error de conexión con el servidor', 'error');
+                confirmBtn.innerHTML = originalBtnHTML;
                 document.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
             }
         }

@@ -16,8 +16,11 @@ require_once __DIR__ . '/../layouts/header.php';
             <i class="fas fa-arrow-left"></i> Volver
         </a>
     </div>
-    <div class="card-body">
         <form id="formCliente" action="/clientes/update/<?= $cliente['id'] ?>" method="POST">
+            <?php
+            require_once __DIR__ . '/../../Helpers/CSRF.php';
+            echo \App\Helpers\CSRF::field();
+            ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -112,11 +115,40 @@ document.getElementById('formCliente').addEventListener('submit', async function
         return;
     }
     
-    const data = await SIPAN.submitForm(this, (response) => {
-        setTimeout(() => {
-            window.location.href = '/clientes';
-        }, 1500);
-    });
+    const btn = this.querySelector('button[type="submit"]');
+    const originalContent = btn.innerHTML;
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualizando...';
+
+    const formData = new FormData(this);
+
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            headers: { 'X-CSRF-Token': csrfToken },
+            body: formData
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            SIPAN.success('Cliente actualizado con éxito');
+            setTimeout(() => {
+                window.location.href = '/clientes';
+            }, 1500);
+        } else {
+            SIPAN.error(data.message || 'Error al actualizar el cliente');
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    } catch (error) {
+        console.error(error);
+        SIPAN.error('Error de conexión con el servidor');
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    }
 });
 </script>
 

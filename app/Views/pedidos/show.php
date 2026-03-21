@@ -12,6 +12,10 @@ require_once __DIR__ . '/../layouts/header.php';
 </div>
 
 <div class="row" x-data="pedidoDetailApp()">
+    <?php
+    require_once __DIR__ . '/../../Helpers/CSRF.php';
+    echo \App\Helpers\CSRF::field();
+    ?>
     <div class="col-md-8">
         <!-- Productos del Pedido -->
         <div class="card mb-3">
@@ -297,9 +301,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 const formData = new FormData();
                 formData.append('estado_pedido', this.nuevoEstado);
 
+                const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
                 try {
                     const response = await fetch('/pedidos/update/<?= $pedido['id'] ?>', {
                         method: 'POST',
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        },
                         body: formData
                     });
 
@@ -325,9 +334,14 @@ require_once __DIR__ . '/../layouts/header.php';
                 const formData = new FormData();
                 formData.append('id_repartidor', this.nuevoRepartidor);
 
+                const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
                 try {
                     const response = await fetch('/pedidos/asignar-repartidor/<?= $pedido['id'] ?>', {
                         method: 'POST',
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        },
                         body: formData
                     });
 
@@ -399,8 +413,13 @@ require_once __DIR__ . '/../layouts/header.php';
                 try {
                     console.log('Enviando petición fetch...');
 
+                    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+
                     const response = await fetch('/pedidos/registrar-pago', {
                         method: 'POST',
+                        headers: {
+                            'X-CSRF-Token': csrfToken
+                        },
                         body: formData
                     });
 

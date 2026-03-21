@@ -18,6 +18,10 @@ require_once __DIR__ . '/../layouts/sidebar.php';
     <div class="card">
         <div class="card-body">
             <form @submit.prevent="handleSubmit()">
+                <?php
+                require_once __DIR__ . '/../../Helpers/CSRF.php';
+                echo \App\Helpers\CSRF::field();
+                ?>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Nombre de la Sucursal <span class="text-danger">*</span></label>
@@ -56,8 +60,13 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                 </div>
                 
                 <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Guardar Cambios
+                    <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                        <template x-if="!isSubmitting">
+                            <span><i class="fas fa-save"></i> Guardar Cambios</span>
+                        </template>
+                        <template x-if="isSubmitting">
+                            <span><i class="fas fa-spinner fa-spin"></i> Guardando...</span>
+                        </template>
                     </button>
                     <a href="/sucursales" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancelar
@@ -71,6 +80,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
 <script>
 function editSucursalApp(sucursal) {
     return {
+        isSubmitting: false,
         formData: {
             nombre: sucursal.nombre,
             direccion: sucursal.direccion,
@@ -80,10 +90,16 @@ function editSucursalApp(sucursal) {
         },
         
         async handleSubmit() {
+            this.isSubmitting = true;
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+            
             try {
                 const response = await fetch('/sucursales/update/<?= $sucursal['id'] ?>', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
                     body: JSON.stringify(this.formData)
                 });
                 
@@ -113,6 +129,8 @@ function editSucursalApp(sucursal) {
                     text: 'Error de conexión',
                     confirmButtonColor: '#D4A574'
                 });
+            } finally {
+                this.isSubmitting = false;
             }
         }
     };

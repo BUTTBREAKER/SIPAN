@@ -130,6 +130,8 @@ return [
     'GET|/usuarios/actividad' => ['UsuariosController', 'actividad'],
     'POST|/usuarios/actualizar-perfil' => ['UsuariosController', 'actualizarPerfil'],
     'POST|/usuarios/cambiar-estado' => ['UsuariosController', 'cambiarEstado'],
+    'GET|/usuarios/edit' => ['UsuariosController', 'edit'],
+    'POST|/usuarios/update' => ['UsuariosController', 'update'],
 
     // Sucursales (Admin only)
     'GET|/sucursales' => ['SucursalesController', 'index'],

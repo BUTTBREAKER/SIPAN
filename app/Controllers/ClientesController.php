@@ -13,6 +13,7 @@ class ClientesController
 
     public function __construct()
     {
+        require_once __DIR__ . '/../../app/Helpers/CSRF.php';
         $this->clienteModel = new Cliente();
         $this->pedidoModel = new Pedido();
     }
@@ -41,6 +42,11 @@ class ClientesController
         AuthMiddleware::checkRole(['administrador', 'empleado']);
 
         header('Content-Type: application/json');
+
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
 
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
@@ -85,6 +91,11 @@ class ClientesController
 
         header('Content-Type: application/json');
 
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
+
         $data = [
             'nombre' => $_POST['nombre'] ?? '',
             'apellido' => $_POST['apellido'] ?? '',
@@ -110,6 +121,11 @@ class ClientesController
         AuthMiddleware::checkRole(['administrador']);
 
         header('Content-Type: application/json');
+
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
 
         try {
             $this->clienteModel->delete($id);

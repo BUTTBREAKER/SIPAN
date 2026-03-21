@@ -11,6 +11,7 @@ class PedidosController
 
     public function __construct()
     {
+        require_once __DIR__ . '/../../app/Helpers/CSRF.php';
         $this->pedidoModel = new Pedido();
     }
 
@@ -105,6 +106,11 @@ class PedidosController
         AuthMiddleware::check();
         
         header('Content-Type: application/json');
+
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
         
         $pedido = $this->pedidoModel->find($id);
 
@@ -150,6 +156,11 @@ class PedidosController
     {
         AuthMiddleware::check();
         header('Content-Type: application/json');
+
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
 
         $pedido = $this->pedidoModel->find($id);
 

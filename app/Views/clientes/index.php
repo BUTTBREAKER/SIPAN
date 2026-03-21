@@ -21,8 +21,12 @@ require_once __DIR__ . '/../layouts/header.php';
         <div class="card-body p-0">
             <div id="grid-clientes"></div>
         </div>
-    </div>
 </div>
+
+<?php
+require_once __DIR__ . '/../../Helpers/CSRF.php';
+echo \App\Helpers\CSRF::field();
+?>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -103,7 +107,11 @@ async function eliminarCliente(id) {
 
     if (result.isConfirmed) {
         try {
-            const response = await fetch(`/clientes/delete/${id}`, { method: 'POST' });
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+            const response = await fetch(`/clientes/delete/${id}`, { 
+                method: 'POST',
+                headers: { 'X-CSRF-Token': csrfToken }
+            });
             const data = await response.json();
             
             if (data.success) {

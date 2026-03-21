@@ -22,6 +22,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <div id="grid-usuarios"></div>
         </div>
     </div>
+    <?= \App\Helpers\CSRF::field() ?>
 </div>
 
 <style>
@@ -108,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     actions += `<a href="/usuarios/actividad?usuario_id=${cell}" class="grid-btn-action grid-btn-view" title="Actividad"><i class="fas fa-history"></i></a>`;
                     
                     if (!isSelf) {
+                        actions += `<a href="/usuarios/edit?id=${cell}" class="grid-btn-action grid-btn-edit" title="Editar"><i class="fas fa-edit"></i></a>`;
                         const toggleIcon = estado === 'activo' ? 'ban' : 'check';
                         const toggleClass = estado === 'activo' ? 'btn-warning' : 'btn-success';
                         const toggleTitle = estado === 'activo' ? 'Desactivar' : 'Activar';
@@ -148,7 +150,10 @@ async function cambiarEstado(usuarioId, nuevoEstado) {
         try {
             const response = await fetch('/usuarios/cambiar-estado', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': document.querySelector('input[name="csrf_token"]').value
+                },
                 body: JSON.stringify({
                     usuario_id: usuarioId,
                     estado: nuevoEstado

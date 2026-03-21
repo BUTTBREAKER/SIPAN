@@ -15,6 +15,7 @@ class PedidosController
 
     public function __construct()
     {
+        require_once __DIR__ . '/../../Helpers/CSRF.php';
         $this->pedidoModel = new Pedido();
         $this->clienteModel = new Cliente();
         $this->productoModel = new Producto();
@@ -50,6 +51,12 @@ class PedidosController
         AuthMiddleware::checkRole(['administrador', 'cajero', 'empleado']);
 
         header('Content-Type: application/json');
+
+        // Validar CSRF
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
 
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
@@ -119,6 +126,12 @@ class PedidosController
 
         header('Content-Type: application/json');
 
+        // Validar CSRF
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
+
         $data = [
             'estado_pedido' => $_POST['estado_pedido'] ?? 'pendiente',  // Cambiado a 'estado_pedido' para consistencia
             'fecha_entrega' => $_POST['fecha_entrega'] ?? null,
@@ -144,6 +157,12 @@ class PedidosController
     {
         // Forzar que siempre devuelva JSON
         header('Content-Type: application/json; charset=utf-8');
+
+        // Validar CSRF
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
 
         // Log inicial
         error_log("=== REGISTRAR PAGO INICIADO ===");
@@ -263,6 +282,12 @@ class PedidosController
         AuthMiddleware::checkRole(['administrador', 'empleado']);
         
         header('Content-Type: application/json');
+
+        // Validar CSRF
+        if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+            echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
+            exit;
+        }
         
         $id_repartidor = $_POST['id_repartidor'] ?? null;
         

@@ -88,6 +88,11 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
+<?php
+require_once __DIR__ . '/../../Helpers/CSRF.php';
+echo \App\Helpers\CSRF::field();
+?>
+
 <script>
 function copiarClave(clave) {
     navigator.clipboard.writeText(clave).then(() => {
@@ -115,9 +120,13 @@ async function cambiarEstado(sucursalId, nuevoEstado) {
     
     if (result.isConfirmed) {
         try {
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
             const response = await fetch('/sucursales/cambiar-estado', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
                 body: JSON.stringify({
                     sucursal_id: sucursalId,
                     estado: nuevoEstado
@@ -153,9 +162,13 @@ async function regenerarClave(sucursalId) {
     
     if (result.isConfirmed) {
         try {
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
             const response = await fetch(`/sucursales/regenerar-clave/${sucursalId}`, {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'}
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                }
             });
             
             const data = await response.json();
