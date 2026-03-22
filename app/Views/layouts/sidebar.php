@@ -114,6 +114,14 @@
                         <span>Compras</span>
                     </a>
                 </li>
+                <li>
+                    <a href="/chat" class="nav-link <?= ($currentPage ?? '') === 'chat' ? 'active' : '' ?>" style="position:relative;">
+                        <i class="fas fa-comments"></i>
+                        <span>Chat</span>
+                        <span id="chat-badge" class="position-absolute badge rounded-pill bg-danger" 
+                              style="display:none; top:6px; right:8px; font-size:.6rem; padding:3px 6px;">0</span>
+                    </a>
+                </li>
             </ul>
         </div>
 
@@ -224,4 +232,90 @@ function cambiarSucursal(sucursalId) {
         console.error('Error:', error);
     });
 }
+</script>
+
+<!-- Chat Badge: Pulse Animation + Global Polling (60s) -->
+<style>
+.chat-has-unread {
+    position: relative;
+}
+.chat-has-unread i.fa-comments {
+    animation: chatPulse 2s ease-in-out infinite;
+    color: #4e6bff !important;
+}
+@keyframes chatPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: .7; }
+}
+.chat-has-unread::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px;
+    height: 8px;
+    background: #e74c3c;
+    border-radius: 50%;
+    animation: dotBlink 1.5s ease-in-out infinite;
+}
+@keyframes dotBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+}
+</style>
+<script>
+// Global chat badge sync — 1 petición cada 60s desde CUALQUIER página
+(function() {
+    // No ejecutar en la página de chat (ya tiene su propio sync)
+    if (window.location.pathname === '/chat') return;
+
+    let globalChatTimer = null;
+
+    async function syncChatBadge() {
+        try {
+            const res = await fetch('/chat/sync?');
+            const data = await res.json();
+            if (data.success) {
+                const badge = document.getElementById('chat-badge');
+                if (badge) {
+                    badge.textContent = data.no_leidos;
+                    badge.style.display = data.no_leidos > 0 ? 'flex' : 'none';
+                }
+                const chatLink = document.querySelector('a[href="/chat"]');
+                if (chatLink) {
+                    if (data.no_leidos > 0) {
+                        chatLink.classList.add('chat-has-unread');
+                    } else {
+                        chatLink.classList.remove('chat-has-unread');
+                    }
+                }
+                // Push notification si la tab está oculta
+                if (data.no_leidos > 0 && document.hidden && window.notificationManager) {
+                    window.notificationManager.showNotification('💬 SIPAN Chat', 'Tienes ' + data.no_leidos + ' mensaje(s) sin leer');
+                }
+            }
+        } catch(e) { /* silencioso */ }
+    }
+
+    function startGlobalSync() {
+        if (globalChatTimer) clearInterval(globalChatTimer);
+        syncChatBadge(); // Inicial
+        globalChatTimer = setInterval(syncChatBadge, 60000); // Cada 60s
+    }
+
+    // Page Visibility API
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (globalChatTimer) clearInterval(globalChatTimer);
+        } else {
+            startGlobalSync();
+        }
+    });
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        startGlobalSync();
+    } else {
+        document.addEventListener('DOMContentLoaded', startGlobalSync);
+    }
+})();
 </script>

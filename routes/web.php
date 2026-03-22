@@ -175,4 +175,14 @@ return [
 
     // System Config
     'GET|/config/refresh-tasa' => ['ConfigController', 'refreshTasa'],
+
+    // Chat Interno
+    'GET|/chat'                        => ['ChatController', 'index'],
+    'GET|/chat/conversaciones'         => ['ChatController', 'getConversaciones'],
+    'GET|/chat/usuarios'               => ['ChatController', 'getUsuarios'],
+    'POST|/chat/conversacion-directa'  => ['ChatController', 'getOrCreateDirecta'],
+    'GET|/chat/mensajes/{id}'          => ['ChatController', 'getMensajes'],
+    'POST|/chat/enviar/{id}'           => ['ChatController', 'enviar'],
+    'GET|/chat/poll'                   => ['ChatController', 'poll'],
+    'GET|/chat/sync'                   => ['ChatController', 'sync'],
 ];

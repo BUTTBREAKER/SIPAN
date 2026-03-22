@@ -79,14 +79,10 @@ if (stripos($path, '/delivery') === 0) {
 
 // Remover el subdirectorio base si no estamos en la raíz
 $script_name = dirname($_SERVER['SCRIPT_NAME']);
-// Priorizar APP_URL del .env, si no detectarlo por host
-$env_app_url = $_ENV['APP_URL'] ?? null;
-if ($env_app_url) {
-    define('BASE_URL', rtrim($env_app_url, '/\\') . '/');
-} else {
-    $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . $script_name;
-    define('BASE_URL', rtrim($base_url, '/\\') . '/');
-}
+// Detectar protocolo (compatible con proxy/túnel como Cloudflare)
+$protocol = ($isSecure) ? 'https' : 'http';
+$base_url = $protocol . '://' . $_SERVER['HTTP_HOST'] . $script_name;
+define('BASE_URL', rtrim($base_url, '/\\') . '/');
 
 if ($script_name !== '/' && $script_name !== '\\') {
     $path = str_replace($script_name, '', $path);
