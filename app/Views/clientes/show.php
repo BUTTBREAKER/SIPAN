@@ -152,7 +152,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 $resumen_comprado = 0;
                 $resumen_pagado = 0;
                 $resumen_deuda = 0;
-                
+
                 if (isset($pedidos) && is_array($pedidos)) {
                     foreach ($pedidos as $p) {
                         $resumen_comprado += $p['total'] ?? 0;
@@ -210,7 +210,7 @@ require_once __DIR__ . '/../layouts/header.php';
                                         <td>
                                             <?php if (($p['monto_deuda'] ?? 0) > 0) : ?>
                                                 <strong class="text-danger">$ <?= number_format($p['monto_deuda'], 2) ?></strong>
-                                            <?php else: ?>
+                                            <?php else : ?>
                                                 <span class="text-success">$ 0.00</span>
                                             <?php endif; ?>
                                         </td>

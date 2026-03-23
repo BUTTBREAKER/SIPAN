@@ -178,18 +178,18 @@ require_once __DIR__ . '/../layouts/header.php';
                 <!-- SECCIÓN REPARTIDOR -->
                 <div class="mt-4 border-top pt-3">
                     <h4 class="h6 mb-3 text-muted">Asignación de Repartidor</h4>
-                    <?php if (!empty($pedido['id_repartidor'])): ?>
-                        <?php 
+                    <?php if (!empty($pedido['id_repartidor'])) : ?>
+                        <?php
                             $rep_nombre = 'Repartidor Asignado';
-                            foreach($repartidores ?? [] as $rep) {
-                                if($rep['id'] == $pedido['id_repartidor']) {
-                                    $rep_nombre = $rep['primer_nombre'] . ' ' . $rep['apellido_paterno'];
-                                    break;
-                                }
+                        foreach ($repartidores ?? [] as $rep) {
+                            if ($rep['id'] == $pedido['id_repartidor']) {
+                                $rep_nombre = $rep['primer_nombre'] . ' ' . $rep['apellido_paterno'];
+                                break;
                             }
+                        }
                         ?>
                         <p class="mb-2"><i class="fas fa-motorcycle text-success mr-2"></i> <strong><?= htmlspecialchars($rep_nombre) ?></strong></p>
-                    <?php else: ?>
+                    <?php else : ?>
                         <p class="mb-2 text-warning"><i class="fas fa-exclamation-triangle mr-2"></i> Sin asignar</p>
                     <?php endif; ?>
 
@@ -197,7 +197,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <div class="input-group mt-2">
                             <select x-model="nuevoRepartidor" class="form-select" style="max-width:200px">
                                 <option value="">Seleccionar...</option>
-                                <?php foreach($repartidores ?? [] as $rep): ?>
+                                <?php foreach ($repartidores ?? [] as $rep) : ?>
                                     <option value="<?= $rep['id'] ?>" <?= $pedido['id_repartidor'] == $rep['id'] ? 'selected' : '' ?>>
                                         <?= htmlspecialchars($rep['primer_nombre'] . ' ' . $rep['apellido_paterno']) ?>
                                     </option>
