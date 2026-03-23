@@ -103,7 +103,7 @@ class Pedido extends BaseModel
         return $this->db->fetchAll($sql, [$cliente_id]);
     }
 
-    public function getWithDetails($sucursal_id, $estado_pedido = null, $estado_pago = null)
+    public function getWithDetails($sucursal_id, $estado_pedido = null, $estado_pago = null, $fecha_inicio = null, $fecha_fin = null)
     {
         $sql = "SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido,
                        u.primer_nombre, u.apellido_paterno,
@@ -117,13 +117,30 @@ class Pedido extends BaseModel
         $params = [$sucursal_id];
 
         if ($estado_pedido) {
-            $sql .= " AND p.estado_pedido = ?";
-            $params[] = $estado_pedido;
+            if (is_array($estado_pedido)) {
+                $placeholders = implode(',', array_fill(0, count($estado_pedido), '?'));
+                $sql .= " AND p.estado_pedido IN ($placeholders)";
+                $params = array_merge($params, $estado_pedido);
+            } else {
+                $sql .= " AND p.estado_pedido = ?";
+                $params[] = $estado_pedido;
+            }
         }
 
         if ($estado_pago) {
             $sql .= " AND p.estado_pago = ?";
             $params[] = $estado_pago;
+        }
+
+        // Optimization: Keep query SARGable using direct timestamp comparison
+        if ($fecha_inicio) {
+            $sql .= " AND p.fecha_pedido >= ?";
+            $params[] = $fecha_inicio . ' 00:00:00';
+        }
+
+        if ($fecha_fin) {
+            $sql .= " AND p.fecha_pedido <= ?";
+            $params[] = $fecha_fin . ' 23:59:59';
         }
 
         $sql .= " ORDER BY p.fecha_pedido DESC";
