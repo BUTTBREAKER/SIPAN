@@ -114,7 +114,7 @@ class PedidosController
         require_once __DIR__ . '/../Models/Usuario.php';
         $usuarioModel = new \App\Models\Usuario();
         $sucursal_id = $_SESSION['sucursal_id'] ?? $pedido['id_sucursal'];
-        
+
         $repartidores = $usuarioModel->getRepartidoresBySucursal($sucursal_id);
 
         require_once __DIR__ . '/../Views/pedidos/show.php';
@@ -280,7 +280,7 @@ class PedidosController
     public function asignarRepartidor($id)
     {
         AuthMiddleware::checkRole(['administrador', 'empleado']);
-        
+
         header('Content-Type: application/json');
 
         // Validar CSRF
@@ -288,13 +288,13 @@ class PedidosController
             echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
             exit;
         }
-        
+
         $id_repartidor = $_POST['id_repartidor'] ?? null;
-        
+
         try {
             // Actualizar solo el id_repartidor
             $this->pedidoModel->update($id, ['id_repartidor' => $id_repartidor]);
-            
+
             echo json_encode(['success' => true, 'message' => 'Repartidor asignado correctamente']);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al asignar repartidor: ' . $e->getMessage()]);

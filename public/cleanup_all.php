@@ -1,4 +1,5 @@
 <?php
+
 $root = dirname(__DIR__);
 $files = [
     'check_db_schema.php',
@@ -63,4 +64,3 @@ foreach ($public_files as $file) {
 }
 
 echo "PROCESO COMPLETADO.\n";
-?>
