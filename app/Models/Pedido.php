@@ -103,9 +103,10 @@ class Pedido extends BaseModel
         return $this->db->fetchAll($sql, [$cliente_id]);
     }
 
-    public function getWithDetails($sucursal_id, $estado_pedido = null, $estado_pago = null)
+    public function getWithDetails($sucursal_id, $estado_pedido = null, $estado_pago = null, $limit = null)
     {
         $sql = "SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido,
+                       c.direccion as cliente_direccion,
                        u.primer_nombre, u.apellido_paterno,
                        rep.primer_nombre as rep_nombre, rep.apellido_paterno as rep_apellido
                 FROM {$this->table} p
@@ -117,8 +118,14 @@ class Pedido extends BaseModel
         $params = [$sucursal_id];
 
         if ($estado_pedido) {
-            $sql .= " AND p.estado_pedido = ?";
-            $params[] = $estado_pedido;
+            if (is_array($estado_pedido)) {
+                $placeholders = implode(',', array_fill(0, count($estado_pedido), '?'));
+                $sql .= " AND p.estado_pedido IN ($placeholders)";
+                $params = array_merge($params, $estado_pedido);
+            } else {
+                $sql .= " AND p.estado_pedido = ?";
+                $params[] = $estado_pedido;
+            }
         }
 
         if ($estado_pago) {
@@ -128,13 +135,41 @@ class Pedido extends BaseModel
 
         $sql .= " ORDER BY p.fecha_pedido DESC";
 
+        if ($limit) {
+            $sql .= " LIMIT " . (int)$limit;
+        }
+
         return $this->db->fetchAll($sql, $params);
+    }
+
+    /**
+     * Obtiene los conteos de pedidos por estado para una sucursal (Optimización Bolt)
+     *
+     * @param int $sucursal_id
+     * @return array
+     */
+    public function getCountsBySucursal($sucursal_id)
+    {
+        $sql = "SELECT estado_pedido, COUNT(*) as total
+                FROM {$this->table}
+                WHERE id_sucursal = ?
+                GROUP BY estado_pedido";
+
+        $results = $this->db->fetchAll($sql, [$sucursal_id]);
+
+        $counts = [];
+        foreach ($results as $row) {
+            $counts[$row['estado_pedido']] = (int)$row['total'];
+        }
+
+        return $counts;
     }
 
     private function generarNumeroPedido()
     {
         $fecha = date('Ymd');
-        $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE DATE(fecha_pedido) = CURDATE()";
+        // Bolt Optimization: SARGable date comparison (utilizes index on fecha_pedido)
+        $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE fecha_pedido >= CURDATE()";
         $result = $this->db->fetchOne($sql);
         $numero = ($result['total'] ?? 0) + 1;
         return "PED-{$fecha}-" . str_pad($numero, 4, '0', STR_PAD_LEFT);
@@ -160,18 +195,18 @@ class Pedido extends BaseModel
         }
 
         $sql .= " ORDER BY p.fecha_pedido DESC";
-        
+
         return $this->db->fetchAll($sql, $params);
     }
 
     public function updateEstadoEntrega($id, $estado, $observaciones = null)
     {
         $data = ['estado_pedido' => $estado];
-        
+
         if ($estado === 'entregado' || $estado === 'completado') {
             $data['fecha_entrega'] = date('Y-m-d H:i:s');
         }
-        
+
         if ($observaciones !== null) {
             $data['observaciones'] = $observaciones;
         }

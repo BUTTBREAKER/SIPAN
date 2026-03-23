@@ -58,7 +58,7 @@ if (session_status() === PHP_SESSION_NONE) {
     // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
     $baseSessionName = $_ENV['session_name'] ?? 'SIPAN_SESSION';
     $finalSessionName = $isDeliveryPath ? $baseSessionName . '_DELIVERY' : $baseSessionName;
-    
+
     session_name($finalSessionName);
     session_start();
 }
