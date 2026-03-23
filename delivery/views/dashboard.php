@@ -13,13 +13,13 @@ ob_start();
 
 <div class="tab-scroller">
     <div class="tab-pill active" onclick="filterPedidos('todos', this)">
-        Todos <span class="count" id="count-todos"><?= count($pedidos) ?></span>
+        Todos <span class="count" id="count-todos"><?= $total_pedidos ?></span>
     </div>
     <div class="tab-pill" onclick="filterPedidos('pendientes', this)">
-        Pendientes <span class="count" id="count-pendientes"><?= count($pendientes) ?></span>
+        Pendientes <span class="count" id="count-pendientes"><?= $total_pendientes ?></span>
     </div>
     <div class="tab-pill" onclick="filterPedidos('en_camino', this)">
-        En Camino <span class="count" id="count-camino"><?= count($en_camino) ?></span>
+        En Camino <span class="count" id="count-camino"><?= $total_en_camino ?></span>
     </div>
 </div>
 

@@ -19,22 +19,29 @@ class PedidosController
     {
         AuthMiddleware::check();
 
-        $user_id = $_SESSION['user_id'];
+        $sucursal_id = $_SESSION['sucursal_id'];
+
+        // Bolt Optimization: Fetch only active orders (pending, processing, en route)
+        // This avoids loading the entire branch history into memory.
+        $activeStatuses = ['pendiente', 'en_proceso', 'en_camino'];
+        $pedidos = $this->pedidoModel->getWithDetails($sucursal_id, $activeStatuses);
         
-        // Obtener pedidos de toda la sucursal
-        $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id']);
+        // Fetch counts separately to update all tabs correctly
+        $counts = $this->pedidoModel->getCountsBySucursal($sucursal_id);
         
+        $total_pedidos = array_sum($counts);
+        $total_pendientes = ($counts['pendiente'] ?? 0) + ($counts['en_proceso'] ?? 0);
+        $total_en_camino = $counts['en_camino'] ?? 0;
+
+        // Compatibility for view: split active orders into categories
         $pendientes = [];
         $en_camino = [];
-        $entregados = [];
         
         foreach ($pedidos as $p) {
             if ($p['estado_pedido'] === 'en_proceso' || $p['estado_pedido'] === 'pendiente') {
                 $pendientes[] = $p;
             } elseif ($p['estado_pedido'] === 'en_camino') {
                 $en_camino[] = $p;
-            } elseif ($p['estado_pedido'] === 'entregado') {
-                $entregados[] = $p;
             }
         }
 
@@ -49,24 +56,17 @@ class PedidosController
         AuthMiddleware::check();
         header('Content-Type: application/json');
 
-        $user_id = $_SESSION['user_id'];
+        $sucursal_id = $_SESSION['sucursal_id'];
         
-        // Obtener pedidos de toda la sucursal
-        $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id']);
+        // Bolt Optimization: Use efficient status counts instead of fetching all records
+        $counts = $this->pedidoModel->getCountsBySucursal($sucursal_id);
 
-        $pendientes = 0;
-        $en_camino = 0;
-
-        foreach ($pedidos as $p) {
-            if ($p['estado_pedido'] === 'en_proceso' || $p['estado_pedido'] === 'pendiente') {
-                $pendientes++;
-            } elseif ($p['estado_pedido'] === 'en_camino') {
-                $en_camino++;
-            }
-        }
+        $total = array_sum($counts);
+        $pendientes = ($counts['pendiente'] ?? 0) + ($counts['en_proceso'] ?? 0);
+        $en_camino = $counts['en_camino'] ?? 0;
 
         echo json_encode([
-            'total'      => count($pedidos),
+            'total'      => $total,
             'pendientes' => $pendientes,
             'en_camino'  => $en_camino,
             'timestamp'  => date('H:i:s')
@@ -257,27 +257,29 @@ class PedidosController
         require_once __DIR__ . '/../../app/Core/Database.php';
         $db = \App\Core\Database::getInstance();
 
+        // Bolt Optimization: SARGable date comparison
         $sql = "SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido, 
                        c.direccion as cliente_direccion 
                 FROM pedidos p
                 INNER JOIN clientes c ON p.id_cliente = c.id
                 WHERE p.id_repartidor = ? 
                   AND p.estado_pedido IN ('entregado', 'completado')
-                  AND DATE(p.fecha_pedido) BETWEEN ? AND ?
+                  AND p.fecha_pedido >= ? AND p.fecha_pedido <= ?
                 ORDER BY p.fecha_pedido DESC 
                 LIMIT 100";
                 
-        $pedidos = $db->fetchAll($sql, [$user_id, $fecha_desde, $fecha_hasta]);
+        $pedidos = $db->fetchAll($sql, [$user_id, $fecha_desde . ' 00:00:00', $fecha_hasta . ' 23:59:59']);
 
         // Resumen del período
+        // Bolt Optimization: SARGable date comparison
         $sql_resumen = "SELECT COUNT(*) as total_entregas, 
                                COALESCE(SUM(p.total), 0) as total_monto,
                                COALESCE(SUM(p.monto_pagado), 0) as total_cobrado
                         FROM pedidos p
                         WHERE p.id_repartidor = ? 
                           AND p.estado_pedido IN ('entregado', 'completado')
-                          AND DATE(p.fecha_pedido) BETWEEN ? AND ?";
-        $resumen = $db->fetchOne($sql_resumen, [$user_id, $fecha_desde, $fecha_hasta]);
+                          AND p.fecha_pedido >= ? AND p.fecha_pedido <= ?";
+        $resumen = $db->fetchOne($sql_resumen, [$user_id, $fecha_desde . ' 00:00:00', $fecha_hasta . ' 23:59:59']);
 
         require_once __DIR__ . '/../views/historial.php';
     }
@@ -295,26 +297,31 @@ class PedidosController
         $db = \App\Core\Database::getInstance();
 
         // — Entregas de HOY —
+        // Bolt Optimization: SARGable comparison
         $hoy = $db->fetchOne(
             "SELECT COUNT(*) as entregas, COALESCE(SUM(total), 0) as monto, COALESCE(SUM(monto_pagado), 0) as cobrado
-             FROM pedidos WHERE id_repartidor = ? AND estado_pedido = 'entregado' AND DATE(fecha_entrega) = CURDATE()",
+             FROM pedidos WHERE id_repartidor = ? AND estado_pedido = 'entregado' AND fecha_entrega >= CURDATE()",
             [$user_id]
         );
 
         // — Esta semana —
+        // Bolt Optimization: SARGable range comparison
+        $startOfWeek = date('Y-m-d', strtotime('monday this week')) . ' 00:00:00';
         $semana = $db->fetchOne(
             "SELECT COUNT(*) as entregas, COALESCE(SUM(total), 0) as monto, COALESCE(SUM(monto_pagado), 0) as cobrado
              FROM pedidos WHERE id_repartidor = ? AND estado_pedido = 'entregado' 
-             AND YEARWEEK(fecha_entrega, 1) = YEARWEEK(CURDATE(), 1)",
-            [$user_id]
+             AND fecha_entrega >= ?",
+            [$user_id, $startOfWeek]
         );
 
         // — Este mes —
+        // Bolt Optimization: SARGable range comparison
+        $startOfMonth = date('Y-m-01') . ' 00:00:00';
         $mes = $db->fetchOne(
             "SELECT COUNT(*) as entregas, COALESCE(SUM(total), 0) as monto, COALESCE(SUM(monto_pagado), 0) as cobrado
              FROM pedidos WHERE id_repartidor = ? AND estado_pedido = 'entregado' 
-             AND YEAR(fecha_entrega) = YEAR(CURDATE()) AND MONTH(fecha_entrega) = MONTH(CURDATE())",
-            [$user_id]
+             AND fecha_entrega >= ?",
+            [$user_id, $startOfMonth]
         );
 
         // — Pedidos activos ahora —
@@ -327,22 +334,25 @@ class PedidosController
         );
 
         // — Últimos 7 días para gráfico —
+        // Bolt Optimization: Use grouped index if possible, DATE() in GROUP BY is often unavoidable for reports
+        // but we keep WHERE SARGable.
         $ultimos7 = $db->fetchAll(
             "SELECT DATE(fecha_entrega) as dia, COUNT(*) as entregas, COALESCE(SUM(total), 0) as monto
              FROM pedidos WHERE id_repartidor = ? AND estado_pedido = 'entregado' 
              AND fecha_entrega >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-             GROUP BY DATE(fecha_entrega) ORDER BY dia ASC",
+             GROUP BY dia ORDER BY dia ASC",
             [$user_id]
         );
 
         // — Ratio de éxito (entregados vs no_entregados este mes) —
+        // Bolt Optimization: SARGable range comparison
         $ratio_data = $db->fetchOne(
             "SELECT 
                 SUM(CASE WHEN estado_pedido = 'entregado' THEN 1 ELSE 0 END) as exitosos,
                 SUM(CASE WHEN estado_pedido = 'no_entregado' THEN 1 ELSE 0 END) as fallidos
              FROM pedidos WHERE id_repartidor = ? 
-             AND YEAR(fecha_pedido) = YEAR(CURDATE()) AND MONTH(fecha_pedido) = MONTH(CURDATE())",
-            [$user_id]
+             AND fecha_pedido >= ?",
+            [$user_id, $startOfMonth]
         );
         $total_ratio = ($ratio_data['exitosos'] ?? 0) + ($ratio_data['fallidos'] ?? 0);
         $ratio = $total_ratio > 0 ? round(($ratio_data['exitosos'] / $total_ratio) * 100) : 100;
