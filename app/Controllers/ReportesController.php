@@ -414,10 +414,17 @@ class ReportesController
 
     public function producciones()
     {
-        $producciones = $this->produccionModel->getWithDetails($_SESSION['sucursal_id']);
+        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
+        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
 
-        $data = ['producciones' => $producciones];
+        $producciones = $this->produccionModel->getWithDetails($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+
+        $data = [
+            'producciones' => $producciones,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin
+        ];
 
         if ($formato === 'pdf') {
             $this->generarPDFProducciones($data);
@@ -440,7 +447,7 @@ class ReportesController
         $spreadsheet->getProperties()->setCreator("SIPAN")->setTitle("Reporte de Producciones");
 
         $sheet->setCellValue('A1', 'Reporte de Producciones');
-        $sheet->setCellValue('A2', 'Fecha: ' . date('d/m/Y H:i'));
+        $sheet->setCellValue('A2', 'Rango: ' . $data['fecha_inicio'] . ' al ' . $data['fecha_fin']);
 
         $headers = ['Fecha', 'Producto', 'Cantidad', 'Responsable', 'Estado'];
         $col = 'A';
@@ -475,18 +482,73 @@ class ReportesController
 
     public function pedidos()
     {
-        $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id']);
+        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
+        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
 
-        $data = ['pedidos' => $pedidos];
+        $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id'], null, null, $fecha_inicio, $fecha_fin);
+
+        $data = [
+            'pedidos' => $pedidos,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin
+        ];
 
         if ($formato === 'pdf') {
             $this->generarPDFPedidos($data);
+        } elseif ($formato === 'excel') {
+            $this->generarExcelPedidos($data);
         } else {
             $data['pageTitle'] = 'Reporte de Pedidos';
             $data['currentPage'] = 'reportes';
             require_once __DIR__ . '/../Views/reportes/pedidos.php';
         }
+    }
+
+    private function generarExcelPedidos($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $spreadsheet->getProperties()->setCreator("SIPAN")->setTitle("Reporte de Pedidos");
+
+        $sheet->setCellValue('A1', 'Reporte de Pedidos');
+        $sheet->setCellValue('A2', 'Rango: ' . $data['fecha_inicio'] . ' al ' . $data['fecha_fin']);
+
+        $headers = ['N° Pedido', 'Fecha', 'Cliente', 'Total', 'Estado Pedido', 'Estado Pago'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '4', $header);
+            $sheet->getStyle($col . '4')->getFont()->setBold(true);
+            $col++;
+        }
+
+        $row = 5;
+        foreach ($data['pedidos'] as $p) {
+            $sheet->setCellValue('A' . $row, $p['numero_pedido']);
+            $sheet->setCellValue('B' . $row, date('d/m/Y H:i', strtotime($p['fecha_pedido'])));
+            $sheet->setCellValue('C' . $row, $p['cliente_nombre'] . ' ' . $p['cliente_apellido']);
+            $sheet->setCellValue('D' . $row, $p['total']);
+            $sheet->setCellValue('E' . $row, ucfirst($p['estado_pedido']));
+            $sheet->setCellValue('F' . $row, ucfirst($p['estado_pago']));
+
+            $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $row++;
+        }
+
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="reporte_pedidos_' . date('Y-m-d') . '.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
     }
 
     private function generarPDFInsumos($data)
