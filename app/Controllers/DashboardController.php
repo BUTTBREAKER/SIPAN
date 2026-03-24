@@ -37,14 +37,40 @@ class DashboardController
         // Cargar modelo Lotes para vencimientos
         $loteModel = new \App\Models\Lote();
 
+        // Bolt: Consolidación de métricas de ventas en una sola consulta
+        // Obtenemos los últimos 31 días para cubrir el mes actual completo (o últimos 30 días)
+        $ventas_data = $this->ventaModel->getVentasUltimosDias($sucursal_id, 31);
+
+        $ventas_hoy = 0;
+        $ventas_semana = 0;
+        $ventas_mes = 0;
+        $hoy = date('Y-m-d');
+        $hace_7_dias = date('Y-m-d', strtotime('-7 days'));
+        $primer_dia_mes = date('Y-m-01');
+
+        foreach ($ventas_data as $v) {
+            $fecha = $v['fecha_full'];
+            $total = $v['total'];
+
+            if ($fecha === $hoy) {
+                $ventas_hoy = $total;
+            }
+            if ($fecha >= $hace_7_dias) {
+                $ventas_semana += $total;
+            }
+            if ($fecha >= $primer_dia_mes) {
+                $ventas_mes += $total;
+            }
+        }
+
         // Obtener datos del dashboard
         $data = [
             'productos_stock_bajo' => $this->productoModel->getWithStockBajo($sucursal_id),
             'insumos_stock_bajo' => $this->insumoModel->getWithStockBajo($sucursal_id),
-            'ventas_hoy' => $this->ventaModel->getTotalVentas($sucursal_id, date('Y-m-d'), date('Y-m-d')),
-            'ventas_semana' => $this->ventaModel->getTotalVentas($sucursal_id, date('Y-m-d', strtotime('-7 days')), date('Y-m-d')),
-            'ventas_mes' => $this->ventaModel->getTotalVentas($sucursal_id, date('Y-m-01'), date('Y-m-d')),
-            'ventas_ultimos_dias' => $this->ventaModel->getVentasUltimosDias($sucursal_id, 7),
+            'ventas_hoy' => $ventas_hoy,
+            'ventas_semana' => $ventas_semana,
+            'ventas_mes' => $ventas_mes,
+            'ventas_ultimos_dias' => array_slice($ventas_data, -7), // Solo últimos 7 para el gráfico inicial
             'productos_mas_vendidos' => $this->ventaModel->getProductosMasVendidos($sucursal_id, 5),
             'lotes_por_vencer' => $loteModel->getPorVencer($sucursal_id, 30) // Próximos 30 días
         ];

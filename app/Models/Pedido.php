@@ -103,7 +103,7 @@ class Pedido extends BaseModel
         return $this->db->fetchAll($sql, [$cliente_id]);
     }
 
-    public function getWithDetails($sucursal_id, $estado_pedido = null, $estado_pago = null, $fecha_inicio = null, $fecha_fin = null)
+    public function getWithDetails($sucursal_id, $estado_pedido = null, $estado_pago = null, $fecha_inicio = null, $fecha_fin = null, $limit = null)
     {
         $sql = "SELECT p.*, c.nombre as cliente_nombre, c.apellido as cliente_apellido,
                        c.direccion as cliente_direccion,

@@ -208,7 +208,9 @@ class Venta extends BaseModel
     {
         $sql = "SELECT DATE(fecha_venta) as fecha, COALESCE(SUM(total), 0) as total
                 FROM {$this->table}
-                WHERE id_sucursal = ? AND fecha_venta >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+                WHERE id_sucursal = ?
+                AND fecha_venta >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+                AND estado = 'completada'
                 GROUP BY DATE(fecha_venta)
                 ORDER BY fecha ASC";
 
@@ -223,6 +225,7 @@ class Venta extends BaseModel
             $fecha = date('Y-m-d', strtotime("-$i days"));
             $ventas[] = [
                 'fecha' => date('d/m', strtotime($fecha)),
+                'fecha_full' => $fecha, // Bolt: para facilitar agregaciones en PHP
                 'total' => (float)($indexedResult[$fecha] ?? 0)
             ];
         }
@@ -271,11 +274,15 @@ class Venta extends BaseModel
 
     public function getProductosMasVendidos($sucursal_id, $limit = 5)
     {
+        // Bolt: Optimización de rendimiento filtrando por últimos 30 días y solo ventas completadas
+        // Esto evita escaneos de toda la tabla a medida que el sistema crece.
         $sql = "SELECT p.nombre, SUM(vp.cantidad) as cantidad
                 FROM venta_productos vp
                 INNER JOIN {$this->table} v ON vp.id_venta = v.id
                 INNER JOIN productos p ON vp.id_producto = p.id
                 WHERE v.id_sucursal = ?
+                AND v.fecha_venta >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                AND v.estado = 'completada'
                 GROUP BY p.id, p.nombre
                 ORDER BY cantidad DESC
                 LIMIT " . (int)$limit;
