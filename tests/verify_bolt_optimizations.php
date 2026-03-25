@@ -33,7 +33,7 @@ class MockDatabase {
             return [['id' => 1, 'stock_actual' => 10, 'precio_unitario' => 100]];
         }
         if (strpos($sql, 'FROM productos') !== false) {
-            return [['id' => 1, 'stock_actual' => 20]];
+            return [['id' => 1, 'stock_actual' => 20], ['id' => 2, 'stock_actual' => 20]];
         }
         return [];
     }
