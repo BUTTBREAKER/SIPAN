@@ -12,8 +12,23 @@ class Producto extends BaseModel
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 
-    public function all($orderBy = null)
+    /**
+     * Optimización Bolt: Filtra productos por sucursal a nivel de base de datos.
+     * Al agregar el parámetro $sucursal_id, evitamos cargar todos los productos de todas las sucursales
+     * en memoria cuando solo se necesitan los de una sucursal específica (e.g., Ventas, Recetas).
+     *
+     * Impacto esperado: Reduce el consumo de memoria de PHP y el tráfico de red de la BD en un 90%
+     * para entornos con 10 sucursales, acelerando la carga de formularios de creación de ventas y pedidos.
+     *
+     * @param int|null $sucursal_id
+     * @return array
+     */
+    public function all($sucursal_id = null)
     {
+        if ($sucursal_id !== null) {
+            return $this->getAllBySucursal($sucursal_id);
+        }
+
         $sql = "SELECT * FROM {$this->table} ORDER BY nombre";
         return $this->db->fetchAll($sql);
     }
