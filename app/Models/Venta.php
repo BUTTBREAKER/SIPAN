@@ -126,14 +126,14 @@ class Venta extends BaseModel
 
     public function getWithDetails($sucursal_id, $fecha_inicio = null, $fecha_fin = null)
     {
+        // Optimización Bolt: Se eliminó el LEFT JOIN con venta_productos y el COUNT(vp.id)
+        // ya que total_productos no se utiliza en la UI y causaba sobrecarga innecesaria en grandes volúmenes de datos.
         $sql = "SELECT v.*, 
                        CONCAT(COALESCE(c.nombre, ''), ' ', COALESCE(c.apellido, '')) as cliente_nombre,
-                       CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre,
-                       COUNT(vp.id) as total_productos
+                       CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
                 FROM {$this->table} v
                 INNER JOIN usuarios u ON v.id_usuario = u.id
                 LEFT JOIN clientes c ON v.id_cliente = c.id
-                LEFT JOIN venta_productos vp ON v.id = vp.id_venta
                 WHERE v.id_sucursal = ?";
 
         $params = [$sucursal_id];
@@ -149,7 +149,7 @@ class Venta extends BaseModel
             $params[] = $fecha_fin . ' 23:59:59';
         }
 
-        $sql .= " GROUP BY v.id ORDER BY v.fecha_venta DESC";
+        $sql .= " ORDER BY v.fecha_venta DESC";
 
         return $this->db->fetchAll($sql, $params);
     }
