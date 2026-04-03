@@ -173,20 +173,20 @@ class Receta extends BaseModel
 
     public function all($sucursal_id = null)
     {
-        if ($sucursal_id === null) {
-            $sql = "SELECT r.*, p.nombre as producto_nombre
-                    FROM {$this->table} r
-                    INNER JOIN productos p ON r.id_producto = p.id
-                    ORDER BY r.nombre";
-            return $this->db->fetchAll($sql);
-        }
-
-        $sql = "SELECT r.*, p.nombre as producto_nombre
+        $sql = "SELECT r.*, p.nombre as producto_nombre,
+                       COUNT(ri.id) as total_insumos
                 FROM {$this->table} r
                 INNER JOIN productos p ON r.id_producto = p.id
-                WHERE r.id_sucursal = ?
-                ORDER BY r.nombre";
-        return $this->db->fetchAll($sql, [$sucursal_id]);
+                LEFT JOIN receta_insumos ri ON r.id = ri.id_receta";
+
+        $params = [];
+        if ($sucursal_id !== null) {
+            $sql .= " WHERE r.id_sucursal = ?";
+            $params[] = $sucursal_id;
+        }
+
+        $sql .= " GROUP BY r.id ORDER BY r.nombre";
+        return $this->db->fetchAll($sql, $params);
     }
 
     public function getInsumosByReceta($receta_id)
