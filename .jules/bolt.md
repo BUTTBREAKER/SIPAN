@@ -13,3 +13,7 @@
 ## 2025-01-24 - [Dashboard Metric Consolidation]
 **Learning:** Fetching multiple aggregate metrics (today, week, month) via separate queries is inefficient. Fetching a single daily dataset for the longest period (e.g., last 31 days) and aggregating in PHP reduces database round-trips by 75% and provides consistent results across different dashboard widgets.
 **Action:** Consolidate related aggregate queries into a single daily time-series fetch and process the sub-periods in-memory.
+
+## 2025-01-24 - [BaseModel Signature Consistency]
+**Learning:** Overriding `BaseModel` methods (like `all()`) with incompatible signatures or ignoring standard parameters (like `$sucursal_id`) creates silent performance bottlenecks. Controllers passing these arguments expect filtering that isn't happening, leading to global data leaks and high memory usage.
+**Action:** When overriding `BaseModel` methods, ensure signatures match exactly and honor inherited filtering parameters to prevent performance regressions in a multi-tenant/multi-branch architecture.
