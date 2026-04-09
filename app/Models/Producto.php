@@ -69,7 +69,10 @@ class Producto extends BaseModel
 
     public function getBySucursal($sucursal_id)
     {
-        $sql = "SELECT * FROM productos WHERE id_sucursal = ?";
+        // Optimización Bolt: El valor_stock se calcula en la DB para evitar bucles O(N) en PHP.
+        $sql = "SELECT *, (stock_actual * precio_actual) as valor_stock
+                FROM productos
+                WHERE id_sucursal = ?";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 }
