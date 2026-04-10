@@ -13,3 +13,7 @@
 ## 2025-01-24 - [Dashboard Metric Consolidation]
 **Learning:** Fetching multiple aggregate metrics (today, week, month) via separate queries is inefficient. Fetching a single daily dataset for the longest period (e.g., last 31 days) and aggregating in PHP reduces database round-trips by 75% and provides consistent results across different dashboard widgets.
 **Action:** Consolidate related aggregate queries into a single daily time-series fetch and process the sub-periods in-memory.
+
+## 2025-01-24 - [Unused Aggregate Joins Optimization]
+**Learning:** Performing a `LEFT JOIN` and `GROUP BY` to calculate a field never displayed in the UI (e.g., `total_productos` in `Venta::getWithDetails`) is a significant source of database overhead. This pattern often arises from copy-pasting code between different modules or views.
+**Action:** Verify UI data usage before including complex joins in high-traffic listing queries. If a field is not rendered, prune the join and aggregation.
