@@ -161,7 +161,7 @@ class Receta extends BaseModel
     public function getWithDetails($sucursal_id)
     {
         $sql = "SELECT r.*, p.nombre as producto_nombre, 
-                       COUNT(ri.id) as total_insumos
+                       COUNT(ri.id) as insumos_count
                 FROM {$this->table} r
                 INNER JOIN productos p ON r.id_producto = p.id
                 LEFT JOIN receta_insumos ri ON r.id = ri.id_receta
