@@ -17,3 +17,7 @@
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
+**Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
+**Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
