@@ -6,6 +6,9 @@ class Configuracion extends BaseModel
 {
     protected $table = 'configuracion';
 
+    // Bolt Optimization: Static in-memory cache for the BCV exchange rate
+    private static $cachedTasa = null;
+
     /**
      * Get value by key
      */
@@ -21,6 +24,11 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
+        // Update cache if it's the exchange rate
+        if ($key === 'tasa_bcv') {
+            self::$cachedTasa = (float)$value;
+        }
+
         $exists = $this->get($key);
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
@@ -36,6 +44,11 @@ class Configuracion extends BaseModel
      */
     public function getTasaBCV()
     {
+        // Bolt Optimization: Return cached value if available
+        if (self::$cachedTasa !== null) {
+            return self::$cachedTasa;
+        }
+
         $key = 'tasa_bcv';
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
@@ -48,11 +61,13 @@ class Configuracion extends BaseModel
             $newRate = $this->fetchFromApi();
             if ($newRate) {
                 $this->set($key, $newRate);
-                return $newRate;
+                self::$cachedTasa = (float)$newRate;
+                return self::$cachedTasa;
             }
         }
 
-        return $rate;
+        self::$cachedTasa = (float)$rate;
+        return self::$cachedTasa;
     }
 
     public function updateTasaBCV()
@@ -61,7 +76,7 @@ class Configuracion extends BaseModel
         $newRate = $this->fetchFromApi();
         if ($newRate) {
             $this->set($key, $newRate);
-            return $newRate;
+            return self::$cachedTasa;
         }
         return false;
     }
