@@ -5,15 +5,23 @@ namespace App\Models;
 class Configuracion extends BaseModel
 {
     protected $table = 'configuracion';
+    private static $cache = [];
 
     /**
      * Get value by key
      */
     public function get($key, $default = null)
     {
+        if (array_key_exists($key, self::$cache)) {
+            return self::$cache[$key] !== null ? self::$cache[$key] : $default;
+        }
+
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
-        return $result ? $result['valor'] : $default;
+        $value = $result ? $result['valor'] : null;
+
+        self::$cache[$key] = $value;
+        return $value !== null ? $value : $default;
     }
 
     /**
@@ -22,13 +30,19 @@ class Configuracion extends BaseModel
     public function set($key, $value)
     {
         $exists = $this->get($key);
+        $success = false;
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
-            return $this->db->execute($sql, [$value, $key]);
+            $success = $this->db->execute($sql, [$value, $key]);
         } else {
             $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)";
-            return $this->db->execute($sql, [$key, $value]);
+            $success = $this->db->execute($sql, [$key, $value]);
         }
+
+        if ($success) {
+            self::$cache[$key] = $value;
+        }
+        return $success;
     }
 
     /**
@@ -37,6 +51,11 @@ class Configuracion extends BaseModel
     public function getTasaBCV()
     {
         $key = 'tasa_bcv';
+
+        if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
+            return (float)self::$cache[$key];
+        }
+
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
@@ -48,11 +67,13 @@ class Configuracion extends BaseModel
             $newRate = $this->fetchFromApi();
             if ($newRate) {
                 $this->set($key, $newRate);
-                return $newRate;
+                // self::$cache[$key] updated by set()
+                return (float)$newRate;
             }
         }
 
-        return $rate;
+        self::$cache[$key] = $rate;
+        return (float)$rate;
     }
 
     public function updateTasaBCV()

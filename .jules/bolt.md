@@ -17,3 +17,7 @@
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2026-04-16 - [Static Configuration Caching and Null Handling]
+**Learning:** Redundant database queries for global settings (like exchange rates) on every page load create unnecessary overhead. Using `isset()` for cache checks fails to optimize keys that are `null` or missing, as it returns `false` and triggers a re-query. Additionally, caching a caller-provided `$default` value instead of the database result can lead to inconsistent returns if the same key is requested elsewhere with a different default.
+**Action:** Use a static array for request-level caching in configuration models, verify existence with `array_key_exists()` to support `null` values, and only cache the raw database result to maintain default value integrity.
