@@ -102,57 +102,70 @@ function formatearCampo($campo)
         </div>
     </div>
     <div class="card-body" id="panelFiltros">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label"><i class="fas fa-table"></i> Tabla</label>
-                <select id="filtroTabla" class="form-select">
-                    <option value="">Todas las tablas</option>
-                    <option value="productos">Productos</option>
-                    <option value="insumos">Insumos</option>
-                    <option value="ventas">Ventas</option>
-                    <option value="clientes">Clientes</option>
-                    <option value="pedidos">Pedidos</option>
-                    <option value="producciones">Producciones</option>
-                    <option value="usuarios">Usuarios</option>
-                    <option value="recetas">Recetas</option>
-                    <option value="compras">Compras</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label"><i class="fas fa-bolt"></i> Acción</label>
-                <select id="filtroAccion" class="form-select">
-                    <option value="">Todas las acciones</option>
-                    <option value="INSERT">Creación</option>
-                    <option value="UPDATE">Actualización</option>
-                    <option value="DELETE">Eliminación</option>
-                    <option value="UNDO">Deshacer</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label"><i class="fas fa-flag"></i> Estado</label>
-                <select id="filtroEstado" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="activo">Activos</option>
-                    <option value="deshecho">Deshechos</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">&nbsp;</label>
-                <div class="d-grid gap-2">
-                    <button onclick="aplicarFiltros()" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Aplicar
-                    </button>
-                    <button onclick="limpiarFiltros()" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Limpiar
-                    </button>
+        <form method="GET" action="/auditorias" id="formFiltros">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-table"></i> Tabla</label>
+                    <select name="tabla" class="form-select">
+                        <option value="">Todas las tablas</option>
+                        <option value="productos" <?= ($_GET['tabla'] ?? '') === 'productos' ? 'selected' : '' ?>>Productos</option>
+                        <option value="insumos" <?= ($_GET['tabla'] ?? '') === 'insumos' ? 'selected' : '' ?>>Insumos</option>
+                        <option value="ventas" <?= ($_GET['tabla'] ?? '') === 'ventas' ? 'selected' : '' ?>>Ventas</option>
+                        <option value="clientes" <?= ($_GET['tabla'] ?? '') === 'clientes' ? 'selected' : '' ?>>Clientes</option>
+                        <option value="pedidos" <?= ($_GET['tabla'] ?? '') === 'pedidos' ? 'selected' : '' ?>>Pedidos</option>
+                        <option value="producciones" <?= ($_GET['tabla'] ?? '') === 'producciones' ? 'selected' : '' ?>>Producciones</option>
+                        <option value="usuarios" <?= ($_GET['tabla'] ?? '') === 'usuarios' ? 'selected' : '' ?>>Usuarios</option>
+                        <option value="recetas" <?= ($_GET['tabla'] ?? '') === 'recetas' ? 'selected' : '' ?>>Recetas</option>
+                        <option value="compras" <?= ($_GET['tabla'] ?? '') === 'compras' ? 'selected' : '' ?>>Compras</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label"><i class="fas fa-bolt"></i> Acción</label>
+                    <select name="accion" class="form-select">
+                        <option value="">Todas las acciones</option>
+                        <option value="INSERT" <?= ($_GET['accion'] ?? '') === 'INSERT' ? 'selected' : '' ?>>Creación</option>
+                        <option value="UPDATE" <?= ($_GET['accion'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Actualización</option>
+                        <option value="DELETE" <?= ($_GET['accion'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Eliminación</option>
+                        <option value="UNDO" <?= ($_GET['accion'] ?? '') === 'UNDO' ? 'selected' : '' ?>>Deshacer</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label"><i class="fas fa-flag"></i> Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="activo" <?= ($_GET['estado'] ?? '') === 'activo' ? 'selected' : '' ?>>Activos</option>
+                        <option value="deshecho" <?= ($_GET['estado'] ?? '') === 'deshecho' ? 'selected' : '' ?>>Deshechos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-user"></i> Usuario</label>
+                    <select name="usuario_id" class="form-select">
+                        <option value="">Todos los usuarios</option>
+                        <?php foreach ($usuarios as $u) : ?>
+                            <option value="<?= $u['id'] ?>" <?= (int)($_GET['usuario_id'] ?? 0) === (int)$u['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($u['nombre']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                        <a href="/auditorias" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
 
         <div class="mt-3">
             <div class="alert alert-info mb-0">
                 <i class="fas fa-info-circle"></i>
-                <strong>Nota:</strong> Solo se pueden deshacer cambios realizados en las últimas 24 horas.
+                <strong>Nota:</strong> Solo se pueden deshacer cambios realizados en las últimas 24 horas. Mostrando los últimos 100 registros.
             </div>
         </div>
     </div>
@@ -632,64 +645,6 @@ function formatearCampo($campo)
         }
     }
 
-    // Aplicar filtros
-    function aplicarFiltros() {
-        const tabla = document.getElementById('filtroTabla').value.toLowerCase();
-        const accion = document.getElementById('filtroAccion').value;
-        const estado = document.getElementById('filtroEstado').value;
-
-        const items = document.querySelectorAll('.audit-item');
-        let visibles = 0;
-
-        items.forEach(item => {
-            const itemTabla = item.dataset.tabla;
-            const itemAccion = item.dataset.accion;
-            const itemEstado = item.dataset.estado;
-
-            let mostrar = true;
-
-            if (tabla && !itemTabla.includes(tabla)) mostrar = false;
-            if (accion && itemAccion !== accion) mostrar = false;
-            if (estado && itemEstado !== estado) mostrar = false;
-
-            item.style.display = mostrar ? 'flex' : 'none';
-            if (mostrar) visibles++;
-        });
-
-        // Mostrar mensaje si no hay resultados
-        const timeline = document.getElementById('timelineAuditorias');
-        let noResults = timeline.querySelector('.no-results-message');
-
-        if (visibles === 0) {
-            if (!noResults) {
-                noResults = document.createElement('div');
-                noResults.className = 'alert alert-warning no-results-message';
-                noResults.innerHTML = '<i class="fas fa-search"></i> No se encontraron resultados con los filtros aplicados.';
-                timeline.appendChild(noResults);
-            }
-        } else {
-            if (noResults) {
-                noResults.remove();
-            }
-        }
-    }
-
-    // Limpiar filtros
-    function limpiarFiltros() {
-        document.getElementById('filtroTabla').value = '';
-        document.getElementById('filtroAccion').value = '';
-        document.getElementById('filtroEstado').value = '';
-
-        const items = document.querySelectorAll('.audit-item');
-        items.forEach(item => {
-            item.style.display = 'flex';
-        });
-
-        const noResults = document.querySelector('.no-results-message');
-        if (noResults) {
-            noResults.remove();
-        }
-    }
 
     // Ver detalle de auditoría (mejorado para UX)
     async function verDetalle(id) {
