@@ -7,13 +7,30 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
 
     /**
+     * Bolt: In-memory request-level cache to avoid redundant DB queries.
+     * Since this model is often called from header.php and other components
+     * in the same request, caching values here provides a significant performance boost.
+     */
+    private static $cache = [];
+    private static $tasaBcvChecked = false;
+
+    /**
      * Get value by key
      */
     public function get($key, $default = null)
     {
+        // Check if the key exists in cache (including null if it doesn't exist in DB)
+        if (array_key_exists($key, self::$cache)) {
+            return self::$cache[$key] !== null ? self::$cache[$key] : $default;
+        }
+
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
-        return $result ? $result['valor'] : $default;
+
+        $value = $result ? $result['valor'] : null;
+        self::$cache[$key] = $value;
+
+        return $value !== null ? $value : $default;
     }
 
     /**
@@ -21,8 +38,15 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
-        $exists = $this->get($key);
-        if ($exists !== null) {
+        // get($key) now returns $default (null by default) if not found,
+        // but it caches 'null' internally in self::$cache[$key]
+        $sqlCheck = "SELECT 1 FROM {$this->table} WHERE clave = ? LIMIT 1";
+        $exists = $this->db->fetchOne($sqlCheck, [$key]);
+
+        // Update cache
+        self::$cache[$key] = $value;
+
+        if ($exists) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
             return $this->db->execute($sql, [$value, $key]);
         } else {
@@ -37,6 +61,12 @@ class Configuracion extends BaseModel
     public function getTasaBCV()
     {
         $key = 'tasa_bcv';
+
+        // If we already checked the expiration and cached the result in this request, return it immediately.
+        if (self::$tasaBcvChecked && array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
+            return self::$cache[$key];
+        }
+
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
@@ -48,9 +78,12 @@ class Configuracion extends BaseModel
             $newRate = $this->fetchFromApi();
             if ($newRate) {
                 $this->set($key, $newRate);
-                return $newRate;
+                $rate = $newRate;
             }
         }
+
+        self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
 
         return $rate;
     }
@@ -61,6 +94,8 @@ class Configuracion extends BaseModel
         $newRate = $this->fetchFromApi();
         if ($newRate) {
             $this->set($key, $newRate);
+            self::$cache[$key] = $newRate;
+            self::$tasaBcvChecked = true;
             return $newRate;
         }
         return false;
