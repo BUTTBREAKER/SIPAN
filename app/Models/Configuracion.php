@@ -6,14 +6,25 @@ class Configuracion extends BaseModel
 {
     protected $table = 'configuracion';
 
+    // Bolt Optimization: Request-level in-memory cache
+    private static $cache = [];
+    private static $tasaBcvChecked = false;
+
     /**
      * Get value by key
      */
     public function get($key, $default = null)
     {
+        if (array_key_exists($key, self::$cache)) {
+            return self::$cache[$key] ?? $default;
+        }
+
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
-        return $result ? $result['valor'] : $default;
+        $value = $result ? $result['valor'] : null;
+
+        self::$cache[$key] = $value;
+        return $value ?? $default;
     }
 
     /**
@@ -24,11 +35,17 @@ class Configuracion extends BaseModel
         $exists = $this->get($key);
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
-            return $this->db->execute($sql, [$value, $key]);
+            $result = $this->db->execute($sql, [$value, $key]);
         } else {
             $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)";
-            return $this->db->execute($sql, [$key, $value]);
+            $result = $this->db->execute($sql, [$key, $value]);
         }
+
+        if ($result) {
+            self::$cache[$key] = $value;
+        }
+
+        return $result;
     }
 
     /**
@@ -37,6 +54,11 @@ class Configuracion extends BaseModel
     public function getTasaBCV()
     {
         $key = 'tasa_bcv';
+
+        if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
+            return self::$cache[$key] ?? 50.00;
+        }
+
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
@@ -48,10 +70,13 @@ class Configuracion extends BaseModel
             $newRate = $this->fetchFromApi();
             if ($newRate) {
                 $this->set($key, $newRate);
+                self::$tasaBcvChecked = true;
                 return $newRate;
             }
         }
 
+        self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
         return $rate;
     }
 
