@@ -17,3 +17,7 @@
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2025-01-24 - [Request-Level Configuration Caching]
+**Learning:** Global configurations like exchange rates (Tasa BCV) are often accessed multiple times per request (header display, price calculations, etc.). Implementing request-level in-memory caching using static properties eliminates redundant database queries and expensive external API calls within the same execution cycle.
+**Action:** Use static properties for request-level caching of high-frequency, low-volatility data like system settings and exchange rates.

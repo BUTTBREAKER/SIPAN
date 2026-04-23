@@ -7,13 +7,34 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
 
     /**
+     * Caching en memoria a nivel de request (Optimización Bolt)
+     * @var array<string, mixed>
+     */
+    protected static $cache = [];
+
+    /**
+     * Bandera para asegurar que la tasa BCV se verifique solo una vez por request (Optimización Bolt)
+     * @var bool
+     */
+    protected static $tasaBcvChecked = false;
+
+    /**
      * Get value by key
      */
     public function get($key, $default = null)
     {
+        // Verificar cache en memoria primero
+        if (array_key_exists($key, self::$cache)) {
+            return self::$cache[$key] ?? $default;
+        }
+
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
-        return $result ? $result['valor'] : $default;
+
+        $value = $result ? $result['valor'] : null;
+        self::$cache[$key] = $value;
+
+        return $value ?? $default;
     }
 
     /**
@@ -21,6 +42,9 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
+        // Actualizar cache
+        self::$cache[$key] = $value;
+
         $exists = $this->get($key);
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
@@ -33,15 +57,26 @@ class Configuracion extends BaseModel
 
     /**
      * Get BCV Rate, updating from API if expired (> 1 hour)
+     * Optimización Bolt: Cacheo en memoria para evitar múltiples queries en el mismo request.
      */
     public function getTasaBCV()
     {
         $key = 'tasa_bcv';
+
+        // Si ya lo verificamos en este request, retornar del cache
+        if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
+            return self::$cache[$key] ?? 50.00;
+        }
+
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
         $rate = $row ? $row['valor'] : 50.00; // Fallback
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
+
+        // Guardar en cache para el resto del request
+        self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
 
         // Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
@@ -77,7 +112,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Optimización Bolt: Reducido de 10 a 3 segundos
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
