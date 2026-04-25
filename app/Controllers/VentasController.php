@@ -177,17 +177,14 @@ class VentasController
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
 
-        // Obtener venta básica
-        $venta = $this->ventaModel->find($id);
+        // Obtener información completa (incluye validación de sucursal)
+        // Bolt: Eliminada consulta redundante find($id)
+        $venta = $this->ventaModel->getVentaConDetalles($id, $sucursal_id);
 
-        if (!$venta || $venta['id_sucursal'] != $sucursal_id) {
+        if (!$venta) {
             header('Location: /ventas');
             exit;
         }
-
-        // Obtener información adicional usando el modelo Venta con el nuevo método
-        $ventaCompleta = $this->ventaModel->getVentaConDetalles($id, $sucursal_id);
-        $venta = $ventaCompleta ?: $venta; // Usar la completa si existe
 
         // Limpiar cliente_nombre si está vacío
         if (isset($venta['cliente_nombre']) && trim($venta['cliente_nombre']) == '') {
@@ -210,17 +207,14 @@ class VentasController
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
 
-        // Obtener venta básica primero
-        $venta = $this->ventaModel->find($id);
+        // Obtener información completa (incluye validación de sucursal)
+        // Bolt: Eliminada consulta redundante find($id)
+        $venta = $this->ventaModel->getVentaConDetalles($id, $sucursal_id);
 
-        if (!$venta || $venta['id_sucursal'] != $sucursal_id) {
+        if (!$venta) {
             header('Location: /ventas');
             exit;
         }
-
-        // Obtener información completa
-        $ventaCompleta = $this->ventaModel->getVentaConDetalles($id, $sucursal_id);
-        $venta = $ventaCompleta ?: $venta;
 
         // Limpiar cliente_nombre si está vacío
         if (isset($venta['cliente_nombre']) && trim($venta['cliente_nombre']) == '') {
