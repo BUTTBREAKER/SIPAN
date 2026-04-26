@@ -23,8 +23,17 @@ class AuditoriasController
 
         $tabla = $_GET['tabla'] ?? null;
         $usuario_id = $_GET['usuario_id'] ?? null;
+        $accion = $_GET['accion'] ?? null;
+        $estado = $_GET['estado'] ?? null;
 
-        $auditorias = $this->auditoriaModel->getWithDetails($sucursal_id, $tabla, $usuario_id);
+        $auditorias = $this->auditoriaModel->getWithDetails($sucursal_id, $tabla, $usuario_id, $accion, $estado);
+
+        $filters = [
+            'tabla' => $tabla,
+            'usuario_id' => $usuario_id,
+            'accion' => $accion,
+            'estado' => $estado
+        ];
 
         require_once __DIR__ . '/../Views/auditorias/index.php';
     }

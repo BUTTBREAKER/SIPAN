@@ -96,58 +96,60 @@ function formatearCampo($campo)
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="fas fa-filter"></i> Filtros de Búsqueda</h5>
-            <button onclick="toggleFiltros()" class="btn btn-sm btn-outline-secondary" id="btnToggleFiltros">
+            <button type="button" onclick="toggleFiltros()" class="btn btn-sm btn-outline-secondary" id="btnToggleFiltros">
                 <i class="fas fa-chevron-up"></i>
             </button>
         </div>
     </div>
     <div class="card-body" id="panelFiltros">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label"><i class="fas fa-table"></i> Tabla</label>
-                <select id="filtroTabla" class="form-select">
-                    <option value="">Todas las tablas</option>
-                    <option value="productos">Productos</option>
-                    <option value="insumos">Insumos</option>
-                    <option value="ventas">Ventas</option>
-                    <option value="clientes">Clientes</option>
-                    <option value="pedidos">Pedidos</option>
-                    <option value="producciones">Producciones</option>
-                    <option value="usuarios">Usuarios</option>
-                    <option value="recetas">Recetas</option>
-                    <option value="compras">Compras</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label"><i class="fas fa-bolt"></i> Acción</label>
-                <select id="filtroAccion" class="form-select">
-                    <option value="">Todas las acciones</option>
-                    <option value="INSERT">Creación</option>
-                    <option value="UPDATE">Actualización</option>
-                    <option value="DELETE">Eliminación</option>
-                    <option value="UNDO">Deshacer</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label"><i class="fas fa-flag"></i> Estado</label>
-                <select id="filtroEstado" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="activo">Activos</option>
-                    <option value="deshecho">Deshechos</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">&nbsp;</label>
-                <div class="d-grid gap-2">
-                    <button onclick="aplicarFiltros()" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Aplicar
-                    </button>
-                    <button onclick="limpiarFiltros()" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Limpiar
-                    </button>
+        <form action="/auditorias" method="GET">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-table"></i> Tabla</label>
+                    <select name="tabla" id="filtroTabla" class="form-select">
+                        <option value="">Todas las tablas</option>
+                        <option value="productos" <?= ($filters['tabla'] ?? '') === 'productos' ? 'selected' : '' ?>>Productos</option>
+                        <option value="insumos" <?= ($filters['tabla'] ?? '') === 'insumos' ? 'selected' : '' ?>>Insumos</option>
+                        <option value="ventas" <?= ($filters['tabla'] ?? '') === 'ventas' ? 'selected' : '' ?>>Ventas</option>
+                        <option value="clientes" <?= ($filters['tabla'] ?? '') === 'clientes' ? 'selected' : '' ?>>Clientes</option>
+                        <option value="pedidos" <?= ($filters['tabla'] ?? '') === 'pedidos' ? 'selected' : '' ?>>Pedidos</option>
+                        <option value="producciones" <?= ($filters['tabla'] ?? '') === 'producciones' ? 'selected' : '' ?>>Producciones</option>
+                        <option value="usuarios" <?= ($filters['tabla'] ?? '') === 'usuarios' ? 'selected' : '' ?>>Usuarios</option>
+                        <option value="recetas" <?= ($filters['tabla'] ?? '') === 'recetas' ? 'selected' : '' ?>>Recetas</option>
+                        <option value="compras" <?= ($filters['tabla'] ?? '') === 'compras' ? 'selected' : '' ?>>Compras</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-bolt"></i> Acción</label>
+                    <select name="accion" id="filtroAccion" class="form-select">
+                        <option value="">Todas las acciones</option>
+                        <option value="INSERT" <?= ($filters['accion'] ?? '') === 'INSERT' ? 'selected' : '' ?>>Creación</option>
+                        <option value="UPDATE" <?= ($filters['accion'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Actualización</option>
+                        <option value="DELETE" <?= ($filters['accion'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Eliminación</option>
+                        <option value="UNDO" <?= ($filters['accion'] ?? '') === 'UNDO' ? 'selected' : '' ?>>Deshacer</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-flag"></i> Estado</label>
+                    <select name="estado" id="filtroEstado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="activo" <?= ($filters['estado'] ?? '') === 'activo' ? 'selected' : '' ?>>Activos</option>
+                        <option value="deshecho" <?= ($filters['estado'] ?? '') === 'deshecho' ? 'selected' : '' ?>>Deshechos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Aplicar
+                        </button>
+                        <a href="/auditorias" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Limpiar
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+        </form>
 
         <div class="mt-3">
             <div class="alert alert-info mb-0">
@@ -629,65 +631,6 @@ function formatearCampo($campo)
             panel.style.display = 'none';
             icon.classList.remove('fa-chevron-up');
             icon.classList.add('fa-chevron-down');
-        }
-    }
-
-    // Aplicar filtros
-    function aplicarFiltros() {
-        const tabla = document.getElementById('filtroTabla').value.toLowerCase();
-        const accion = document.getElementById('filtroAccion').value;
-        const estado = document.getElementById('filtroEstado').value;
-
-        const items = document.querySelectorAll('.audit-item');
-        let visibles = 0;
-
-        items.forEach(item => {
-            const itemTabla = item.dataset.tabla;
-            const itemAccion = item.dataset.accion;
-            const itemEstado = item.dataset.estado;
-
-            let mostrar = true;
-
-            if (tabla && !itemTabla.includes(tabla)) mostrar = false;
-            if (accion && itemAccion !== accion) mostrar = false;
-            if (estado && itemEstado !== estado) mostrar = false;
-
-            item.style.display = mostrar ? 'flex' : 'none';
-            if (mostrar) visibles++;
-        });
-
-        // Mostrar mensaje si no hay resultados
-        const timeline = document.getElementById('timelineAuditorias');
-        let noResults = timeline.querySelector('.no-results-message');
-
-        if (visibles === 0) {
-            if (!noResults) {
-                noResults = document.createElement('div');
-                noResults.className = 'alert alert-warning no-results-message';
-                noResults.innerHTML = '<i class="fas fa-search"></i> No se encontraron resultados con los filtros aplicados.';
-                timeline.appendChild(noResults);
-            }
-        } else {
-            if (noResults) {
-                noResults.remove();
-            }
-        }
-    }
-
-    // Limpiar filtros
-    function limpiarFiltros() {
-        document.getElementById('filtroTabla').value = '';
-        document.getElementById('filtroAccion').value = '';
-        document.getElementById('filtroEstado').value = '';
-
-        const items = document.querySelectorAll('.audit-item');
-        items.forEach(item => {
-            item.style.display = 'flex';
-        });
-
-        const noResults = document.querySelector('.no-results-message');
-        if (noResults) {
-            noResults.remove();
         }
     }
 
