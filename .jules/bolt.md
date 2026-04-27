@@ -17,3 +17,7 @@
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2026-04-27 - [Request-Level Caching Strategy]
+**Learning:** When implementing request-level caching in methods that accept a default value (like `Configuracion::get`), it is critical to store only the raw database result (including `null`) in the cache. Decoupling the cached value from the fallback default prevents logical errors in 'set' methods that rely on existence checks (via `get`) to decide between an `INSERT` and an `UPDATE` operation.
+**Action:** Always cache the raw underlying data or a sentinel value, and apply defaults only at the return point of the getter method.
