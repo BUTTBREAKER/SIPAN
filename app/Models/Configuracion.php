@@ -6,14 +6,26 @@ class Configuracion extends BaseModel
 {
     protected $table = 'configuracion';
 
+    // Bolt Optimization: Request-level in-memory cache
+    private static $cache = [];
+    private static $tasaBcvChecked = null;
+
     /**
      * Get value by key
      */
     public function get($key, $default = null)
     {
+        if (array_key_exists($key, self::$cache)) {
+            return self::$cache[$key] ?? $default;
+        }
+
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
-        return $result ? $result['valor'] : $default;
+
+        $valor = $result ? $result['valor'] : null;
+        self::$cache[$key] = $valor;
+
+        return $valor ?? $default;
     }
 
     /**
@@ -22,6 +34,15 @@ class Configuracion extends BaseModel
     public function set($key, $value)
     {
         $exists = $this->get($key);
+
+        // Update cache
+        self::$cache[$key] = $value;
+
+        // If it's the BCV rate, also update the specific cached property
+        if ($key === 'tasa_bcv') {
+            self::$tasaBcvChecked = $value !== null ? (float)$value : null;
+        }
+
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
             return $this->db->execute($sql, [$value, $key]);
@@ -36,6 +57,10 @@ class Configuracion extends BaseModel
      */
     public function getTasaBCV()
     {
+        if (self::$tasaBcvChecked !== null) {
+            return self::$tasaBcvChecked;
+        }
+
         $key = 'tasa_bcv';
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
@@ -48,11 +73,13 @@ class Configuracion extends BaseModel
             $newRate = $this->fetchFromApi();
             if ($newRate) {
                 $this->set($key, $newRate);
-                return $newRate;
+                self::$tasaBcvChecked = (float)$newRate;
+                return self::$tasaBcvChecked;
             }
         }
 
-        return $rate;
+        self::$tasaBcvChecked = (float)$rate;
+        return self::$tasaBcvChecked;
     }
 
     public function updateTasaBCV()
@@ -77,7 +104,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Bolt: Reduced timeout from 10s to 3s
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
