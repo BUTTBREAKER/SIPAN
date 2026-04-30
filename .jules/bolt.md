@@ -17,3 +17,7 @@
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2026-04-30 - [Algorithmic Efficiency in Predictions]
+**Learning:** Predictive algorithms like Simple Moving Average (SMA) and Linear Regression can often be optimized from O(N*P) or multiple O(N) passes to a single O(N) pass. Using a sliding window for SMA and mathematical series formulas for regression sums (sumX, sumXX) significantly reduces CPU cycles and memory allocations.
+**Action:** Review helper classes performing mathematical computations over datasets for opportunities to apply sliding windows or closed-form formulas to minimize iterations.
