@@ -38,10 +38,9 @@ class VentasController
         AuthMiddleware::checkRole(['administrador', 'cajero', 'empleado']);
 
         ob_clean();
-        $user = AuthMiddleware::getUser();
-        $sucursal_id = $user['sucursal_id'];
-
-        $productos = $this->productoModel->all($sucursal_id);
+        // Bolt Optimization: Removed redundant $this->productoModel->all($sucursal_id) fetch.
+        // The "New Sale" view (create.php) uses an AJAX-based search component (Alpine.js)
+        // to retrieve products as needed, making the initial full-catalog fetch unnecessary.
 
         // Obtener tasa BCV
         $configModel = new \App\Models\Configuracion();
