@@ -17,3 +17,7 @@
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2026-05-04 - [Request-level Configuration Caching]
+**Learning:** Frequent calls to configuration settings and exchange rates (like those in global headers) can cause redundant database round-trips and expensive expiration logic checks within a single request. Implementing a simple static in-memory cache in the model reduces these hits to a single query per request.
+**Action:** Use static properties for request-level caching in models that provide global configuration or frequently accessed metadata.

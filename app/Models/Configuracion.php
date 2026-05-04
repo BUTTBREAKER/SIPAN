@@ -6,14 +6,30 @@ class Configuracion extends BaseModel
 {
     protected $table = 'configuracion';
 
+    // Bolt Optimization: Request-level in-memory cache
+    private static $cache = [];
+    private static $tasaBcvChecked = false;
+
     /**
      * Get value by key
      */
     public function get($key, $default = null)
     {
+        if (array_key_exists($key, self::$cache)) {
+            return self::$cache[$key];
+        }
+
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
-        return $result ? $result['valor'] : $default;
+
+        $value = $result ? $result['valor'] : $default;
+
+        // Only cache if found in DB to avoid caching the default value globally
+        if ($result) {
+            self::$cache[$key] = $value;
+        }
+
+        return $value;
     }
 
     /**
@@ -21,14 +37,25 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
-        $exists = $this->get($key);
-        if ($exists !== null) {
+        // Optimization: Check existence directly to avoid cache-related issues in logic
+        $sqlCheck = "SELECT 1 FROM {$this->table} WHERE clave = ? LIMIT 1";
+        $exists = $this->db->fetchOne($sqlCheck, [$key]);
+
+        if ($exists) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
-            return $this->db->execute($sql, [$value, $key]);
+            $result = $this->db->execute($sql, [$value, $key]);
         } else {
             $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)";
-            return $this->db->execute($sql, [$key, $value]);
+            $result = $this->db->execute($sql, [$key, $value]);
         }
+
+        // Update cache
+        self::$cache[$key] = $value;
+        if ($key === 'tasa_bcv') {
+            self::$tasaBcvChecked = true;
+        }
+
+        return $result;
     }
 
     /**
@@ -37,6 +64,12 @@ class Configuracion extends BaseModel
     public function getTasaBCV()
     {
         $key = 'tasa_bcv';
+
+        // Bolt Optimization: Return cached value if already fetched in this request
+        if (self::$tasaBcvChecked && isset(self::$cache[$key])) {
+            return self::$cache[$key];
+        }
+
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
@@ -48,9 +81,12 @@ class Configuracion extends BaseModel
             $newRate = $this->fetchFromApi();
             if ($newRate) {
                 $this->set($key, $newRate);
-                return $newRate;
+                $rate = $newRate;
             }
         }
+
+        self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
 
         return $rate;
     }
@@ -77,7 +113,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
