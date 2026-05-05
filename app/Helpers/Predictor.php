@@ -19,19 +19,20 @@ class Predictor
             return []; // No hay suficientes datos
         }
 
-        // Convertir keys (fechas) a índices numéricos (x) y valores a (y)
-        $x = range(1, $n);
-        $y = array_values($datos);
+        // Bolt Optimization: Mathematical calculation of sums to avoid range() and O(N) overhead for X
+        // sumX = n * (n + 1) / 2
+        // sumXX = n * (n + 1) * (2n + 1) / 6
+        $sumX = ($n * ($n + 1)) / 2;
+        $sumXX = ($n * ($n + 1) * (2 * $n + 1)) / 6;
 
-        $sumX = array_sum($x);
-        $sumY = array_sum($y);
-
+        $sumY = 0;
         $sumXY = 0;
-        $sumXX = 0;
 
-        for ($i = 0; $i < $n; $i++) {
-            $sumXY += ($x[$i] * $y[$i]);
-            $sumXX += ($x[$i] * $x[$i]);
+        $i = 1;
+        foreach ($datos as $valor) {
+            $sumY += $valor;
+            $sumXY += ($i * $valor);
+            $i++;
         }
 
         // Fórmulas de m (pendiente) y b (intersección)
@@ -84,19 +85,25 @@ class Predictor
         $valores = array_values($datos);
         $count = count($valores);
 
+        if ($count === 0) {
+            return [];
+        }
+
+        // Bolt Optimization: Sliding window approach to reduce complexity from O(N*P) to O(N)
+        $runningSum = 0;
         for ($i = 0; $i < $count; $i++) {
+            $runningSum += $valores[$i];
+
             if ($i < $periodo - 1) {
-                // No hay suficientes datos anteriores
                 $resultado[] = null;
                 continue;
             }
 
-            $suma = 0;
-            for ($j = 0; $j < $periodo; $j++) {
-                $suma += $valores[$i - $j];
+            if ($i >= $periodo) {
+                $runningSum -= $valores[$i - $periodo];
             }
 
-            $resultado[] = round($suma / $periodo, 2);
+            $resultado[] = round($runningSum / $periodo, 2);
         }
 
         return $resultado;
