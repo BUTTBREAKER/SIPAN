@@ -17,3 +17,7 @@
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2025-01-24 - [Request-Level Caching for Global Configuration]
+**Learning:** Configuration values like exchange rates are often fetched in global components (e.g., header.php), leading to redundant database queries and potentially expensive API expiration checks on every page load. Implementing a static in-memory cache with a per-request guard flag ensures these operations happen at most once per request, significantly reducing overhead for values used throughout the application.
+**Action:** Use static properties for request-level caching of global settings and external API results to avoid redundant database round-trips and processing within the same execution lifecycle.
