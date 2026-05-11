@@ -85,4 +85,20 @@ class Producto extends BaseModel
         $sql = "SELECT * FROM productos WHERE id_sucursal = ?";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
+
+    /**
+     * Obtiene los productos para el reporte de inventario con el valor de stock calculado en SQL.
+     * Optimización Bolt: Desplaza el cálculo (stock * precio) a la base de datos.
+     *
+     * @param int $sucursal_id
+     * @return array
+     */
+    public function getInventoryReport($sucursal_id)
+    {
+        $sql = "SELECT *, (stock_actual * precio_actual) as valor_stock
+                FROM {$this->table}
+                WHERE id_sucursal = ?
+                ORDER BY nombre";
+        return $this->db->fetchAll($sql, [$sucursal_id]);
+    }
 }
