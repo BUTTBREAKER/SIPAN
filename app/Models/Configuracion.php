@@ -7,13 +7,33 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
 
     /**
+     * Cache estática para almacenar valores de configuración durante la solicitud actual.
+     * @var array
+     */
+    private static $cache = [];
+
+    /**
+     * Indica si la tasa BCV ya fue verificada en esta solicitud.
+     * @var bool
+     */
+    private static $tasaBcvChecked = false;
+
+    /**
      * Get value by key
      */
     public function get($key, $default = null)
     {
+        if (array_key_exists($key, self::$cache)) {
+            return self::$cache[$key];
+        }
+
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
-        return $result ? $result['valor'] : $default;
+
+        $value = $result ? $result['valor'] : $default;
+        self::$cache[$key] = $value;
+
+        return $value;
     }
 
     /**
@@ -22,13 +42,27 @@ class Configuracion extends BaseModel
     public function set($key, $value)
     {
         $exists = $this->get($key);
+        $success = false;
+
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
-            return $this->db->execute($sql, [$value, $key]);
+            $success = (bool)$this->db->execute($sql, [$value, $key]);
         } else {
             $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)";
-            return $this->db->execute($sql, [$key, $value]);
+            $success = (bool)$this->db->execute($sql, [$key, $value]);
         }
+
+        if ($success) {
+            // Actualizar cache local solo si la DB fue exitosa
+            self::$cache[$key] = $value;
+
+            // Si estamos actualizando la tasa, marcar como verificada para evitar recargas
+            if ($key === 'tasa_bcv') {
+                self::$tasaBcvChecked = true;
+            }
+        }
+
+        return $success;
     }
 
     /**
@@ -37,6 +71,12 @@ class Configuracion extends BaseModel
     public function getTasaBCV()
     {
         $key = 'tasa_bcv';
+
+        // Si ya lo verificamos en esta solicitud, retornar el valor del cache
+        if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
+            return self::$cache[$key];
+        }
+
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
@@ -52,6 +92,8 @@ class Configuracion extends BaseModel
             }
         }
 
+        self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
         return $rate;
     }
 
@@ -77,7 +119,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Bolt: Reducido de 10 a 3 segundos para resiliencia
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
