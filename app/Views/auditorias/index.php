@@ -102,46 +102,57 @@ function formatearCampo($campo)
         </div>
     </div>
     <div class="card-body" id="panelFiltros">
-        <form action="/auditorias" method="GET">
+        <form method="GET" action="/auditorias" id="formFiltros">
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label"><i class="fas fa-table"></i> Tabla</label>
-                    <select name="tabla" id="filtroTabla" class="form-select">
+                    <select name="tabla" class="form-select">
                         <option value="">Todas las tablas</option>
-                        <option value="productos" <?= ($filters['tabla'] ?? '') === 'productos' ? 'selected' : '' ?>>Productos</option>
-                        <option value="insumos" <?= ($filters['tabla'] ?? '') === 'insumos' ? 'selected' : '' ?>>Insumos</option>
-                        <option value="ventas" <?= ($filters['tabla'] ?? '') === 'ventas' ? 'selected' : '' ?>>Ventas</option>
-                        <option value="clientes" <?= ($filters['tabla'] ?? '') === 'clientes' ? 'selected' : '' ?>>Clientes</option>
-                        <option value="pedidos" <?= ($filters['tabla'] ?? '') === 'pedidos' ? 'selected' : '' ?>>Pedidos</option>
-                        <option value="producciones" <?= ($filters['tabla'] ?? '') === 'producciones' ? 'selected' : '' ?>>Producciones</option>
-                        <option value="usuarios" <?= ($filters['tabla'] ?? '') === 'usuarios' ? 'selected' : '' ?>>Usuarios</option>
-                        <option value="recetas" <?= ($filters['tabla'] ?? '') === 'recetas' ? 'selected' : '' ?>>Recetas</option>
-                        <option value="compras" <?= ($filters['tabla'] ?? '') === 'compras' ? 'selected' : '' ?>>Compras</option>
+                        <option value="productos" <?= ($_GET['tabla'] ?? '') === 'productos' ? 'selected' : '' ?>>Productos</option>
+                        <option value="insumos" <?= ($_GET['tabla'] ?? '') === 'insumos' ? 'selected' : '' ?>>Insumos</option>
+                        <option value="ventas" <?= ($_GET['tabla'] ?? '') === 'ventas' ? 'selected' : '' ?>>Ventas</option>
+                        <option value="clientes" <?= ($_GET['tabla'] ?? '') === 'clientes' ? 'selected' : '' ?>>Clientes</option>
+                        <option value="pedidos" <?= ($_GET['tabla'] ?? '') === 'pedidos' ? 'selected' : '' ?>>Pedidos</option>
+                        <option value="producciones" <?= ($_GET['tabla'] ?? '') === 'producciones' ? 'selected' : '' ?>>Producciones</option>
+                        <option value="usuarios" <?= ($_GET['tabla'] ?? '') === 'usuarios' ? 'selected' : '' ?>>Usuarios</option>
+                        <option value="recetas" <?= ($_GET['tabla'] ?? '') === 'recetas' ? 'selected' : '' ?>>Recetas</option>
+                        <option value="compras" <?= ($_GET['tabla'] ?? '') === 'compras' ? 'selected' : '' ?>>Compras</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label"><i class="fas fa-bolt"></i> Acción</label>
-                    <select name="accion" id="filtroAccion" class="form-select">
+                    <select name="accion" class="form-select">
                         <option value="">Todas las acciones</option>
-                        <option value="INSERT" <?= ($filters['accion'] ?? '') === 'INSERT' ? 'selected' : '' ?>>Creación</option>
-                        <option value="UPDATE" <?= ($filters['accion'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Actualización</option>
-                        <option value="DELETE" <?= ($filters['accion'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Eliminación</option>
-                        <option value="UNDO" <?= ($filters['accion'] ?? '') === 'UNDO' ? 'selected' : '' ?>>Deshacer</option>
+                        <option value="INSERT" <?= ($_GET['accion'] ?? '') === 'INSERT' ? 'selected' : '' ?>>Creación</option>
+                        <option value="UPDATE" <?= ($_GET['accion'] ?? '') === 'UPDATE' ? 'selected' : '' ?>>Actualización</option>
+                        <option value="DELETE" <?= ($_GET['accion'] ?? '') === 'DELETE' ? 'selected' : '' ?>>Eliminación</option>
+                        <option value="UNDO" <?= ($_GET['accion'] ?? '') === 'UNDO' ? 'selected' : '' ?>>Deshacer</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label"><i class="fas fa-flag"></i> Estado</label>
-                    <select name="estado" id="filtroEstado" class="form-select">
+                    <select name="estado" class="form-select">
                         <option value="">Todos</option>
-                        <option value="activo" <?= ($filters['estado'] ?? '') === 'activo' ? 'selected' : '' ?>>Activos</option>
-                        <option value="deshecho" <?= ($filters['estado'] ?? '') === 'deshecho' ? 'selected' : '' ?>>Deshechos</option>
+                        <option value="activo" <?= ($_GET['estado'] ?? '') === 'activo' ? 'selected' : '' ?>>Activos</option>
+                        <option value="deshecho" <?= ($_GET['estado'] ?? '') === 'deshecho' ? 'selected' : '' ?>>Deshechos</option>
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <label class="form-label"><i class="fas fa-user"></i> Usuario</label>
+                    <select name="usuario_id" class="form-select">
+                        <option value="">Todos los usuarios</option>
+                        <?php foreach ($usuarios as $u) : ?>
+                            <option value="<?= $u['id'] ?>" <?= (int)($_GET['usuario_id'] ?? 0) === (int)$u['id'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($u['nombre']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i> Aplicar
+                            <i class="fas fa-search"></i> Filtrar
                         </button>
                         <a href="/auditorias" class="btn btn-outline-secondary">
                             <i class="fas fa-times"></i> Limpiar
@@ -154,7 +165,7 @@ function formatearCampo($campo)
         <div class="mt-3">
             <div class="alert alert-info mb-0">
                 <i class="fas fa-info-circle"></i>
-                <strong>Nota:</strong> Solo se pueden deshacer cambios realizados en las últimas 24 horas.
+                <strong>Nota:</strong> Solo se pueden deshacer cambios realizados en las últimas 24 horas. Mostrando los últimos 100 registros.
             </div>
         </div>
     </div>
@@ -633,6 +644,7 @@ function formatearCampo($campo)
             icon.classList.add('fa-chevron-down');
         }
     }
+
 
     // Ver detalle de auditoría (mejorado para UX)
     async function verDetalle(id) {

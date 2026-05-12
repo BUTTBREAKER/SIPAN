@@ -44,7 +44,11 @@ class Auditoria extends BaseModel
         ]);
     }
 
-    public function getWithDetails($sucursal_id = null, $tabla = null, $usuario_id = null, $accion = null, $estado = null)
+    /**
+     * Obtener auditorías con detalles de usuario y sucursal.
+     * Optimización Bolt: Soporta filtrado por acción y estado (deshacer) en SQL y reduce el límite por defecto.
+     */
+    public function getWithDetails($sucursal_id = null, $tabla = null, $usuario_id = null, $accion = null, $estado = null, $limit = 100)
     {
         $sql = "SELECT a.*, 
                 CONCAT_WS(' ', u.primer_nombre, u.segundo_nombre, u.apellido_paterno, u.apellido_materno) as usuario_nombre,
@@ -76,13 +80,15 @@ class Auditoria extends BaseModel
             $params[] = $accion;
         }
 
-        if ($estado !== null && $estado !== '') {
-            $deshacer = ($estado === 'deshecho') ? 1 : 0;
-            $sql .= " AND a.deshacer = ?";
-            $params[] = $deshacer;
+        if ($estado) {
+            if ($estado === 'deshecho') {
+                $sql .= " AND a.deshacer = 1";
+            } elseif ($estado === 'activo') {
+                $sql .= " AND a.deshacer = 0";
+            }
         }
 
-        $sql .= " ORDER BY a.fecha_accion DESC LIMIT 100";
+        $sql .= " ORDER BY a.fecha_accion DESC LIMIT " . (int)$limit;
 
         return $this->db->fetchAll($sql, $params);
     }

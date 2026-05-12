@@ -28,12 +28,9 @@ class AuditoriasController
 
         $auditorias = $this->auditoriaModel->getWithDetails($sucursal_id, $tabla, $usuario_id, $accion, $estado);
 
-        $filters = [
-            'tabla' => $tabla,
-            'usuario_id' => $usuario_id,
-            'accion' => $accion,
-            'estado' => $estado
-        ];
+        // Obtener lista de usuarios para el filtro
+        $usuarioModel = new \App\Models\Usuario();
+        $usuarios = $usuarioModel->getBySucursal($sucursal_id);
 
         require_once __DIR__ . '/../Views/auditorias/index.php';
     }
