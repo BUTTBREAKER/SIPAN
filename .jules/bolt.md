@@ -17,3 +17,9 @@
 ## 2025-01-24 - [BaseModel Signature Consistency]
 **Learning:** Overriding `BaseModel` methods (like `all()`) with incompatible signatures or ignoring standard parameters (like `$sucursal_id`) creates silent performance bottlenecks. Controllers passing these arguments expect filtering that isn't happening, leading to global data leaks and high memory usage.
 **Action:** When overriding `BaseModel` methods, ensure signatures match exactly and honor inherited filtering parameters to prevent performance regressions in a multi-tenant/multi-branch architecture.
+## 2025-01-24 - [Unused Join and Aggregation Optimization]
+**Learning:** Performing a `LEFT JOIN` and `GROUP BY` to calculate a field that is never displayed in the UI is a common source of database overhead. Removing these redundant operations, especially in many-to-one relationships (like sales to products), drastically reduces query complexity and memory usage as the dataset grows.
+**Action:** Before implementing an aggregation in a listing query, verify that the resulting field is actually used in the associated view or controller.
+## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
+**Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
+**Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.

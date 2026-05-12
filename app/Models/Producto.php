@@ -29,6 +29,7 @@ class Producto extends BaseModel
         }
 
         $sql .= " ORDER BY nombre";
+
         return $this->db->fetchAll($sql, $params);
     }
 
