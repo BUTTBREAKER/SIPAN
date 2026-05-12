@@ -27,6 +27,14 @@ class Configuracion extends BaseModel
     private static $tasaBcvChecked = false;
 
     /**
+     * Bolt: In-memory request-level cache to avoid redundant DB queries.
+     * Since this model is often called from header.php and other components
+     * in the same request, caching values here provides a significant performance boost.
+     */
+    private static $cache = [];
+    private static $tasaBcvChecked = false;
+
+    /**
      * Get value by key
      */
     public function get($key, $default = null)

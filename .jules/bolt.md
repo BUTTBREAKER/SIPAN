@@ -27,6 +27,9 @@
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
 
+## 2026-04-19 - [Request-Level Caching with Defaults]
+**Learning:** When implementing request-level caching for methods that allow a fallback default (like `get($key, $default)`), it is critical to cache only the raw result (or `null`) from the database. Caching the provided default value can lead to logic errors in subsequent operations, such as a `set()` method incorrectly performing an `UPDATE` on a non-existent row because it believes the key exists based on a previously cached default.
+**Action:** Always decouple the cached database result from the method's return-level default handling to ensure internal state (existence checks) remains accurate.
 ## 2026-04-18 - [Request-Level Configuration Cache]
 **Learning:** Repetitive database queries for global configuration (like exchange rates in a header) on every page load create unnecessary database overhead. A simple request-level in-memory cache using a static property can eliminate these redundant queries. However, special care must be taken for methods with internal expiration logic (like `getTasaBCV`) and methods that depend on database existence checks (like `set`) to avoid bypassing critical checks or breaking `INSERT` vs `UPDATE` logic.
 **Action:** Implement request-level caching for configuration models, ensuring a "checked" flag or similar mechanism is used for values that require periodic refreshes, and always bypass the cache for database existence checks in `set()` operations.
