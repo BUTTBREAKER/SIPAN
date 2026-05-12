@@ -82,6 +82,10 @@ class Producto extends BaseModel
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 
+    /**
+     * Obtiene los productos de una sucursal con el valor del stock calculado.
+     * Optimización Bolt: Calcula valor_stock directamente en SQL para mayor eficiencia.
+     */
     public function getBySucursal($sucursal_id)
     {
         // Optimización Bolt: El valor_stock se calcula en la DB para evitar bucles O(N) en PHP.
