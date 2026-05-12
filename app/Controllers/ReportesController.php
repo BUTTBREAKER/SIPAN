@@ -202,12 +202,8 @@ class ReportesController
         $productos = $this->productoModel->getBySucursal($_SESSION['sucursal_id']);
         $formato = $_GET['formato'] ?? 'html';
 
-        // Calcular valor del inventario
-        $valor_total = 0;
-        foreach ($productos as &$producto) {
-            $producto['valor_stock'] = $producto['stock_actual'] * $producto['precio_actual'];
-            $valor_total += $producto['valor_stock'];
-        }
+        // Optimización Bolt: El valor_stock ya viene calculado desde el modelo (SQL)
+        $valor_total = array_sum(array_column($productos, 'valor_stock'));
 
         $data = [
             'productos' => $productos,
