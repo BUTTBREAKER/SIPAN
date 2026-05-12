@@ -6,6 +6,9 @@ class Configuracion extends BaseModel
 {
     protected $table = 'configuracion';
 
+    // Bolt Optimization: Static in-memory cache for the BCV exchange rate
+    private static $cachedTasa = null;
+
     /**
      * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
      */
@@ -64,7 +67,8 @@ class Configuracion extends BaseModel
             if ($newRate) {
                 // set() will update self::$cachedTasa
                 $this->set($key, $newRate);
-                return $newRate;
+                self::$cachedTasa = (float)$newRate;
+                return self::$cachedTasa;
             }
         }
 
@@ -78,7 +82,7 @@ class Configuracion extends BaseModel
         $newRate = $this->fetchFromApi();
         if ($newRate) {
             $this->set($key, $newRate);
-            return $newRate;
+            return self::$cachedTasa;
         }
         return false;
     }
