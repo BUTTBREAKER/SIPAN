@@ -14,6 +14,9 @@
 **Learning:** Fetching multiple aggregate metrics (today, week, month) via separate queries is inefficient. Fetching a single daily dataset for the longest period (e.g., last 31 days) and aggregating in PHP reduces database round-trips by 75% and provides consistent results across different dashboard widgets.
 **Action:** Consolidate related aggregate queries into a single daily time-series fetch and process the sub-periods in-memory.
 
+## 2025-01-24 - [BaseModel Signature Consistency]
+**Learning:** Overriding `BaseModel` methods (like `all()`) with incompatible signatures or ignoring standard parameters (like `$sucursal_id`) creates silent performance bottlenecks. Controllers passing these arguments expect filtering that isn't happening, leading to global data leaks and high memory usage.
+**Action:** When overriding `BaseModel` methods, ensure signatures match exactly and honor inherited filtering parameters to prevent performance regressions in a multi-tenant/multi-branch architecture.
 ## 2025-01-24 - [Unused Join and Aggregation Optimization]
 **Learning:** Performing a `LEFT JOIN` and `GROUP BY` to calculate a field that is never displayed in the UI is a common source of database overhead. Removing these redundant operations, especially in many-to-one relationships (like sales to products), drastically reduces query complexity and memory usage as the dataset grows.
 **Action:** Before implementing an aggregation in a listing query, verify that the resulting field is actually used in the associated view or controller.

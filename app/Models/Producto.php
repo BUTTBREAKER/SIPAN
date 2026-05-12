@@ -14,7 +14,9 @@ class Producto extends BaseModel
 
     /**
      * Obtiene todos los productos, opcionalmente filtrados por sucursal.
-     * Optimización Bolt: Respeta el filtrado por sucursal para evitar carga innecesaria de datos.
+     * Bolt Optimization: Se corrigió la firma para que coincida con BaseModel::all($sucursal_id)
+     * y se implementó el filtrado por sucursal a nivel de base de datos.
+     * Esto evita cargar el catálogo global de productos en cada sucursal (O(N) -> O(N/S)).
      */
     public function all($sucursal_id = null)
     {
