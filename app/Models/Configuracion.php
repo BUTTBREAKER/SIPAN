@@ -36,6 +36,7 @@ class Configuracion extends BaseModel
 
     /**
      * Get value by key
+     * Bolt Optimization: Uses request-level in-memory cache to avoid redundant DB queries.
      */
     public function get($key, $default = null)
     {
@@ -53,6 +54,7 @@ class Configuracion extends BaseModel
 
     /**
      * Set value by key
+     * Bolt Optimization: Updates request-level cache.
      */
     public function set($key, $value)
     {
@@ -79,6 +81,7 @@ class Configuracion extends BaseModel
 
     /**
      * Get BCV Rate, updating from API if expired (> 1 hour)
+     * Bolt Optimization: Ensures API/DB check happens only once per request.
      */
     public function getTasaBCV()
     {
@@ -124,6 +127,10 @@ class Configuracion extends BaseModel
         return self::$cachedTasa;
     }
 
+    /**
+     * Manually refresh the BCV Rate
+     * Bolt Optimization: Updates request-level cache.
+     */
     public function updateTasaBCV()
     {
         $key = 'tasa_bcv';
