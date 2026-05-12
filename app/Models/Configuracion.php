@@ -16,6 +16,17 @@ class Configuracion extends BaseModel
     private static $cachedTasa = null;
 
     /**
+     * Cache en memoria para la duración de la petición (Request-level cache)
+     * Optimización Bolt: Evita consultas redundantes a la base de datos.
+     */
+    private static $cache = [];
+
+    /**
+     * Flag para asegurar que la lógica de expiración de la tasa BCV se ejecute una vez por petición.
+     */
+    private static $tasaBcvChecked = false;
+
+    /**
      * Get value by key
      */
     public function get($key, $default = null)
@@ -79,6 +90,9 @@ class Configuracion extends BaseModel
 
         $rate = $row ? (float)$row['valor'] : 50.00; // Fallback
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
+
+        // Marcar como verificado para esta petición
+        self::$tasaBcvChecked = true;
 
         // Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
