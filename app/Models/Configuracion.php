@@ -7,6 +7,14 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
     private static $cache = [];
 
+    // Bolt Optimization: Static in-memory cache for the BCV exchange rate
+    private static $cachedTasa = null;
+
+    /**
+     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
+     */
+    private static $cachedTasa = null;
+
     /**
      * Get value by key
      */
@@ -29,6 +37,11 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
+        // Update cache if key is BCV rate
+        if ($key === 'tasa_bcv') {
+            self::$cachedTasa = (float)$value;
+        }
+
         $exists = $this->get($key);
         $success = false;
         if ($exists !== null) {
@@ -50,6 +63,11 @@ class Configuracion extends BaseModel
      */
     public function getTasaBCV()
     {
+        // Bolt Optimization: Return cached value if already fetched during this request
+        if (self::$cachedTasa !== null) {
+            return self::$cachedTasa;
+        }
+
         $key = 'tasa_bcv';
 
         if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
@@ -59,13 +77,14 @@ class Configuracion extends BaseModel
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
-        $rate = $row ? $row['valor'] : 50.00; // Fallback
+        $rate = $row ? (float)$row['valor'] : 50.00; // Fallback
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
 
         // Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
             if ($newRate) {
+                // set() will update self::$cachedTasa
                 $this->set($key, $newRate);
                 // self::$cache[$key] updated by set()
                 return (float)$newRate;
@@ -74,6 +93,13 @@ class Configuracion extends BaseModel
 
         self::$cache[$key] = $rate;
         return (float)$rate;
+                self::$cachedTasa = (float)$newRate;
+                return self::$cachedTasa;
+            }
+        }
+
+        self::$cachedTasa = $rate;
+        return self::$cachedTasa;
     }
 
     public function updateTasaBCV()
@@ -82,7 +108,7 @@ class Configuracion extends BaseModel
         $newRate = $this->fetchFromApi();
         if ($newRate) {
             $this->set($key, $newRate);
-            return $newRate;
+            return self::$cachedTasa;
         }
         return false;
     }
