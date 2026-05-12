@@ -24,30 +24,16 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<?php
-// Prepare data including Ingredient Count which was previously queried in-view
-// Ideally this should be in Controller, but doing it here to minimize impact
-require_once __DIR__ . '/../../Models/Receta.php';
-$recetaModel = new \App\Models\Receta();
-
-$recetasData = array_map(function ($r) use ($recetaModel) {
-    // We fetch insumos count per row
-    $insumos = $recetaModel->getInsumos($r['id']);
-    $r['insumos_count'] = count($insumos);
-    return $r;
-}, $recetas ?? []);
-?>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const rawData = <?= json_encode($recetasData) ?>;
+    const rawData = <?= json_encode($recetas ?? []) ?>;
     const userRol = '<?= $_SESSION['user_rol'] ?? '' ?>';
 
     const gridData = rawData.map(r => [
         r.id, // Hidden
         r.producto_nombre || 'Producto #' + r.id_producto,
         r.rendimiento + ' unidades',
-        r.insumos_count + ' insumo(s)',
+        (r.total_insumos || 0) + ' insumo(s)',
         r.id // Action
     ]);
 
