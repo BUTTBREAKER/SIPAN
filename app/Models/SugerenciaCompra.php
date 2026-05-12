@@ -14,23 +14,20 @@ class SugerenciaCompra extends BaseModel
 
     public function getWithDetails($sucursal_id, $estado = null)
     {
+        // Bolt Optimization: Removed redundant LEFT JOIN on productos.
+        // The current schema and 'sp_generar_sugerencias_compra' procedure only support insumos.
+        // Using INNER JOIN on insumos since id_insumo is mandatory and simplified the SELECT list.
         $sql = "SELECT 
                     sc.*,
-                    COALESCE(i.nombre, p.nombre) as item_nombre,
-                    COALESCE(i.stock_actual, p.stock_actual) as stock_actual,
-                    COALESCE(i.stock_minimo, p.stock_minimo) as stock_minimo,
-                    CASE 
-                        WHEN sc.id_insumo IS NOT NULL THEN 'insumo'
-                        WHEN sc.id_producto IS NOT NULL THEN 'producto'
-                        ELSE 'desconocido'
-                    END as tipo,
-                    COALESCE(sc.id_insumo, sc.id_producto) as id_item,
+                    i.nombre as item_nombre,
+                    i.stock_actual,
+                    i.stock_minimo,
+                    'insumo' as tipo,
+                    sc.id_insumo as id_item,
                     i.unidad_medida,
-                    COALESCE(i.precio_unitario, p.precio_actual) as precio_unitario,
-                    p.imagen as producto_imagen
+                    i.precio_unitario
                 FROM {$this->table} sc
-                LEFT JOIN insumos i ON sc.id_insumo = i.id
-                LEFT JOIN productos p ON sc.id_producto = p.id
+                INNER JOIN insumos i ON sc.id_insumo = i.id
                 WHERE sc.id_sucursal = ?";
 
         $params = [$sucursal_id];
