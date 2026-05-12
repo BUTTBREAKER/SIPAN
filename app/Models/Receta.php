@@ -160,33 +160,30 @@ class Receta extends BaseModel
 
     public function getWithDetails($sucursal_id)
     {
-        $sql = "SELECT r.*, p.nombre as producto_nombre, 
+        return $this->all($sucursal_id);
+    }
+
+    /**
+     * Obtiene todas las recetas con el conteo de insumos pre-calculado.
+     * Optimización Bolt: Evita N+1 queries al traer total_insumos en una sola consulta.
+     */
+    public function all($sucursal_id = null)
+    {
+        $sql = "SELECT r.*, p.nombre as producto_nombre,
                        COUNT(ri.id) as total_insumos
                 FROM {$this->table} r
                 INNER JOIN productos p ON r.id_producto = p.id
-                LEFT JOIN receta_insumos ri ON r.id = ri.id_receta
-                WHERE r.id_sucursal = ?
-                GROUP BY r.id
-                ORDER BY r.nombre";
-        return $this->db->fetchAll($sql, [$sucursal_id]);
-    }
+                LEFT JOIN receta_insumos ri ON r.id = ri.id_receta";
 
-    public function all($sucursal_id = null)
-    {
-        if ($sucursal_id === null) {
-            $sql = "SELECT r.*, p.nombre as producto_nombre
-                    FROM {$this->table} r
-                    INNER JOIN productos p ON r.id_producto = p.id
-                    ORDER BY r.nombre";
-            return $this->db->fetchAll($sql);
+        $params = [];
+        if ($sucursal_id !== null) {
+            $sql .= " WHERE r.id_sucursal = ?";
+            $params[] = $sucursal_id;
         }
 
-        $sql = "SELECT r.*, p.nombre as producto_nombre
-                FROM {$this->table} r
-                INNER JOIN productos p ON r.id_producto = p.id
-                WHERE r.id_sucursal = ?
-                ORDER BY r.nombre";
-        return $this->db->fetchAll($sql, [$sucursal_id]);
+        $sql .= " GROUP BY r.id ORDER BY r.nombre";
+
+        return $this->db->fetchAll($sql, $params);
     }
 
     public function getInsumosByReceta($receta_id)

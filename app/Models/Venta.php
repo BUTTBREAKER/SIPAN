@@ -129,6 +129,9 @@ class Venta extends BaseModel
         // Bolt Optimization: Removed redundant LEFT JOIN on venta_productos and COUNT(vp.id).
         // The total_productos field is not used in the UI, and removing this many-to-one join
         // significantly reduces DB overhead and eliminates the need for a GROUP BY clause.
+        // Bolt Optimization: Removed redundant LEFT JOIN on venta_productos and GROUP BY.
+        // The 'total_productos' count was not used in the sales index view (Grid.js),
+        // and removing it significantly improves performance on large datasets.
         $sql = "SELECT v.*, 
                        CONCAT(COALESCE(c.nombre, ''), ' ', COALESCE(c.apellido, '')) as cliente_nombre,
                        CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
