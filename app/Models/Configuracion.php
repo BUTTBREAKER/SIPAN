@@ -51,6 +51,18 @@ class Configuracion extends BaseModel
     protected static $tasaBcvChecked = false;
 
     /**
+     * Cache para valores de configuración (request-level)
+     * @var array<string, mixed>
+     */
+    private static $cache = [];
+
+    /**
+     * Cache para la tasa BCV (request-level)
+     * @var float|null
+     */
+    private static $tasaBcvCached = null;
+
+    /**
      * Get value by key
      * Bolt Optimization: Uses request-level in-memory cache to avoid redundant DB queries.
      */
