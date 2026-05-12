@@ -27,6 +27,11 @@
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
 
+<<<<<<< bolt-config-caching-884154159979286291
+## 2025-01-24 - [Request-Level Configuration Caching]
+**Learning:** Global configuration values (like BCV exchange rate) are often accessed multiple times across different components (header, sales creation, reports) during a single request. Implementing a simple in-memory static cache in the model prevents redundant database queries and expensive external API calls without the risk of stale data between requests in standard PHP-FPM environments.
+**Action:** Identify frequently accessed configuration keys and implement static properties for request-level caching in the `Configuracion` model or similar utility classes.
+=======
 ## 2026-05-02 - [Request-Level Caching for Configuration]
 **Learning:** Configuration settings (especially the BCV exchange rate) are often accessed multiple times during a single request (e.g., in the header and again in specific controllers or views). Implementing request-level in-memory caching using static properties safely reduces redundant database queries and expensive API logic without the complexity of persistent caching or the risk of stale data across different requests.
 **Action:** Use static properties to cache frequently accessed model-level data that is unlikely to change during a single request lifecycle, especially for global settings or metadata used in headers.
@@ -48,3 +53,4 @@
 ## 2025-01-24 - [In-Memory Caching for Global Configuration]
 **Learning:** Frequent retrieval of global configuration values (like exchange rates) that are used across multiple components (header, controllers, views) can lead to redundant database queries within a single request. Implementing a static in-memory cache at the model level eliminates these extra queries.
 **Action:** Use static properties to cache frequently accessed, request-constant configuration values in models to reduce database load. Ensure that 'setter' methods also update this cache to maintain consistency.
+>>>>>>> main
