@@ -19,19 +19,20 @@ class Predictor
             return []; // No hay suficientes datos
         }
 
-        // Convertir keys (fechas) a índices numéricos (x) y valores a (y)
-        $x = range(1, $n);
-        $y = array_values($datos);
-
-        $sumX = array_sum($x);
-        $sumY = array_sum($y);
-
+        /**
+         * Bolt Optimization: Replace O(N) range() and array_sum() with mathematical formulas
+         * and a single O(N) pass for sumY and sumXY.
+         */
+        $sumX = ($n * ($n + 1)) / 2;
+        $sumXX = ($n * ($n + 1) * (2 * $n + 1)) / 6;
+        $sumY = 0;
         $sumXY = 0;
-        $sumXX = 0;
 
-        for ($i = 0; $i < $n; $i++) {
-            $sumXY += ($x[$i] * $y[$i]);
-            $sumXX += ($x[$i] * $x[$i]);
+        $i = 1;
+        foreach ($datos as $valor) {
+            $sumY += $valor;
+            $sumXY += ($i * $valor);
+            $i++;
         }
 
         // Fórmulas de m (pendiente) y b (intersección)
@@ -84,16 +85,23 @@ class Predictor
         $valores = array_values($datos);
         $count = count($valores);
 
+        /**
+         * Bolt Optimization: Use a sliding window approach for SMA.
+         * Reduces complexity from O(N*P) to O(N) by maintaining a running sum.
+         */
+        $suma = 0;
         for ($i = 0; $i < $count; $i++) {
+            $suma += $valores[$i];
+
             if ($i < $periodo - 1) {
                 // No hay suficientes datos anteriores
                 $resultado[] = null;
                 continue;
             }
 
-            $suma = 0;
-            for ($j = 0; $j < $periodo; $j++) {
-                $suma += $valores[$i - $j];
+            if ($i >= $periodo) {
+                // Subtract the value that is falling out of the window
+                $suma -= $valores[$i - $periodo];
             }
 
             $resultado[] = round($suma / $periodo, 2);
