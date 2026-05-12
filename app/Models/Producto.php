@@ -12,10 +12,25 @@ class Producto extends BaseModel
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 
-    public function all($orderBy = null)
+    /**
+     * Obtiene todos los productos, opcionalmente filtrados por sucursal.
+     * Bolt Optimization: Se corrigió la firma para que coincida con BaseModel::all($sucursal_id)
+     * y se implementó el filtrado por sucursal a nivel de base de datos.
+     * Esto evita cargar el catálogo global de productos en cada sucursal (O(N) -> O(N/S)).
+     */
+    public function all($sucursal_id = null)
     {
-        $sql = "SELECT * FROM {$this->table} ORDER BY nombre";
-        return $this->db->fetchAll($sql);
+        $sql = "SELECT * FROM {$this->table}";
+        $params = [];
+
+        if ($sucursal_id !== null) {
+            $sql .= " WHERE id_sucursal = ?";
+            $params[] = $sucursal_id;
+        }
+
+        $sql .= " ORDER BY nombre";
+
+        return $this->db->fetchAll($sql, $params);
     }
 
 
@@ -69,7 +84,10 @@ class Producto extends BaseModel
 
     public function getBySucursal($sucursal_id)
     {
-        $sql = "SELECT * FROM productos WHERE id_sucursal = ?";
+        // Optimización Bolt: El valor_stock se calcula en la DB para evitar bucles O(N) en PHP.
+        $sql = "SELECT *, (stock_actual * precio_actual) as valor_stock
+                FROM productos
+                WHERE id_sucursal = ?";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 }
