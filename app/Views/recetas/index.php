@@ -26,8 +26,6 @@ require_once __DIR__ . '/../layouts/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Optimización Bolt: Se utiliza la variable $recetas que ya trae total_insumos desde el controlador
-    // evitando consultas N+1 en la vista.
     const rawData = <?= json_encode($recetas ?? []) ?>;
     const userRol = '<?= $_SESSION['user_rol'] ?? '' ?>';
 
