@@ -12,10 +12,23 @@ class Producto extends BaseModel
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 
-    public function all($orderBy = null)
+    /**
+     * Obtiene todos los productos, opcionalmente filtrados por sucursal.
+     * Optimización Bolt: Respeta el filtrado por sucursal para evitar carga innecesaria de datos.
+     */
+    public function all($sucursal_id = null)
     {
-        $sql = "SELECT * FROM {$this->table} ORDER BY nombre";
-        return $this->db->fetchAll($sql);
+        $sql = "SELECT * FROM {$this->table}";
+        $params = [];
+
+        if ($sucursal_id !== null) {
+            $sql .= " WHERE id_sucursal = ?";
+            $params[] = $sucursal_id;
+        }
+
+        $sql .= " ORDER BY nombre";
+
+        return $this->db->fetchAll($sql, $params);
     }
 
 

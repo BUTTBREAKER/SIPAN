@@ -26,7 +26,6 @@ require_once __DIR__ . '/../layouts/header.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Bolt Optimization: Recetas data already includes 'total_insumos' from the controller/model
     const rawData = <?= json_encode($recetas ?? []) ?>;
     const userRol = '<?= $_SESSION['user_rol'] ?? '' ?>';
 
