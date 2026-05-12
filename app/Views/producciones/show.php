@@ -27,7 +27,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Producto:</strong><br>
-                            <?= htmlspecialchars($producto['nombre']) ?>
+                            <?= htmlspecialchars($produccion['producto_nombre']) ?>
                         </div>
                         <div class="col-md-6">
                             <strong>Cantidad Producida:</strong><br>
@@ -42,7 +42,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         </div>
                         <div class="col-md-6">
                             <strong>Usuario:</strong><br>
-                            <?= htmlspecialchars("{$usuario['primer_nombre']} {$usuario['apellido_paterno']}") ?>
+                            <?= htmlspecialchars($produccion['usuario_nombre']) ?>
                         </div>
                     </div>
                     
@@ -88,13 +88,13 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                                     <td>$ <?= number_format($costo_insumo, 2) ?></td>
                                 </tr>
                                 <?php endforeach; ?>
-                                <?php if (empty($insumos_utilizados)) : ?>
+                                <?php if (empty($insumos)) : ?>
                                 <tr>
                                     <td colspan="5" class="text-center text-muted">No hay insumos registrados</td>
                                 </tr>
                                 <?php endif; ?>
                             </tbody>
-                            <?php if (!empty($insumos_utilizados)) : ?>
+                            <?php if (!empty($insumos)) : ?>
                             <tfoot>
                                 <tr class="table-info">
                                     <th colspan="4" class="text-end">Costo Total de Producción:</th>
@@ -102,7 +102,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                                 </tr>
                                 <tr class="table-success">
                                     <th colspan="4" class="text-end">Costo por Unidad:</th>
-                                    <th>$ <?= number_format($costo_total / $produccion['cantidad'], 2) ?></th>
+                                    <th>$ <?= number_format($produccion['cantidad_producida'] > 0 ? $costo_total / $produccion['cantidad_producida'] : 0, 2) ?></th>
                                 </tr>
                             </tfoot>
                             <?php endif; ?>
@@ -118,11 +118,11 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <h5><i class="fas fa-calculator"></i> Resumen de Costos</h5>
                 </div>
                 <div class="card-body">
-                    <?php if (!empty($insumos_utilizados)) : ?>
+                    <?php if (!empty($insumos)) : ?>
                     <div class="mb-3 p-3 bg-light rounded">
                         <div class="d-flex justify-content-between mb-2">
                             <strong>Cantidad Producida:</strong>
-                            <span><?= number_format($produccion['cantidad'], 2) ?> unidades</span>
+                            <span><?= number_format($produccion['cantidad_producida'], 2) ?> unidades</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <strong>Costo Total:</strong>
@@ -131,7 +131,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         <hr>
                         <div class="d-flex justify-content-between">
                             <strong>Costo por Unidad:</strong>
-                            <span class="text-success fs-5">$ <?= number_format($costo_total / $produccion['cantidad'], 2) ?></span>
+                            <span class="text-success fs-5">$ <?= number_format($produccion['cantidad_producida'] > 0 ? $costo_total / $produccion['cantidad_producida'] : 0, 2) ?></span>
                         </div>
                     </div>
                     <?php else : ?>
