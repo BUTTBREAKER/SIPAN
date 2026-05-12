@@ -97,4 +97,24 @@ class Produccion extends BaseModel
 
         return $this->db->fetchAll($sql, $params);
     }
+
+    /**
+     * Obtiene una producción con sus detalles (producto y usuario) en una sola consulta.
+     * Optimización Bolt: Reduce round-trips a la base de datos de 3 a 1 para el encabezado de producción.
+     *
+     * @param int $id
+     * @param int $sucursal_id
+     * @return array|false
+     */
+    public function getProduccionConDetalles($id, $sucursal_id)
+    {
+        $sql = "SELECT pr.*, pr.cantidad_producida as cantidad, p.nombre as producto_nombre,
+                       CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
+                FROM {$this->table} pr
+                INNER JOIN productos p ON pr.id_producto = p.id
+                INNER JOIN usuarios u ON pr.id_usuario = u.id
+                WHERE pr.id = ? AND pr.id_sucursal = ?";
+
+        return $this->db->fetchOne($sql, [$id, $sucursal_id]);
+    }
 }
