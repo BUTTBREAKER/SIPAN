@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         r.id, // Hidden
         r.producto_nombre || 'Producto #' + r.id_producto,
         r.rendimiento + ' unidades',
-        r.insumos_count + ' insumo(s)',
+        (r.total_insumos || 0) + ' insumo(s)',
         r.id // Action
     ]);
 
