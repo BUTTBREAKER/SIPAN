@@ -39,6 +39,18 @@ class Configuracion extends BaseModel
     private static $tasaBcvChecked = false;
 
     /**
+     * Caching en memoria a nivel de request (Optimización Bolt)
+     * @var array<string, mixed>
+     */
+    protected static $cache = [];
+
+    /**
+     * Bandera para asegurar que la tasa BCV se verifique solo una vez por request (Optimización Bolt)
+     * @var bool
+     */
+    protected static $tasaBcvChecked = false;
+
+    /**
      * Get value by key
      * Bolt Optimization: Uses request-level in-memory cache to avoid redundant DB queries.
      */
@@ -106,7 +118,8 @@ class Configuracion extends BaseModel
         $rate = $row ? (float)$row['valor'] : 50.00; // Fallback
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
 
-        // Marcar como verificado para esta petición
+        // Guardar en cache para el resto del request
+        self::$cache[$key] = $rate;
         self::$tasaBcvChecked = true;
 
         // Check if expired (1 hour = 3600 seconds)
@@ -157,7 +170,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Optimización Bolt: Reducido de 10 a 3 segundos
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
