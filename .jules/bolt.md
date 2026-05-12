@@ -14,6 +14,19 @@
 **Learning:** Fetching multiple aggregate metrics (today, week, month) via separate queries is inefficient. Fetching a single daily dataset for the longest period (e.g., last 31 days) and aggregating in PHP reduces database round-trips by 75% and provides consistent results across different dashboard widgets.
 **Action:** Consolidate related aggregate queries into a single daily time-series fetch and process the sub-periods in-memory.
 
+## 2025-01-24 - [N+1 Query Elimination in Views]
+**Learning:** Instantiating models and performing database queries within a loop inside a View (e.g., fetching ingredient counts for a list of recipes) is a severe N+1 performance bottleneck. Moving the aggregation to the initial SQL query using `LEFT JOIN` and `GROUP BY` reduces database round-trips from O(N) to O(1) and improves architectural separation by removing model dependencies from the View.
+**Action:** Always check Views for PHP loops that perform database calls and refactor the underlying Model method to include the required data via SQL joins or aggregations.
+## 2025-01-24 - [BaseModel Signature Consistency]
+**Learning:** Overriding `BaseModel` methods (like `all()`) with incompatible signatures or ignoring standard parameters (like `$sucursal_id`) creates silent performance bottlenecks. Controllers passing these arguments expect filtering that isn't happening, leading to global data leaks and high memory usage.
+**Action:** When overriding `BaseModel` methods, ensure signatures match exactly and honor inherited filtering parameters to prevent performance regressions in a multi-tenant/multi-branch architecture.
+## 2025-01-24 - [Unused Join and Aggregation Optimization]
+**Learning:** Performing a `LEFT JOIN` and `GROUP BY` to calculate a field that is never displayed in the UI is a common source of database overhead. Removing these redundant operations, especially in many-to-one relationships (like sales to products), drastically reduces query complexity and memory usage as the dataset grows.
+**Action:** Before implementing an aggregation in a listing query, verify that the resulting field is actually used in the associated view or controller.
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
 **Action:** Before optimizing a query with a join/count, verify if the resulting field is actually used in the view or controller. If not, prune it.
+
+## 2025-01-24 - [In-Memory Caching for Global Configuration]
+**Learning:** Frequent retrieval of global configuration values (like exchange rates) that are used across multiple components (header, controllers, views) can lead to redundant database queries within a single request. Implementing a static in-memory cache at the model level eliminates these extra queries.
+**Action:** Use static properties to cache frequently accessed, request-constant configuration values in models to reduce database load. Ensure that 'setter' methods also update this cache to maintain consistency.
