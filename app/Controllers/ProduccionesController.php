@@ -4,29 +4,20 @@ namespace App\Controllers;
 
 use App\Models\Produccion;
 use App\Models\Producto;
-use App\Models\Insumo;
-use App\Models\Receta;
 use App\Models\Negocio;
 use App\Middlewares\AuthMiddleware;
-use App\Models\Usuario;
 
 class ProduccionesController
 {
     private $produccionModel;
     private $productoModel;
-    private $insumoModel;
-    private $recetaModel;
     private $negocioModel;
-    private Usuario $usuarioModel;
 
     public function __construct()
     {
         $this->produccionModel = new Produccion();
         $this->productoModel = new Producto();
-        $this->insumoModel = new Insumo();
-        $this->recetaModel = new Receta();
         $this->negocioModel = new Negocio();
-        $this->usuarioModel = new Usuario();
     }
 
     public function index()
@@ -109,16 +100,18 @@ class ProduccionesController
     {
         AuthMiddleware::check();
 
-        $produccion = $this->produccionModel->find($id);
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'];
+
+        // Bolt Optimization: Retrieve production, product and user info in a single round-trip
+        $produccion = $this->produccionModel->getProduccionConDetalles($id, $sucursal_id);
 
         if (!$produccion) {
             header('Location: /producciones');
             exit;
         }
 
-        $producto = $this->productoModel->find($produccion['id_producto']);
         $insumos = $this->produccionModel->getInsumos($id);
-        $usuario = $this->usuarioModel->find($produccion['id_usuario']);
 
         require_once __DIR__ . '/../Views/producciones/show.php';
     }
