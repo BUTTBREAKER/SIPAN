@@ -96,7 +96,7 @@ function formatearCampo($campo)
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="fas fa-filter"></i> Filtros de Búsqueda</h5>
-            <button onclick="toggleFiltros()" class="btn btn-sm btn-outline-secondary" id="btnToggleFiltros">
+            <button type="button" onclick="toggleFiltros()" class="btn btn-sm btn-outline-secondary" id="btnToggleFiltros">
                 <i class="fas fa-chevron-up"></i>
             </button>
         </div>
