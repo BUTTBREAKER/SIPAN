@@ -202,7 +202,7 @@ class ReportesController
         $productos = $this->productoModel->getBySucursal($_SESSION['sucursal_id']);
         $formato = $_GET['formato'] ?? 'html';
 
-        // Optimización Bolt: valor_stock ya viene calculado desde SQL (Producto::getBySucursal)
+        // Optimización Bolt: El valor_stock ya viene calculado desde el modelo (SQL)
         $valor_total = array_sum(array_column($productos, 'valor_stock'));
 
         $data = [
