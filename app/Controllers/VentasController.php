@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Venta;
 use App\Models\Producto;
 use App\Models\Negocio;
+use App\Models\Cliente;
 use App\Middlewares\AuthMiddleware;
 
 class VentasController
@@ -12,12 +13,14 @@ class VentasController
     private $ventaModel;
     private $productoModel;
     private $negocioModel;
+    private $clienteModel;
 
     public function __construct()
     {
         $this->ventaModel = new Venta();
         $this->productoModel = new Producto();
         $this->negocioModel = new Negocio();
+        $this->clienteModel = new Cliente();
     }
 
     public function index()
@@ -41,7 +44,8 @@ class VentasController
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
 
-        $productos = $this->productoModel->all($sucursal_id);
+        // Bolt Optimization: Removed redundant full product fetch as products are searched via AJAX.
+        $clientes = $this->clienteModel->getBySucursal($sucursal_id);
 
         // Obtener tasa BCV
         $configModel = new \App\Models\Configuracion();

@@ -37,12 +37,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <label class="form-label">Cliente (Opcional)</label>
                         <select name="id_cliente" class="form-select" id="selectCliente" x-model="id_cliente">
                             <option value="">Cliente General</option>
-                            <?php
-                            require_once __DIR__ . '/../../Models/Cliente.php';
-                            $clienteModel = new \App\Models\Cliente();
-                            $clientes = $clienteModel->getBySucursal($_SESSION['sucursal_id']);
-                            foreach ($clientes as $cliente) :
-                                ?>
+                            <?php foreach ($clientes as $cliente) : ?>
                             <option value="<?= $cliente['id'] ?>">
                                 <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido']) ?>
                                 <?php if ($cliente['documento_numero']) :
