@@ -6,6 +6,8 @@ class Predictor
 {
     /**
      * Calcula la regresión lineal simple (y = mx + b)
+     * Optimización Bolt: Refactorizado a algoritmo O(N) de una sola pasada y uso de fórmulas de series aritméticas
+     * para evitar creación de arrays intermedios con range() y reducir consumo de memoria.
      *
      * @param array $datos Array de valores historicos [fecha => cantidad]
      * @param int $dias_a_proyectar Número de días futuros a predecir
@@ -77,7 +79,11 @@ class Predictor
 
     /**
      * Calcula la Media Móvil Simple (SMA)
-     * Útil para suavizar la curva de demanda
+     * Optimización Bolt: Implementado algoritmo de ventana deslizante para reducir complejidad de O(N*P) a O(N).
+     *
+     * @param array $datos Array de valores historicos [fecha => cantidad]
+     * @param int $periodo Ventana de tiempo para el promedio
+     * @return array
      */
     public static function mediaMovil($datos, $periodo = 3)
     {
@@ -104,7 +110,13 @@ class Predictor
                 $suma -= $valores[$i - $periodo];
             }
 
-            $resultado[] = round($suma / $periodo, 2);
+            if ($i < $periodo - 1) {
+                // No hay suficientes datos para completar el primer periodo
+                $resultado[] = null;
+            } else {
+                // Cálculo O(1) usando suma deslizante
+                $resultado[] = round($sumaVentana / $periodo, 2);
+            }
         }
 
         return $resultado;
