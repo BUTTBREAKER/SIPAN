@@ -67,6 +67,12 @@ class Configuracion extends BaseModel
     private static $tasaBcvChecked = null;
 
     /**
+     * Bolt Optimization: Request-level in-memory cache to avoid redundant DB lookups.
+     */
+    private static $cache = [];
+    private static $tasaBcvChecked = false;
+
+    /**
      * Get value by key
      * Bolt Optimization: Uses request-level in-memory cache to avoid redundant DB queries.
      */
