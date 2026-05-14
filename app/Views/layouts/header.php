@@ -63,6 +63,11 @@
                         <i class="fas fa-bars fs-3"></i>
                     </button>
 
+                    <!-- Desktop Toggle -->
+                    <button class="btn btn-link d-none d-lg-block p-0 text-dark me-3 flex-shrink-0" id="sidebarToggle" aria-label="Alternar Menú">
+                        <i class="fas fa-bars fs-4"></i>
+                    </button>
+
                     <h1 class="page-title mb-0 fs-4 d-none d-sm-block"><?= $pageTitle ?? 'Dashboard' ?></h1>
                     
                     <!-- Logo for very small screens -->
