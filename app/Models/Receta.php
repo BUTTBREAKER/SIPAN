@@ -82,7 +82,7 @@ class Receta extends BaseModel
      */
     public function getInsumos($receta_id)
     {
-        $sql = "SELECT ri.*, i.nombre, i.unidad_medida as unidad_insumo, i.stock_actual, i.precio_unitario, i.costo_unitario
+        $sql = "SELECT ri.*, i.nombre, i.unidad_medida as unidad_insumo, i.stock_actual, i.precio_unitario, i.precio_unitario as costo_unitario
                 FROM receta_insumos ri
                 INNER JOIN insumos i ON ri.id_insumo = i.id
                 WHERE ri.id_receta = ?";
@@ -188,7 +188,7 @@ class Receta extends BaseModel
 
     public function getInsumosByReceta($receta_id)
     {
-        $sql = "SELECT ri.*, i.nombre, i.unidad_medida, i.stock_actual, i.precio_unitario, i.costo_unitario
+        $sql = "SELECT ri.*, i.nombre, i.unidad_medida, i.stock_actual, i.precio_unitario, i.precio_unitario as costo_unitario
                 FROM receta_insumos ri
                 INNER JOIN insumos i ON ri.id_insumo = i.id
                 WHERE ri.id_receta = ?";
