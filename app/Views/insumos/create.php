@@ -18,6 +18,7 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form id="formInsumo" action="/insumos/store" method="POST">
+            <?= \App\Helpers\CSRF::field() ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -26,6 +27,7 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
                 
+                <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Unidad de Medida <span class="text-danger">*</span></label>
                         <select name="unidad_medida" class="form-control" required>

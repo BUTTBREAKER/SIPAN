@@ -17,6 +17,21 @@ class Configuracion extends BaseModel
      * @var bool
      */
     private static $tasaBcvChecked = false;
+     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
+     */
+    private static $cachedTasa = null;
+
+    /**
+     * Caching en memoria a nivel de request (Optimización Bolt)
+     * @var array<string, mixed>
+     */
+    protected static $cache = [];
+
+    /**
+     * Bandera para asegurar que la tasa BCV se verifique solo una vez por request (Optimización Bolt)
+     * @var bool
+     */
+    protected static $tasaBcvChecked = false;
 
     /**
      * Get value by key
@@ -30,6 +45,7 @@ class Configuracion extends BaseModel
 
         $sql = "SELECT valor FROM {$this->table} WHERE clave = ? LIMIT 1";
         $result = $this->db->fetchOne($sql, [$key]);
+
         $value = $result ? $result['valor'] : null;
 
         self::$cache[$key] = $value;
@@ -44,6 +60,7 @@ class Configuracion extends BaseModel
     {
         $exists = $this->get($key);
         $success = false;
+        
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
             $success = $this->db->execute($sql, [$value, $key]);
@@ -54,7 +71,11 @@ class Configuracion extends BaseModel
 
         if ($success) {
             self::$cache[$key] = $value;
+            if ($key === 'tasa_bcv') {
+                self::$tasaBcvChecked = true;
+            }
         }
+        
         return $success;
     }
 
@@ -68,6 +89,8 @@ class Configuracion extends BaseModel
 
         if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
             return (float)(self::$cache[$key] ?? 50.00);
+        if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
+            return (float)self::$cache[$key];
         }
 
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
@@ -76,20 +99,21 @@ class Configuracion extends BaseModel
         $rate = $row ? (float)$row['valor'] : 50.00; // Fallback
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
 
-        // Guardar en cache para el resto del request
         self::$cache[$key] = $rate;
-        self::$tasaBcvChecked = true;
 
         // Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
             if ($newRate) {
+                // self::$cache[$key] updated by set()
                 $this->set($key, $newRate);
                 return (float)$newRate;
             }
         }
 
         return (float)$rate;
+        self::$cachedTasa = (float)$rate;
+        return self::$cachedTasa;
     }
 
     /**
@@ -104,13 +128,14 @@ class Configuracion extends BaseModel
             $this->set($key, $newRate);
             self::$tasaBcvChecked = true;
             return (float)$newRate;
+            return self::$cachedTasa;
         }
         return false;
     }
 
     /**
      * Fetch from Rafnixg API
-     * Bolt Optimization: Reduced timeout from 10s to 3s for better resilience.
+     * Bolt Optimization: Reduced timeout to 3s for better resilience.
      */
     private function fetchFromApi()
     {

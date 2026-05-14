@@ -16,10 +16,12 @@ class Insumo extends BaseModel
                 ORDER BY i.nombre";
         // Corregir nombre de tabla si es 'proveedores' en lugar de 'providers'
         // Asumiendo 'proveedores' por el SQL anterior
-        $sql = "SELECT i.*, p.nombre as proveedor_nombre 
+        $sql = "SELECT i.*, GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre 
                 FROM {$this->table} i
-                LEFT JOIN proveedores p ON i.id_proveedor = p.id
+                LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
+                LEFT JOIN proveedores p ON pi.id_proveedor = p.id
                 WHERE i.id_sucursal = ? 
+                GROUP BY i.id
                 ORDER BY i.nombre";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
@@ -31,9 +33,11 @@ class Insumo extends BaseModel
             return $this->getAllBySucursal($sucursal_id);
         }
 
-        $sql = "SELECT i.*, p.nombre as proveedor_nombre 
+        $sql = "SELECT i.*, GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre 
                 FROM {$this->table} i
-                LEFT JOIN proveedores p ON i.id_proveedor = p.id
+                LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
+                LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                GROUP BY i.id
                 ORDER BY i.nombre";
         return $this->db->fetchAll($sql);
     }
@@ -83,7 +87,24 @@ class Insumo extends BaseModel
 
     public function getByProveedor($proveedor_id)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE id_proveedor = ? ORDER BY nombre";
+        $sql = "SELECT i.* 
+                FROM {$this->table} i
+                INNER JOIN proveedor_insumos pi ON i.id = pi.id_insumo
+                WHERE pi.id_proveedor = ? 
+                ORDER BY i.nombre";
         return $this->db->fetchAll($sql, [$proveedor_id]);
+    }
+
+    public function updateProveedor($insumo_id, $proveedor_id, $precio = 0)
+    {
+        // Primero eliminar cualquier relación existente (para mantener una relación 1 a 1 lógica desde la UI, 
+        // aunque la DB permita muchos a muchos)
+        $sqlDelete = "DELETE FROM proveedor_insumos WHERE id_insumo = ?";
+        $this->db->execute($sqlDelete, [$insumo_id]);
+        
+        if (!empty($proveedor_id)) {
+            $sqlInsert = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio) VALUES (?, ?, ?)";
+            $this->db->execute($sqlInsert, [$proveedor_id, $insumo_id, $precio]);
+        }
     }
 }

@@ -27,6 +27,7 @@
             </ul>
         </div>
 
+        <?php if (in_array($_SESSION['user_rol'] ?? '', ['administrador', 'empleado'])) : ?>
         <!-- Grupo: Inventario -->
         <div class="nav-group" data-group="inventario">
             <div class="nav-group-header" title="Inventario">
@@ -54,6 +55,7 @@
                 </li>
             </ul>
         </div>
+        <?php endif; ?>
 
         <!-- Grupo: Operaciones -->
         <div class="nav-group" data-group="operaciones">
