@@ -110,13 +110,8 @@ class Predictor
                 $suma -= $valores[$i - $periodo];
             }
 
-            if ($i < $periodo - 1) {
-                // No hay suficientes datos para completar el primer periodo
-                $resultado[] = null;
-            } else {
-                // Cálculo O(1) usando suma deslizante
-                $resultado[] = round($sumaVentana / $periodo, 2);
-            }
+            // Cálculo O(1) usando suma deslizante
+            $resultado[] = round($suma / $periodo, 2);
         }
 
         return $resultado;

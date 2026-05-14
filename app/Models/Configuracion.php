@@ -7,6 +7,16 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
 
     /**
+     * Cache for request-level storage
+     * @var array<string, mixed>
+     */
+    private static $cache = [];
+
+    /**
+     * Flag to avoid re-checking BCV rate multiple times per request
+     * @var bool
+     */
+    private static $tasaBcvChecked = false;
      * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
      */
     private static $cachedTasa = null;
@@ -48,11 +58,6 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
-        // Update cache if key is BCV rate
-        if ($key === 'tasa_bcv') {
-            self::$cachedTasa = (float)$value;
-        }
-
         $exists = $this->get($key);
         $success = false;
         
@@ -80,13 +85,10 @@ class Configuracion extends BaseModel
      */
     public function getTasaBCV()
     {
-        // Bolt Optimization: Return cached value if already fetched during this request
-        if (self::$cachedTasa !== null) {
-            return self::$cachedTasa;
-        }
-
         $key = 'tasa_bcv';
 
+        if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
+            return (float)(self::$cache[$key] ?? 50.00);
         if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
             return (float)self::$cache[$key];
         }
@@ -109,6 +111,7 @@ class Configuracion extends BaseModel
             }
         }
 
+        return (float)$rate;
         self::$cachedTasa = (float)$rate;
         return self::$cachedTasa;
     }
@@ -123,6 +126,8 @@ class Configuracion extends BaseModel
         $newRate = $this->fetchFromApi();
         if ($newRate) {
             $this->set($key, $newRate);
+            self::$tasaBcvChecked = true;
+            return (float)$newRate;
             return self::$cachedTasa;
         }
         return false;
@@ -152,13 +157,10 @@ class Configuracion extends BaseModel
             if ($httpCode === 200 && $json) {
                 $data = json_decode($json, true);
 
-                // New API structure found: {"dollar": 325.38, "date": "2026-01-08"}
                 if (isset($data['dollar'])) {
                     return (float)$data['dollar'];
                 }
 
-                // Rafnixg API typically returns an array of rates.
-                // We search for USD or the first rate available.
                 if (isset($data['USD'])) {
                     return (float)$data['USD'];
                 }
@@ -166,7 +168,6 @@ class Configuracion extends BaseModel
                     return (float)$data['usd'];
                 }
 
-                // Fallback for different JSON structures
                 if (isset($data['price'])) {
                     return (float)$data['price'];
                 }
@@ -174,7 +175,6 @@ class Configuracion extends BaseModel
                     return (float)$data['rate'];
                 }
 
-                // If it's an array of objects
                 if (is_array($data)) {
                     foreach ($data as $key => $val) {
                         if (strtoupper($key) === 'USD') {

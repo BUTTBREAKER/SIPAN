@@ -529,10 +529,12 @@ END //
 
 CREATE PROCEDURE sp_verificar_stock_bajo()
 BEGIN
+    -- Bolt Optimization: SARGable date comparison (n.fecha_creacion >= CURDATE())
+    -- This allows the database to use an index on the fecha_creacion column, avoiding full table scans.
     INSERT INTO notificaciones (id_sucursal, tipo, titulo, mensaje, referencia_tipo, referencia_id, leida)
     SELECT p.id_sucursal, 'stock_bajo_producto', CONCAT('Stock Bajo: ', p.nombre), CONCAT('El producto ', p.nombre, ' tiene un stock de ', p.stock_actual, ' unidades'), 'producto', p.id, FALSE
     FROM productos p WHERE p.stock_minimo > 0 AND p.stock_actual <= p.stock_minimo
-    AND NOT EXISTS (SELECT 1 FROM notificaciones n WHERE n.referencia_tipo = 'producto' AND n.referencia_id = p.id AND n.leida = FALSE AND DATE(n.fecha_creacion) = CURDATE());
+    AND NOT EXISTS (SELECT 1 FROM notificaciones n WHERE n.referencia_tipo = 'producto' AND n.referencia_id = p.id AND n.leida = FALSE AND n.fecha_creacion >= CURDATE());
 END //
 
 DELIMITER ;
