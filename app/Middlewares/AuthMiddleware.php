@@ -10,11 +10,27 @@ class AuthMiddleware
             session_start();
         }
 
-        // Verificar integridad completa de la sesión
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_rol']) || !isset($_SESSION['user_nombre'])) {
-            // Si falta algún dato crítico, cerrar sesión para evitar errores
-            session_unset();
-            session_destroy();
+        // Verificar integridad de la sesión de usuario
+        if (!isset($_SESSION['user_id'])) {
+            // Si es una petición AJAX/JSON, devolver 401 en lugar de redireccionar
+            if (
+                (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') ||
+                (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)
+            ) {
+                http_response_code(401);
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Sesión expirada o no autorizada']);
+                exit;
+            }
+            
+            header('Location: /login');
+            exit;
+        }
+
+        // Si existe user_id pero faltan datos críticos (integridad)
+        if (!isset($_SESSION['user_rol']) || !isset($_SESSION['user_nombre'])) {
+            // Limpiar solo datos de usuario, no toda la sesión (preservar CSRF si es posible)
+            unset($_SESSION['user_id'], $_SESSION['user_rol'], $_SESSION['user_nombre']);
             header('Location: /login');
             exit;
         }
