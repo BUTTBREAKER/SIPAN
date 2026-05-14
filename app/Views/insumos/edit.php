@@ -18,6 +18,7 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
     <div class="card-body">
         <form id="formInsumo" action="/insumos/update/<?= $insumo['id'] ?>" method="POST">
+            <?= \App\Helpers\CSRF::field() ?>
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">

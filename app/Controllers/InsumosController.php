@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Insumo;
 use App\Models\Negocio;
 use App\Middlewares\AuthMiddleware;
+use App\Helpers\CSRF;
 
 class InsumosController
 {
@@ -47,6 +48,11 @@ class InsumosController
 
         header('Content-Type: application/json');
 
+        if (!CSRF::validateRequest()) {
+            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido']);
+            exit;
+        }
+
         $user = AuthMiddleware::getUser();
         $sucursal_id = $user['sucursal_id'];
 
@@ -57,11 +63,12 @@ class InsumosController
             exit;
         }
 
+        $proveedor_id = !empty($_POST['id_proveedor']) ? $_POST['id_proveedor'] : null;
+
         $data = [
             'id_negocio' => $negocio['id'],
             'id_sucursal' => $sucursal_id,
             'id_usuario' => $user['id'],
-            'id_proveedor' => !empty($_POST['id_proveedor']) ? $_POST['id_proveedor'] : null,
             'nombre' => trim($_POST['nombre'] ?? ''),
             'descripcion' => trim($_POST['descripcion'] ?? ''),
             'unidad_medida' => (!empty($_POST['unidad_medida'])) ? $_POST['unidad_medida'] : 'kg',
@@ -72,6 +79,8 @@ class InsumosController
 
         try {
             $id = $this->insumoModel->create($data);
+            // Actualizar la tabla pivote proveedor_insumos
+            $this->insumoModel->updateProveedor($id, $proveedor_id, $data['precio_unitario']);
             echo json_encode(['success' => true, 'message' => 'Insumo creado correctamente', 'id' => $id]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al crear insumo: ' . $e->getMessage()]);
@@ -104,8 +113,14 @@ class InsumosController
 
         header('Content-Type: application/json');
 
+        if (!CSRF::validateRequest()) {
+            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido']);
+            exit;
+        }
+
+        $proveedor_id = !empty($_POST['id_proveedor']) ? $_POST['id_proveedor'] : null;
+
         $data = [
-            'id_proveedor' => !empty($_POST['id_proveedor']) ? $_POST['id_proveedor'] : null,
             'nombre' => trim($_POST['nombre'] ?? ''),
             'descripcion' => trim($_POST['descripcion'] ?? ''),
             'unidad_medida' => (!empty($_POST['unidad_medida'])) ? $_POST['unidad_medida'] : 'kg',
@@ -116,6 +131,8 @@ class InsumosController
 
         try {
             $this->insumoModel->update($id, $data);
+            // Actualizar la tabla pivote proveedor_insumos
+            $this->insumoModel->updateProveedor($id, $proveedor_id, $data['precio_unitario']);
             echo json_encode(['success' => true, 'message' => 'Insumo actualizado correctamente']);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al actualizar insumo: ' . $e->getMessage()]);
@@ -128,6 +145,11 @@ class InsumosController
         AuthMiddleware::checkRole(['administrador']);
 
         header('Content-Type: application/json');
+
+        if (!CSRF::validateRequest()) {
+            echo json_encode(['success' => false, 'message' => 'Token CSRF inválido']);
+            exit;
+        }
 
         try {
             $this->insumoModel->delete($id);
