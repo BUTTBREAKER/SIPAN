@@ -48,19 +48,19 @@ class ReportesController
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
+        $sucursal_id = $_SESSION['sucursal_id'];
 
-        $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
-        $ventaIds = array_column($ventas, 'id');
+        $ventas = $this->ventaModel->getByDateRange($sucursal_id, $fecha_inicio, $fecha_fin);
 
-        // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries
+        // Optimización Bolt: Batch fetch de pagos para el listado usando el rango de fechas
+        $todos_los_pagos = $this->ventaModel->getPagosPorRango($sucursal_id, $fecha_inicio, $fecha_fin);
         $pagos_agrupados = [];
-        if (!empty($ventaIds)) {
-            $todos_los_pagos = $this->ventaModel->getPagosPorVentas($ventaIds);
-            foreach ($todos_los_pagos as $p) {
-                $pagos_agrupados[$p['id_venta']][] = $p;
-            }
+        foreach ($todos_los_pagos as $p) {
+            $pagos_agrupados[$p['id_venta']][] = $p;
         }
 
+        // Optimización Bolt: Desglose por método de pago calculado directamente en SQL
+        $breakdown_raw = $this->ventaModel->getPaymentBreakdown($sucursal_id, $fecha_inicio, $fecha_fin);
         $desglose_medios = [
             'efectivo_bs' => 0,
             'efectivo_usd' => 0,
@@ -71,6 +71,19 @@ class ReportesController
             'biopago' => 0
         ];
 
+        foreach ($breakdown_raw as $row) {
+            $m = $row['metodo_pago'];
+            if (isset($desglose_medios[$m])) {
+                $desglose_medios[$m] = (float)$row['total'];
+            } else {
+                // Fallback por si hay métodos no contemplados (otros)
+                if (!isset($desglose_medios['otros'])) {
+                    $desglose_medios['otros'] = 0;
+                }
+                $desglose_medios['otros'] += (float)$row['total'];
+            }
+        }
+
         $total_ventas = 0;
 
         foreach ($ventas as &$venta) {
@@ -79,32 +92,14 @@ class ReportesController
             $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
-                // Sumar del detalle
                 $lista_pagos = [];
                 foreach ($pagos as $p) {
-                    $m = $p['metodo_pago'];
-                    $v = $p['monto'];
-                    if (isset($desglose_medios[$m])) {
-                        $desglose_medios[$m] += $v;
-                    } else {
-                        // Fallback por si hay metodo viejo
-                        if (!isset($desglose_medios['otros'])) {
-                            $desglose_medios['otros'] = 0;
-                        }
-                        $desglose_medios['otros'] += $v;
-                    }
-                    $lista_pagos[] = ucfirst(str_replace('_', ' ', $m)) . ': ' . number_format($v, 2);
+                    $lista_pagos[] = ucfirst(str_replace('_', ' ', $p['metodo_pago'])) . ': ' . number_format($p['monto'], 2);
                 }
                 $venta['detalle_pagos_str'] = implode('<br>', $lista_pagos);
             } else {
-                // Usar el metodo principal (compatibilidad anterior)
-                $m = $venta['metodo_pago'];
-                if ($m !== 'mixto') {
-                    if (isset($desglose_medios[$m])) {
-                        $desglose_medios[$m] += $venta['total'];
-                    }
-                }
-                $venta['detalle_pagos_str'] = ucfirst(str_replace('_', ' ', $m));
+                // Fallback para ventas legacy sin detalle de pagos
+                $venta['detalle_pagos_str'] = ucfirst(str_replace('_', ' ', $venta['metodo_pago']));
             }
         }
 

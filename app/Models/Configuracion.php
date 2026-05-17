@@ -7,28 +7,13 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
 
     /**
-     * Cache for request-level storage
-     * @var array<string, mixed>
-     */
-    private static $cache = [];
-
-    /**
-     * Flag to avoid re-checking BCV rate multiple times per request
-     * @var bool
-     */
-    private static $tasaBcvChecked = false;
-     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
-     */
-    private static $cachedTasa = null;
-
-    /**
-     * Caching en memoria a nivel de request (Optimización Bolt)
+     * Cache for request-level storage (Optimización Bolt)
      * @var array<string, mixed>
      */
     protected static $cache = [];
 
     /**
-     * Bandera para asegurar que la tasa BCV se verifique solo una vez por request (Optimización Bolt)
+     * Flag to avoid re-checking BCV rate multiple times per request (Optimización Bolt)
      * @var bool
      */
     protected static $tasaBcvChecked = false;
@@ -58,10 +43,11 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
+        // First check if it exists using the cached method to avoid redundant DB reads
         $exists = $this->get($key);
         $success = false;
         
-        if ($exists !== null) {
+        if ($exists !== null || array_key_exists($key, self::$cache)) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
             $success = $this->db->execute($sql, [$value, $key]);
         } else {
@@ -87,12 +73,12 @@ class Configuracion extends BaseModel
     {
         $key = 'tasa_bcv';
 
+        // Bolt: If checked in this request, return from cache immediately
         if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
             return (float)(self::$cache[$key] ?? 50.00);
-        if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
-            return (float)self::$cache[$key];
         }
 
+        // Bolt: First time in this request, we fetch from DB and check expiration
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
@@ -100,20 +86,18 @@ class Configuracion extends BaseModel
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
 
         self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
 
         // Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
             if ($newRate) {
-                // self::$cache[$key] updated by set()
                 $this->set($key, $newRate);
                 return (float)$newRate;
             }
         }
 
         return (float)$rate;
-        self::$cachedTasa = (float)$rate;
-        return self::$cachedTasa;
     }
 
     /**
@@ -128,7 +112,6 @@ class Configuracion extends BaseModel
             $this->set($key, $newRate);
             self::$tasaBcvChecked = true;
             return (float)$newRate;
-            return self::$cachedTasa;
         }
         return false;
     }
