@@ -124,6 +124,69 @@ class Venta extends BaseModel
         return $this->db->fetchAll($sql, $venta_ids);
     }
 
+    /**
+     * Obtiene todos los pagos realizados en un rango de fechas para una sucursal (Optimización Bolt)
+     *
+     * @param int $sucursal_id
+     * @param string $fecha_inicio
+     * @param string $fecha_fin
+     * @return array
+     */
+    public function getPagosPorRango($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT vp.* FROM venta_pagos vp
+                INNER JOIN ventas v ON vp.id_venta = v.id
+                WHERE v.id_sucursal = ?
+                  AND v.fecha_venta >= ?
+                  AND v.fecha_venta <= ?";
+
+        return $this->db->fetchAll($sql, [
+            $sucursal_id,
+            $fecha_inicio . ' 00:00:00',
+            $fecha_fin . ' 23:59:59'
+        ]);
+    }
+
+    /**
+     * Obtiene el desglose de ventas por método de pago agregando directamente en SQL (Optimización Bolt)
+     *
+     * @param int $sucursal_id
+     * @param string $fecha_inicio
+     * @param string $fecha_fin
+     * @return array
+     */
+    public function getPaymentBreakdown($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT metodo_pago, SUM(monto) as total
+                FROM (
+                    -- Pagos detallados en venta_pagos
+                    SELECT vp.metodo_pago, vp.monto
+                    FROM venta_pagos vp
+                    INNER JOIN ventas v ON vp.id_venta = v.id
+                    WHERE v.id_sucursal = ?
+                      AND v.fecha_venta >= ? AND v.fecha_venta <= ?
+
+                    UNION ALL
+
+                    -- Pagos de ventas legacy (sin detalle en venta_pagos)
+                    -- Se excluye 'mixto' porque esas ventas DEBEN tener detalle en venta_pagos
+                    SELECT v.metodo_pago, v.total as monto
+                    FROM ventas v
+                    WHERE v.id_sucursal = ?
+                      AND v.fecha_venta >= ? AND v.fecha_venta <= ?
+                      AND v.metodo_pago != 'mixto'
+                      AND NOT EXISTS (SELECT 1 FROM venta_pagos vp WHERE vp.id_venta = v.id)
+                ) combined
+                GROUP BY metodo_pago";
+
+        $p = [
+            $sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59',
+            $sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59'
+        ];
+
+        return $this->db->fetchAll($sql, $p);
+    }
+
     public function getWithDetails($sucursal_id, $fecha_inicio = null, $fecha_fin = null)
     {
         // Bolt Optimization: Removed redundant LEFT JOIN on venta_productos and COUNT(vp.id).
