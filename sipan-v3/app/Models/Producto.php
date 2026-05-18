@@ -27,6 +27,8 @@ class Producto extends Model
         'imagen',
         'activo',
         'id_sucursal',
+        'id_negocio',
+        'id_usuario',
     ];
 
     protected $casts = [
@@ -47,6 +49,16 @@ class Producto extends Model
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class, 'id_sucursal');
+    }
+
+    public function negocio(): BelongsTo
+    {
+        return $this->belongsTo(Negocio::class, 'id_negocio');
+    }
+
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_usuario');
     }
 
     /** Un producto puede tener una receta */

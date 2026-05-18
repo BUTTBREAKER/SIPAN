@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ProductoResource extends Resource
 {
+    use \App\Traits\FiltrablePorSucursal;
+
     protected static ?string $model = Producto::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cake';

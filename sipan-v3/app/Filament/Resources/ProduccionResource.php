@@ -12,6 +12,8 @@ use Filament\Tables\Table;
 
 class ProduccionResource extends Resource
 {
+    use \App\Traits\FiltrablePorSucursal;
+
     protected static ?string $model = Produccion::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';

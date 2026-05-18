@@ -17,9 +17,11 @@ class Produccion extends Model
     protected $fillable = [
         'id_producto',
         'id_sucursal',
+        'id_negocio',
         'id_usuario',
         'id_receta',
         'cantidad_producida',
+        'costo_total',
         'fecha_produccion',
         'notas',
         'estado',
@@ -45,6 +47,11 @@ class Produccion extends Model
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class, 'id_sucursal');
+    }
+
+    public function negocio(): BelongsTo
+    {
+        return $this->belongsTo(Negocio::class, 'id_negocio');
     }
 
     public function usuario(): BelongsTo
