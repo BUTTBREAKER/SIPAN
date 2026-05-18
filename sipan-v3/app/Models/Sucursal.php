@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sucursal extends Model
@@ -13,17 +14,36 @@ class Sucursal extends Model
         'nombre',
         'direccion',
         'telefono',
-        'email',
-        'activo',
+        'correo',
+        'estado',
+        'clave_acceso',
+    ];
+
+    protected $hidden = [
+        'clave_acceso',
     ];
 
     protected $casts = [
-        'activo' => 'boolean',
+        'estado' => 'string',
     ];
+
+    // ─── Helpers ──────────────────────────────────────────────────
+
+    public function estaActiva(): bool
+    {
+        return $this->estado === 'activa';
+    }
+
+    // ─── Relaciones ───────────────────────────────────────────────
 
     public function usuarios(): HasMany
     {
         return $this->hasMany(User::class, 'id_sucursal');
+    }
+
+    public function negocios(): HasMany
+    {
+        return $this->hasMany(Negocio::class, 'id_sucursal');
     }
 
     public function insumos(): HasMany
@@ -48,6 +68,16 @@ class Sucursal extends Model
 
     public function proveedores(): HasMany
     {
-        return $this->hasMany(Proveedor::class, 'sucursal_id');
+        return $this->hasMany(Proveedor::class, 'id_sucursal');
+    }
+
+    public function clientes(): HasMany
+    {
+        return $this->hasMany(Cliente::class, 'id_sucursal');
+    }
+
+    public function cajas(): HasMany
+    {
+        return $this->hasMany(Caja::class, 'id_sucursal');
     }
 }
