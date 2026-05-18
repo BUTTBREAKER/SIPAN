@@ -11,6 +11,8 @@ use Filament\Pages\Page;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Caja;
+use App\Models\CajaMovimiento;
 
 class POS extends Page
 {
@@ -28,11 +30,15 @@ class POS extends Page
     public $id_cliente = null;
     public $metodo_pago = 'efectivo';
     public $notas = '';
+    public $cajaActiva = null;
 
     public function mount()
     {
         $bcvService = app(BcvService::class);
         $this->tasa_bcv = $bcvService->getTasa();
+        
+        $sucursal_id = Auth::user()->id_sucursal ?? 1;
+        $this->cajaActiva = Caja::where('id_sucursal', $sucursal_id)->where('estado', 'abierta')->first();
     }
 
     public function addToCart($id)
@@ -85,6 +91,15 @@ class POS extends Page
 
     public function processSale()
     {
+        if (!$this->cajaActiva) {
+            Notification::make()
+                ->title('No hay caja abierta')
+                ->body('Debe abrir la caja chica antes de procesar ventas.')
+                ->danger()
+                ->send();
+            return;
+        }
+
         if (empty($this->cart)) {
             Notification::make()
                 ->title('El carrito está vacío')
@@ -127,6 +142,22 @@ class POS extends Page
                 $producto = Producto::find($item['id']);
                 $producto->decrement('stock_actual', $item['cantidad']);
             }
+
+            // Registrar movimiento en caja
+            $monto_final = $this->total;
+            if (in_array($this->metodo_pago, ['efectivo_ves', 'punto_venta', 'pago_movil'])) {
+                $monto_final = round($this->total_ves / $this->tasa_bcv, 2); // Always store equivalent USD in caja
+            }
+
+            CajaMovimiento::create([
+                'id_caja' => $this->cajaActiva->id,
+                'tipo' => 'ingreso',
+                'monto' => $monto_final,
+                'descripcion' => 'Venta POS #' . $venta->numero_venta,
+                'metodo_pago' => $this->metodo_pago,
+                'id_venta' => $venta->id,
+                'fecha' => now(),
+            ]);
 
             DB::commit();
 
