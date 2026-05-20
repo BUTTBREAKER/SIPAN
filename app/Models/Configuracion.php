@@ -7,21 +7,6 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
 
     /**
-     * Cache for request-level storage
-     * @var array<string, mixed>
-     */
-    private static $cache = [];
-
-    /**
-     * Flag to avoid re-checking BCV rate multiple times per request
-     * @var bool
-     */
-    private static $tasaBcvChecked = false;
-     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
-     */
-    private static $cachedTasa = null;
-
-    /**
      * Caching en memoria a nivel de request (Optimización Bolt)
      * @var array<string, mixed>
      */
@@ -54,66 +39,65 @@ class Configuracion extends BaseModel
 
     /**
      * Set value by key
-     * Bolt Optimization: Updates request-level cache.
+     * Bolt Optimization: Uses MySQL ON DUPLICATE KEY UPDATE to reduce DB round-trips (2 -> 1).
+     * Also updates request-level cache.
      */
     public function set($key, $value)
     {
-        $exists = $this->get($key);
-        $success = false;
-        
-        if ($exists !== null) {
-            $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
-            $success = $this->db->execute($sql, [$value, $key]);
-        } else {
-            $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)";
-            $success = $this->db->execute($sql, [$key, $value]);
-        }
+        // Using standard ON DUPLICATE KEY UPDATE for better compatibility
+        $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE valor = VALUES(valor)";
 
-        if ($success) {
+        try {
+            // Database::execute returns rowCount. 0 is valid for no-change update.
+            $this->db->execute($sql, [$key, $value]);
+
             self::$cache[$key] = $value;
             if ($key === 'tasa_bcv') {
                 self::$tasaBcvChecked = true;
             }
+            return true;
+        } catch (\Exception $e) {
+            error_log("Error setting configuration: " . $e->getMessage());
+            return false;
         }
-        
-        return $success;
     }
 
     /**
      * Get BCV Rate, updating from API if expired (> 1 hour)
-     * Bolt Optimization: Ensures API/DB check happens only once per request.
+     * Bolt Optimization: Ensures API/DB check happens only once per request and utilizes in-memory cache.
      */
     public function getTasaBCV()
     {
         $key = 'tasa_bcv';
 
+        // 1. Return from cache if already checked
         if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
             return (float)(self::$cache[$key] ?? 50.00);
-        if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
-            return (float)self::$cache[$key];
         }
 
+        // 2. Fetch from DB
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
         $rate = $row ? (float)$row['valor'] : 50.00; // Fallback
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
 
+        // Populate cache
         self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
 
-        // Check if expired (1 hour = 3600 seconds)
+        // 3. Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
-            if ($newRate) {
-                // self::$cache[$key] updated by set()
+            if ($newRate !== null) {
+                // set() updates both DB and cache
                 $this->set($key, $newRate);
                 return (float)$newRate;
             }
         }
 
         return (float)$rate;
-        self::$cachedTasa = (float)$rate;
-        return self::$cachedTasa;
     }
 
     /**
@@ -124,11 +108,10 @@ class Configuracion extends BaseModel
     {
         $key = 'tasa_bcv';
         $newRate = $this->fetchFromApi();
-        if ($newRate) {
+        if ($newRate !== null) {
             $this->set($key, $newRate);
             self::$tasaBcvChecked = true;
             return (float)$newRate;
-            return self::$cachedTasa;
         }
         return false;
     }
@@ -157,29 +140,16 @@ class Configuracion extends BaseModel
             if ($httpCode === 200 && $json) {
                 $data = json_decode($json, true);
 
-                if (isset($data['dollar'])) {
-                    return (float)$data['dollar'];
-                }
-
-                if (isset($data['USD'])) {
-                    return (float)$data['USD'];
-                }
-                if (isset($data['usd'])) {
-                    return (float)$data['usd'];
-                }
-
-                if (isset($data['price'])) {
-                    return (float)$data['price'];
-                }
-                if (isset($data['rate'])) {
-                    return (float)$data['rate'];
-                }
+                // Handle different possible API response formats
+                if (isset($data['dollar'])) return (float)$data['dollar'];
+                if (isset($data['USD'])) return (float)$data['USD'];
+                if (isset($data['usd'])) return (float)$data['usd'];
+                if (isset($data['price'])) return (float)$data['price'];
+                if (isset($data['rate'])) return (float)$data['rate'];
 
                 if (is_array($data)) {
-                    foreach ($data as $key => $val) {
-                        if (strtoupper($key) === 'USD') {
-                            return (float)$val;
-                        }
+                    foreach ($data as $k => $val) {
+                        if (strtoupper($k) === 'USD') return (float)$val;
                     }
                 }
             } else {
