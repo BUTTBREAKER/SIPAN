@@ -10,25 +10,10 @@ class Configuracion extends BaseModel
      * Cache for request-level storage
      * @var array<string, mixed>
      */
-    private static $cache = [];
-
-    /**
-     * Flag to avoid re-checking BCV rate multiple times per request
-     * @var bool
-     */
-    private static $tasaBcvChecked = false;
-     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
-     */
-    private static $cachedTasa = null;
-
-    /**
-     * Caching en memoria a nivel de request (Optimización Bolt)
-     * @var array<string, mixed>
-     */
     protected static $cache = [];
 
     /**
-     * Bandera para asegurar que la tasa BCV se verifique solo una vez por request (Optimización Bolt)
+     * Flag to avoid re-checking BCV rate multiple times per request
      * @var bool
      */
     protected static $tasaBcvChecked = false;
@@ -39,6 +24,7 @@ class Configuracion extends BaseModel
      */
     public function get($key, $default = null)
     {
+        // Usar array_key_exists para soportar valores null cacheados (negative caching)
         if (array_key_exists($key, self::$cache)) {
             return self::$cache[$key] !== null ? self::$cache[$key] : $default;
         }
@@ -54,29 +40,25 @@ class Configuracion extends BaseModel
 
     /**
      * Set value by key
-     * Bolt Optimization: Updates request-level cache.
+     * Bolt Optimization: Updates request-level cache and uses ON DUPLICATE KEY UPDATE.
      */
     public function set($key, $value)
     {
-        $exists = $this->get($key);
-        $success = false;
+        // Bolt: Reducción de 2 round-trips a 1 usando ON DUPLICATE KEY UPDATE.
+        // Se usa la sintaxis compatible con MySQL 8.0+ para evitar VALUES() depreciado.
+        $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)
+                AS new_data ON DUPLICATE KEY UPDATE valor = new_data.valor, updated_at = CURRENT_TIMESTAMP";
         
-        if ($exists !== null) {
-            $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
-            $success = $this->db->execute($sql, [$value, $key]);
-        } else {
-            $sql = "INSERT INTO {$this->table} (clave, valor) VALUES (?, ?)";
-            $success = $this->db->execute($sql, [$key, $value]);
-        }
+        $this->db->execute($sql, [$key, $value]);
 
-        if ($success) {
-            self::$cache[$key] = $value;
-            if ($key === 'tasa_bcv') {
-                self::$tasaBcvChecked = true;
-            }
+        // Bolt: Siempre actualizamos el cache y retornamos true si no hubo excepción,
+        // ya que execute() puede retornar 0 si el valor no cambió físicamente.
+        self::$cache[$key] = $value;
+        if ($key === 'tasa_bcv') {
+            self::$tasaBcvChecked = true;
         }
         
-        return $success;
+        return true;
     }
 
     /**
@@ -87,38 +69,38 @@ class Configuracion extends BaseModel
     {
         $key = 'tasa_bcv';
 
+        // 1. Si ya se verificó en este request, retornar del cache
         if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
             return (float)(self::$cache[$key] ?? 50.00);
-        if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
-            return (float)self::$cache[$key];
         }
 
+        // 2. Buscar en BD
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
-        $rate = $row ? (float)$row['valor'] : 50.00; // Fallback
-        $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
+        $rate = $row ? (float)$row['valor'] : 50.00;
 
-        self::$cache[$key] = $rate;
+        // Fix: Usar fallback de timestamp 0 (1970) para forzar actualización si updated_at es nulo
+        $lastUpdate = ($row && isset($row['updated_at'])) ? strtotime($row['updated_at']) : 0;
 
-        // Check if expired (1 hour = 3600 seconds)
+        // 3. Verificar si expiró (1 hora = 3600 segundos)
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
             if ($newRate) {
-                // self::$cache[$key] updated by set()
                 $this->set($key, $newRate);
-                return (float)$newRate;
+                $rate = $newRate;
             }
         }
 
+        // 4. Cachear para el resto del request
+        self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
+
         return (float)$rate;
-        self::$cachedTasa = (float)$rate;
-        return self::$cachedTasa;
     }
 
     /**
      * Manually refresh the BCV Rate
-     * Bolt Optimization: Updates request-level cache.
      */
     public function updateTasaBCV()
     {
@@ -126,9 +108,9 @@ class Configuracion extends BaseModel
         $newRate = $this->fetchFromApi();
         if ($newRate) {
             $this->set($key, $newRate);
+            self::$cache[$key] = $newRate;
             self::$tasaBcvChecked = true;
             return (float)$newRate;
-            return self::$cachedTasa;
         }
         return false;
     }
@@ -145,7 +127,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Optimización Bolt: Reducido de 10 a 3 segundos
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
@@ -157,29 +139,16 @@ class Configuracion extends BaseModel
             if ($httpCode === 200 && $json) {
                 $data = json_decode($json, true);
 
-                if (isset($data['dollar'])) {
-                    return (float)$data['dollar'];
-                }
-
-                if (isset($data['USD'])) {
-                    return (float)$data['USD'];
-                }
-                if (isset($data['usd'])) {
-                    return (float)$data['usd'];
-                }
-
-                if (isset($data['price'])) {
-                    return (float)$data['price'];
-                }
-                if (isset($data['rate'])) {
-                    return (float)$data['rate'];
-                }
+                // Manejo de diferentes formatos de respuesta de la API
+                if (isset($data['dollar'])) return (float)$data['dollar'];
+                if (isset($data['USD'])) return (float)$data['USD'];
+                if (isset($data['usd'])) return (float)$data['usd'];
+                if (isset($data['price'])) return (float)$data['price'];
+                if (isset($data['rate'])) return (float)$data['rate'];
 
                 if (is_array($data)) {
                     foreach ($data as $key => $val) {
-                        if (strtoupper($key) === 'USD') {
-                            return (float)$val;
-                        }
+                        if (strtoupper($key) === 'USD') return (float)$val;
                     }
                 }
             } else {
