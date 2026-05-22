@@ -10,25 +10,10 @@ class Configuracion extends BaseModel
      * Cache for request-level storage
      * @var array<string, mixed>
      */
-    private static $cache = [];
-
-    /**
-     * Flag to avoid re-checking BCV rate multiple times per request
-     * @var bool
-     */
-    private static $tasaBcvChecked = false;
-     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
-     */
-    private static $cachedTasa = null;
-
-    /**
-     * Caching en memoria a nivel de request (Optimización Bolt)
-     * @var array<string, mixed>
-     */
     protected static $cache = [];
 
     /**
-     * Bandera para asegurar que la tasa BCV se verifique solo una vez por request (Optimización Bolt)
+     * Flag to avoid re-checking BCV rate multiple times per request
      * @var bool
      */
     protected static $tasaBcvChecked = false;
@@ -58,9 +43,11 @@ class Configuracion extends BaseModel
      */
     public function set($key, $value)
     {
+        // Bolt Optimization: Use ON DUPLICATE KEY UPDATE to reduce round-trips if possible
+        // but sticking to standard pattern for compatibility.
         $exists = $this->get($key);
         $success = false;
-        
+
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
             $success = $this->db->execute($sql, [$value, $key]);
@@ -75,7 +62,7 @@ class Configuracion extends BaseModel
                 self::$tasaBcvChecked = true;
             }
         }
-        
+
         return $success;
     }
 
@@ -87,33 +74,31 @@ class Configuracion extends BaseModel
     {
         $key = 'tasa_bcv';
 
+        // 1. Check request-level cache
         if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
             return (float)(self::$cache[$key] ?? 50.00);
-        if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
-            return (float)self::$cache[$key];
         }
 
+        // 2. Fetch from DB
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
         $row = $this->db->fetchOne($sql, [$key]);
 
-        $rate = $row ? (float)$row['valor'] : 50.00; // Fallback
+        $rate = $row ? (float)$row['valor'] : 50.00;
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
 
         self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true;
 
-        // Check if expired (1 hour = 3600 seconds)
+        // 3. Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
             if ($newRate) {
-                // self::$cache[$key] updated by set()
                 $this->set($key, $newRate);
                 return (float)$newRate;
             }
         }
 
         return (float)$rate;
-        self::$cachedTasa = (float)$rate;
-        return self::$cachedTasa;
     }
 
     /**
@@ -128,7 +113,6 @@ class Configuracion extends BaseModel
             $this->set($key, $newRate);
             self::$tasaBcvChecked = true;
             return (float)$newRate;
-            return self::$cachedTasa;
         }
         return false;
     }
@@ -145,7 +129,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Optimización Bolt: Reducido de 10 a 3 segundos
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
@@ -160,14 +144,12 @@ class Configuracion extends BaseModel
                 if (isset($data['dollar'])) {
                     return (float)$data['dollar'];
                 }
-
                 if (isset($data['USD'])) {
                     return (float)$data['USD'];
                 }
                 if (isset($data['usd'])) {
                     return (float)$data['usd'];
                 }
-
                 if (isset($data['price'])) {
                     return (float)$data['price'];
                 }
