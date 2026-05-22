@@ -319,4 +319,43 @@ class Venta extends BaseModel
 
         return $this->db->fetchOne($sql, [$id, $sucursal_id]);
     }
+
+    /**
+     * Obtiene el desglose de ventas por método de pago en un rango de fechas.
+     * Optimización Bolt: Realiza la agregación directamente en SQL para evitar loops en PHP.
+     * Soporta tanto el sistema moderno de pagos múltiples como registros legados.
+     *
+     * @param int $sucursal_id
+     * @param string $fecha_inicio
+     * @param string $fecha_fin
+     * @return array
+     */
+    public function getPaymentBreakdown($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $params = [
+            $sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59',
+            $sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59'
+        ];
+
+        $sql = "SELECT metodo_pago, SUM(monto) as total
+                FROM (
+                    -- Pagos modernos (tabla venta_pagos)
+                    SELECT vp.metodo_pago, vp.monto
+                    FROM venta_pagos vp
+                    JOIN ventas v ON vp.id_venta = v.id
+                    WHERE v.id_sucursal = ? AND v.fecha_venta >= ? AND v.fecha_venta <= ? AND v.estado = 'completada'
+
+                    UNION ALL
+
+                    -- Pagos legados (registrados directamente en tabla ventas)
+                    SELECT v.metodo_pago, v.total as monto
+                    FROM ventas v
+                    WHERE v.id_sucursal = ? AND v.fecha_venta >= ? AND v.fecha_venta <= ? AND v.estado = 'completada'
+                    AND v.metodo_pago != 'mixto'
+                    AND NOT EXISTS (SELECT 1 FROM venta_pagos vp WHERE vp.id_venta = v.id)
+                ) as combined_pagos
+                GROUP BY metodo_pago";
+
+        return $this->db->fetchAll($sql, $params);
+    }
 }

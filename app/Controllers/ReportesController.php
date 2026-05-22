@@ -52,7 +52,7 @@ class ReportesController
         $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
         $ventaIds = array_column($ventas, 'id');
 
-        // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries al generar el detalle de texto
         $pagos_agrupados = [];
         if (!empty($ventaIds)) {
             $todos_los_pagos = $this->ventaModel->getPagosPorVentas($ventaIds);
@@ -61,6 +61,8 @@ class ReportesController
             }
         }
 
+        // Optimización Bolt: Desglose de medios calculado directamente en SQL
+        $breakdown_raw = $this->ventaModel->getPaymentBreakdown($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
         $desglose_medios = [
             'efectivo_bs' => 0,
             'efectivo_usd' => 0,
@@ -71,39 +73,34 @@ class ReportesController
             'biopago' => 0
         ];
 
+        foreach ($breakdown_raw as $row) {
+            $m = $row['metodo_pago'];
+            $v = (float)$row['total'];
+            if (isset($desglose_medios[$m])) {
+                $desglose_medios[$m] = $v;
+            } else {
+                $desglose_medios['otros'] = ($desglose_medios['otros'] ?? 0) + $v;
+            }
+        }
+
         $total_ventas = 0;
 
         foreach ($ventas as &$venta) {
-            $total_ventas += $venta['total'];
+            $total_ventas += (float)$venta['total'];
 
             $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
-                // Sumar del detalle
                 $lista_pagos = [];
                 foreach ($pagos as $p) {
                     $m = $p['metodo_pago'];
                     $v = $p['monto'];
-                    if (isset($desglose_medios[$m])) {
-                        $desglose_medios[$m] += $v;
-                    } else {
-                        // Fallback por si hay metodo viejo
-                        if (!isset($desglose_medios['otros'])) {
-                            $desglose_medios['otros'] = 0;
-                        }
-                        $desglose_medios['otros'] += $v;
-                    }
                     $lista_pagos[] = ucfirst(str_replace('_', ' ', $m)) . ': ' . number_format($v, 2);
                 }
                 $venta['detalle_pagos_str'] = implode('<br>', $lista_pagos);
             } else {
                 // Usar el metodo principal (compatibilidad anterior)
                 $m = $venta['metodo_pago'];
-                if ($m !== 'mixto') {
-                    if (isset($desglose_medios[$m])) {
-                        $desglose_medios[$m] += $venta['total'];
-                    }
-                }
                 $venta['detalle_pagos_str'] = ucfirst(str_replace('_', ' ', $m));
             }
         }
