@@ -160,16 +160,18 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
                     echo "Controlador no encontrado: {$controllerName}";
                 }
             }
-        } catch (Exception $e) {
+        } catch (Throwable $exception) {
             http_response_code(500);
-            if (
-                $_SERVER['HTTP_ACCEPT'] === 'application/json'
-                || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
-            ) {
+            $message = "Error: {$exception->getMessage()}";
+
+            if (str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
                 header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+                echo json_encode([
+                    'success' => false,
+                    'message' => $message,
+                ]);
             } else {
-                echo "Error: " . $e->getMessage();
+                echo $message;
             }
         }
 
