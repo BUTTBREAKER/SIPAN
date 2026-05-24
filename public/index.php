@@ -19,7 +19,7 @@ error_reporting(E_ALL);
 
 if ($_ENV['app_env'] === 'production') {
     // Producción: No mostrar errores en pantalla, solo registrar en log
-    ini_set('display_errors', false);
+    ini_set('display_errors', 'Off');
     ini_set('error_log', __DIR__ . '/../storage/logs/php-errors.log');
 } else {
     // Desarrollo: Mostrar todos los errores
