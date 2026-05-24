@@ -64,7 +64,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Habilitar log de debug
-ini_set('log_errors', true);
+ini_set('log_errors', 'Off');
 
 // La ruta ya fue detectada arriba
 // ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
