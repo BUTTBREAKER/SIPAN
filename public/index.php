@@ -29,7 +29,7 @@ if ($_ENV['app_env'] === 'production') {
 
 // Detectar la ruta ANTES de iniciar la sesión para poder variar el nombre de la sesión
 $request_uri = $_SERVER['REQUEST_URI'] ?? '/';
-$path = parse_url($request_uri, PHP_URL_PATH) ?? '/';
+$path = parse_url($request_uri, PHP_URL_PATH) ?: '/';
 
 // Asegurar que la ruta comience con /
 if (!str_starts_with($path, '/')) {
