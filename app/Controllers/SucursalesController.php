@@ -13,9 +13,7 @@ class SucursalesController
 
     public function __construct()
     {
-        AuthMiddleware::checkAuth();
-        AuthMiddleware::checkRole(['administrador']);
-        require_once __DIR__ . '/../../Helpers/CSRF.php';
+        require_once __DIR__ . '/../Helpers/CSRF.php';
 
         $this->sucursalModel = new Sucursal();
         $this->negocioModel = new Negocio();

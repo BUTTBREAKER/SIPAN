@@ -5,20 +5,6 @@ namespace App\Models;
 class Configuracion extends BaseModel
 {
     protected $table = 'configuracion';
-
-    /**
-     * Cache for request-level storage
-     * @var array<string, mixed>
-     */
-    private static $cache = [];
-
-    /**
-     * Flag to avoid re-checking BCV rate multiple times per request
-     * @var bool
-     */
-    private static $tasaBcvChecked = false;
-     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
-     */
     private static $cachedTasa = null;
 
     /**
@@ -60,7 +46,7 @@ class Configuracion extends BaseModel
     {
         $exists = $this->get($key);
         $success = false;
-        
+
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
             $success = $this->db->execute($sql, [$value, $key]);
@@ -75,7 +61,7 @@ class Configuracion extends BaseModel
                 self::$tasaBcvChecked = true;
             }
         }
-        
+
         return $success;
     }
 
@@ -89,6 +75,8 @@ class Configuracion extends BaseModel
 
         if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
             return (float)(self::$cache[$key] ?? 50.00);
+        }
+
         if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
             return (float)self::$cache[$key];
         }

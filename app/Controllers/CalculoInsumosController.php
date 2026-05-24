@@ -13,7 +13,6 @@ class CalculoInsumosController
 
     public function __construct()
     {
-        AuthMiddleware::checkAuth();
         $this->recetaModel = new Receta();
         $this->insumoModel = new Insumo();
     }

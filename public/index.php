@@ -1,5 +1,6 @@
 <?php
 
+use App\Route;
 use flight\Container;
 use Symfony\Component\Dotenv\Dotenv;
 
@@ -119,8 +120,10 @@ $matched = false;
 $params = [];
 $acceptJson = str_contains($_SERVER['HTTP_ACCEPT'], 'application/json');
 
-foreach ($routes as $route => [$controllerName, $controllerMethod]) {
-    [$routeMethod, $routePath] = explode('|', $route);
+/** @var Route */
+foreach ($routes as $route) {
+    $routeMethod = $route->getMethod();
+    $routePath = $route->getPath();
 
     if ($routeMethod !== $method) {
         continue;
@@ -133,20 +136,9 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
     }
 
     $matched = true;
-    $methodName = $controllerMethod;
 
     try {
-        if (!class_exists($controllerName)) {
-            throw new Exception("Controlador no encontrado: $controllerName");
-        }
-
-        $controller = Container::getInstance()->get($controllerName);
-
-        if (!method_exists($controller, $methodName)) {
-            throw new Exception("Método no encontrado: $methodName");
-        }
-
-        call_user_func_array([$controller, $methodName], $params);
+        call_user_func($route->getCallable(), $params);
     } catch (Throwable $exception) {
         http_response_code(500);
         $message = "Error: {$exception->getMessage()}";

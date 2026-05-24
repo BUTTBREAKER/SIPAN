@@ -11,7 +11,6 @@ class NotificacionesController
 
     public function __construct()
     {
-        AuthMiddleware::checkAuth();
         $this->notificacionModel = new Notificacion();
     }
 
