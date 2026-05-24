@@ -93,17 +93,17 @@ $path = str_replace('/index.php', '', $path);
 // Limpiar la ruta
 $path = rtrim($path, '/') ?: '/';
 
-// Debug (comentar en producción)
-if ($_ENV['app_debug']) {
-    error_log("Path: $path, Method: {$_SERVER['REQUEST_METHOD']}, URI: $request_uri");
-} else {
-    // Log todas las peticiones
-    $log_message = "{$_SERVER['REQUEST_METHOD']} | {$_SERVER['REQUEST_URI']}";
-    error_log($log_message);
-}
-
 // Método HTTP
 $method = $_SERVER['REQUEST_METHOD'];
+
+// Debug (comentar en producción)
+if ($_ENV['app_debug']) {
+    error_log("Path: $path, Method: $method, URI: $request_uri");
+} else {
+    // Log todas las peticiones
+    $log_message = "$method | $request_uri";
+    error_log($log_message);
+}
 
 // Enrutador
 $routes = [];
