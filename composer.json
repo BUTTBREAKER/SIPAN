@@ -23,7 +23,6 @@
     "scripts": {
         "format": ["phpcbf"],
         "serve": [
-            "Composer\\Config::disableProcessTimeout",
             "php -S localhost:61001 -t public"
         ],
         "post-autoload-dump": [
@@ -35,6 +34,7 @@
         "sort-packages": true,
         "allow-plugins": {
             "phpstan/extension-installer": true
-        }
+        },
+        "process-timeout": 0
     }
 }
