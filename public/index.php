@@ -56,7 +56,7 @@ session_set_cookie_params([
 
 if (session_status() === PHP_SESSION_NONE) {
     // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
-    $baseSessionName = $_ENV['session_name'] ?? 'SIPAN_SESSION';
+    $baseSessionName = $_ENV['session_name'];
     $finalSessionName = $isDeliveryPath ? $baseSessionName . '_DELIVERY' : $baseSessionName;
 
     session_name($finalSessionName);
