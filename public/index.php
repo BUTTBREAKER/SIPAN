@@ -108,7 +108,7 @@ if ($_ENV['app_debug']) {
 // Enrutador
 $routes = [];
 
-foreach (glob(__DIR__ . '/../routes/*.php') as $routesFilePath) {
+foreach (glob(__DIR__ . '/../routes/*.php') ?: [] as $routesFilePath) {
     $routes += require $routesFilePath;
 }
 
