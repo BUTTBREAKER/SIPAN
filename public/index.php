@@ -69,11 +69,10 @@ ini_set('log_errors', 'Off');
 // La ruta ya fue detectada arriba
 // ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
 // Si la ruta empieza con /delivery y no es un archivo físico (ya manejado por el servidor)
-if (stripos($path, '/delivery') === 0) {
-    if (file_exists(__DIR__ . '/../delivery/index.php')) {
-        require_once __DIR__ . '/../delivery/index.php';
-        exit;
-    }
+if ($isDeliveryPath) {
+    require_once __DIR__ . '/../delivery/index.php';
+
+    exit;
 }
 // ---------------------------------------------------------------
 
