@@ -15,14 +15,14 @@ ob_start();
 $_ENV['app_debug'] = filter_var($_ENV['app_debug'], FILTER_VALIDATE_BOOL);
 
 // Configurar errores según entorno
+error_reporting(E_ALL);
+
 if ($_ENV['app_env'] === 'production') {
     // Producción: No mostrar errores en pantalla, solo registrar en log
-    error_reporting(E_ALL);
     ini_set('display_errors', false);
     ini_set('error_log', __DIR__ . '/../storage/logs/php-errors.log');
 } else {
     // Desarrollo: Mostrar todos los errores
-    error_reporting(E_ALL);
     ini_set('display_errors', $_ENV['app_debug']);
     ini_set('error_log', __DIR__ . '/../storage/logs/sipan-debug.log');
 }
