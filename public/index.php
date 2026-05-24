@@ -46,12 +46,12 @@ $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] =
 $sessionParams = session_get_cookie_params();
 
 session_set_cookie_params([
-    'lifetime' => $_ENV['session_lifetime'] ?? 86400 /* 1 day */,
+    'lifetime' => $_ENV['session_lifetime'],
     'path' => $sessionParams['path'],
     'domain' => $sessionParams['domain'],
     'secure' => $isSecure,
     'httponly' => true,
-    'samesite' => 'Lax'
+    'samesite' => 'Lax',
 ]);
 
 if (session_status() === PHP_SESSION_NONE) {
