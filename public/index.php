@@ -116,8 +116,8 @@ foreach (glob(__DIR__ . '/../routes/*.php') ?: [] as $routesFilePath) {
 $matched = false;
 $params = [];
 
-foreach ($routes as $route => $handler) {
-    list($routeMethod, $routePath) = explode('|', $route);
+foreach ($routes as $route => [$controllerName, $controllerMethod]) {
+    [$routeMethod, $routePath] = explode('|', $route);
 
     if ($routeMethod !== $method) {
         continue;
@@ -127,8 +127,8 @@ foreach ($routes as $route => $handler) {
 
     if ($params !== false) {
         $matched = true;
-        $controllerName = 'App\\Controllers\\' . $handler[0];
-        $methodName = $handler[1];
+        $controllerName = 'App\\Controllers\\' . $controllerName;
+        $methodName = $controllerMethod;
 
         try {
             if (class_exists($controllerName)) {
