@@ -115,6 +115,7 @@ foreach (glob(__DIR__ . '/../routes/*.php') ?: [] as $routesFilePath) {
 // Buscar ruta coincidente
 $matched = false;
 $params = [];
+$acceptJson = str_contains($_SERVER['HTTP_ACCEPT'], 'application/json');
 
 foreach ($routes as $route => [$controllerName, $controllerMethod]) {
     [$routeMethod, $routePath] = explode('|', $route);
@@ -138,24 +139,27 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
                     call_user_func_array([$controller, $methodName], $params);
                 } else {
                     http_response_code(500);
-                    if (
-                        $_SERVER['HTTP_ACCEPT'] === 'application/json'
-                        || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
-                    ) {
+
+                    if ($acceptJson) {
                         header('Content-Type: application/json');
-                        echo json_encode(['success' => false, 'message' => "Método no encontrado: {$methodName}"]);
+                        echo json_encode([
+                            'success' => false,
+                            'message' => "Método no encontrado: {$methodName}"
+                        ]);
                     } else {
                         echo "Método no encontrado: {$methodName}";
                     }
                 }
             } else {
                 http_response_code(500);
-                if (
-                    $_SERVER['HTTP_ACCEPT'] === 'application/json'
-                    || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
-                ) {
+
+                if ($acceptJson) {
                     header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => "Controlador no encontrado: {$controllerName}"]);
+
+                    echo json_encode([
+                        'success' => false,
+                        'message' => "Controlador no encontrado: {$controllerName}"
+                    ]);
                 } else {
                     echo "Controlador no encontrado: {$controllerName}";
                 }
@@ -164,7 +168,7 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
             http_response_code(500);
             $message = "Error: {$exception->getMessage()}";
 
-            if (str_contains($_SERVER['HTTP_ACCEPT'], 'application/json')) {
+            if ($acceptJson) {
                 header('Content-Type: application/json');
                 echo json_encode([
                     'success' => false,
