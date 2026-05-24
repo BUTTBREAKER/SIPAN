@@ -1,10 +1,13 @@
 includes:
-  - vendor/phpstan/phpstan/conf/bleedingEdge.neon
-  - phpstan-baseline.neon
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+    - phpstan-baseline.neon
 
 parameters:
-  level: 0
-  paths:
-    - app
-    - public
-    - routes
+    level: 0
+    paths:
+        - app
+        - config
+        - delivery
+        - public
+        - routes
+        - tests
