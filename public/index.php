@@ -101,13 +101,11 @@ $path = rtrim($path, '/') ?: '/';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Debug (comentar en producción)
-if ($_ENV['app_debug']) {
-    error_log("Path: $path, Method: $method, URI: $request_uri");
-} else {
-    // Log todas las peticiones
-    $log_message = "$method | $request_uri";
-    error_log($log_message);
-}
+error_log(
+    $_ENV['app_debug']
+        ? "Path: $path, Method: $method, URI: $request_uri"
+        : "$method | $request_uri"
+);
 
 // Enrutador
 $routes = [];
