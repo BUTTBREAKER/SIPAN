@@ -37,7 +37,7 @@ if (!str_starts_with($path, '/')) {
 }
 
 // Detectar si la ruta es para el sistema de delivery
-$isDeliveryPath = (stripos($path, '/delivery') === 0);
+$isDeliveryPath = str_contains($path, '/delivery');
 
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
 $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';

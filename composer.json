@@ -6,7 +6,8 @@
         "firebase/php-jwt": "6.10.0",
         "mpdf/mpdf": "^8.3",
         "phpoffice/phpspreadsheet": "1.30.4",
-        "symfony/dotenv": "5.4.48"
+        "symfony/dotenv": "5.4.48",
+        "symfony/polyfill-php80": "^1.37"
     },
     "autoload": {
         "psr-4": {
