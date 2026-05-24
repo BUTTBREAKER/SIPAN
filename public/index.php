@@ -137,31 +137,10 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
                 if (method_exists($controller, $methodName)) {
                     call_user_func_array([$controller, $methodName], $params);
                 } else {
-                    http_response_code(500);
-
-                    if ($acceptJson) {
-                        header('Content-Type: application/json');
-                        echo json_encode([
-                            'success' => false,
-                            'message' => "Método no encontrado: {$methodName}"
-                        ]);
-                    } else {
-                        echo "Método no encontrado: {$methodName}";
-                    }
+                    throw new Exception("Método no encontrado: {$methodName}");
                 }
             } else {
-                http_response_code(500);
-
-                if ($acceptJson) {
-                    header('Content-Type: application/json');
-
-                    echo json_encode([
-                        'success' => false,
-                        'message' => "Controlador no encontrado: {$controllerName}"
-                    ]);
-                } else {
-                    echo "Controlador no encontrado: {$controllerName}";
-                }
+                throw new Exception("Controlador no encontrado: {$controllerName}");
             }
         } catch (Throwable $exception) {
             http_response_code(500);
