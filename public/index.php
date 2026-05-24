@@ -1,5 +1,6 @@
 <?php
 
+use flight\Container;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -132,7 +133,7 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
 
         try {
             if (class_exists($controllerName)) {
-                $controller = new $controllerName();
+                $controller = Container::getInstance()->get($controllerName);
 
                 if (method_exists($controller, $methodName)) {
                     call_user_func_array([$controller, $methodName], $params);
