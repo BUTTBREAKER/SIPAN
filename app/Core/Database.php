@@ -13,13 +13,17 @@ class Database
     private function __construct()
     {
         // Use Environment helper to get config
+        $driver = \App\Helpers\Environment::get('DB_DRIVER', 'mysql');
         $host = \App\Helpers\Environment::get('DB_HOST', 'localhost');
         $name = \App\Helpers\Environment::get('DB_NAME', 'sipan');
         $user = \App\Helpers\Environment::get('DB_USER', 'root');
         $pass = \App\Helpers\Environment::get('DB_PASS', '');
 
         try {
-            $dsn = "mysql:host={$host};dbname={$name};charset=utf8mb4";
+            $dsn = $driver === 'mysql'
+                ? "mysql:host={$host};dbname={$name};charset=utf8mb4"
+                : "sqlite:$name";
+
             $this->connection = new PDO($dsn, $user, $pass, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

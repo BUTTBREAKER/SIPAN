@@ -21,6 +21,7 @@ class AuthController
     {
         if (AuthMiddleware::isAuthenticated()) {
             header('Location: /dashboard');
+
             exit;
         }
 
