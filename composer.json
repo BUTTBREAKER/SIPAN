@@ -3,10 +3,10 @@
         "php": ">=7.4",
         "ext-json": "*",
         "ext-pdo": "*",
-        "firebase/php-jwt": "^7.0",
-        "mpdf/mpdf": "^8.2",
-        "phpoffice/phpspreadsheet": "^5.4",
-        "symfony/dotenv": "^7.4"
+        "firebase/php-jwt": "6.10.0",
+        "mpdf/mpdf": "^8.3",
+        "phpoffice/phpspreadsheet": "1.30.4",
+        "symfony/dotenv": "5.4.48"
     },
     "autoload": {
         "psr-4": {
@@ -18,7 +18,7 @@
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",
         "squizlabs/php_codesniffer": "^4.0",
-        "symfony/var-dumper": "^7.4"
+        "symfony/var-dumper": "5.4.48"
     },
     "scripts": {
         "format": ["phpcbf"],
@@ -31,6 +31,9 @@
         "allow-plugins": {
             "phpstan/extension-installer": true
         },
-        "process-timeout": 0
+        "process-timeout": 0,
+        "audit": {
+            "ignore": ["firebase/php-jwt"]
+        }
     }
 }
