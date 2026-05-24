@@ -1,7 +1,7 @@
 <?php
 
 /** Función auxiliar para extraer parámetros de la ruta */
-function matchRoute($pattern, $path)
+function matchRoute(string $pattern, string $path)
 {
     $pattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9_-]+)', $pattern);
     $pattern = '#^' . $pattern . '$#';
