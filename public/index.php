@@ -128,7 +128,6 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
 
     if ($params !== false) {
         $matched = true;
-        $controllerName = 'App\\Controllers\\' . $controllerName;
         $methodName = $controllerMethod;
 
         try {

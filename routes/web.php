@@ -1,188 +1,213 @@
 <?php
 
+use App\Controllers\AuditoriasController;
+use App\Controllers\AuthController;
+use App\Controllers\CajaController;
+use App\Controllers\CalculoInsumosController;
+use App\Controllers\ChatController;
+use App\Controllers\ClientesController;
+use App\Controllers\ComprasController;
+use App\Controllers\ConfigController;
+use App\Controllers\DashboardController;
+use App\Controllers\InsumosController;
+use App\Controllers\LotesController;
+use App\Controllers\NotificacionesController;
+use App\Controllers\PedidosController;
+use App\Controllers\PrediccionesController;
+use App\Controllers\ProduccionesController;
+use App\Controllers\ProductosController;
+use App\Controllers\ProveedoresController;
+use App\Controllers\RecetasController;
+use App\Controllers\ReportesController;
+use App\Controllers\RespaldosController;
+use App\Controllers\SucursalesController;
+use App\Controllers\SugerenciasController;
+use App\Controllers\UsuariosController;
+use App\Controllers\VentasController;
+
 return [
     // Autenticación
-    'GET|/' => ['AuthController', 'showLogin'],
-    'GET|/login' => ['AuthController', 'showLogin'],
-    'POST|/login' => ['AuthController', 'login'],
-    'GET|/logout' => ['AuthController', 'logout'],
-    'GET|/register' => ['AuthController', 'showRegister'],
-    'POST|/auth/register' => ['AuthController', 'register'],
-    'POST|/auth/verificar-clave-sucursal' => ['AuthController', 'verificarClaveSucursal'],
-    'GET|/notificaciones/no-leidas' => ['NotificacionesController', 'getNoLeidas'],
-    'POST|/notificaciones/marcar-leida/{id}' => ['NotificacionesController', 'marcarLeida'],
-    'POST|/notificaciones/marcar-todas-leidas' => ['NotificacionesController', 'marcarTodasLeidas'],
-    'POST|/auth/verificar-sucursal' => ['AuthController', 'verificarSucursal'],
-    'POST|/auth/cambiar-sucursal' => ['AuthController', 'cambiarSucursal'],
+    'GET|/' => [AuthController::class, 'showLogin'],
+    'GET|/login' => [AuthController::class, 'showLogin'],
+    'POST|/login' => [AuthController::class, 'login'],
+    'GET|/logout' => [AuthController::class, 'logout'],
+    'GET|/register' => [AuthController::class, 'showRegister'],
+    'POST|/auth/register' => [AuthController::class, 'register'],
+    'POST|/auth/verificar-clave-sucursal' => [AuthController::class, 'verificarClaveSucursal'],
+    'GET|/notificaciones/no-leidas' => [NotificacionesController::class, 'getNoLeidas'],
+    'POST|/notificaciones/marcar-leida/{id}' => [NotificacionesController::class, 'marcarLeida'],
+    'POST|/notificaciones/marcar-todas-leidas' => [NotificacionesController::class, 'marcarTodasLeidas'],
+    'POST|/auth/verificar-sucursal' => [AuthController::class, 'verificarSucursal'],
+    'POST|/auth/cambiar-sucursal' => [AuthController::class, 'cambiarSucursal'],
 
     // Caja Chica
-    'GET|/cajas' => ['CajaController', 'index'],
-    'GET|/cajas/aprir' => ['CajaController', 'abrirPanel'],
-    'POST|/cajas/abrir' => ['CajaController', 'abrir'],
-    'GET|/cajas/cerrar' => ['CajaController', 'cerrarPanel'],
-    'POST|/cajas/cerrar' => ['CajaController', 'cerrar'],
-    'GET|/cajas/movimientos' => ['CajaController', 'movimientos'],
-    'POST|/cajas/movimientos' => ['CajaController', 'addMovimiento'],
+    'GET|/cajas' => [CajaController::class, 'index'],
+    'GET|/cajas/aprir' => [CajaController::class, 'abrirPanel'],
+    'POST|/cajas/abrir' => [CajaController::class, 'abrir'],
+    'GET|/cajas/cerrar' => [CajaController::class, 'cerrarPanel'],
+    'POST|/cajas/cerrar' => [CajaController::class, 'cerrar'],
+    'GET|/cajas/movimientos' => [CajaController::class, 'movimientos'],
+    'POST|/cajas/movimientos' => [CajaController::class, 'addMovimiento'],
 
     // Dashboard
-    'GET|/dashboard' => ['DashboardController', 'index'],
-    'GET|/dashboard/notificaciones' => ['DashboardController', 'getNotificaciones'],
-    'POST|/dashboard/notificacion/leida' => ['DashboardController', 'marcarNotificacionLeida'],
+    'GET|/dashboard' => [DashboardController::class, 'index'],
+    'GET|/dashboard/notificaciones' => [DashboardController::class, 'getNotificaciones'],
+    'POST|/dashboard/notificacion/leida' => [DashboardController::class, 'marcarNotificacionLeida'],
 
     // Productos
-    'GET|/productos' => ['ProductosController', 'index'],
-    'GET|/productos/create' => ['ProductosController', 'create'],
-    'POST|/productos/store' => ['ProductosController', 'store'],
-    'GET|/productos/edit/{id}' => ['ProductosController', 'edit'],
-    'POST|/productos/update/{id}' => ['ProductosController', 'update'],
-    'POST|/productos/delete/{id}' => ['ProductosController', 'delete'],
-    'GET|/productos/search' => ['ProductosController', 'search'],
-    'GET|/productos/stock-bajo' => ['ProductosController', 'stockBajo'],
+    'GET|/productos' => [ProductosController::class, 'index'],
+    'GET|/productos/create' => [ProductosController::class, 'create'],
+    'POST|/productos/store' => [ProductosController::class, 'store'],
+    'GET|/productos/edit/{id}' => [ProductosController::class, 'edit'],
+    'POST|/productos/update/{id}' => [ProductosController::class, 'update'],
+    'POST|/productos/delete/{id}' => [ProductosController::class, 'delete'],
+    'GET|/productos/search' => [ProductosController::class, 'search'],
+    'GET|/productos/stock-bajo' => [ProductosController::class, 'stockBajo'],
 
     // Insumos
-    'GET|/insumos' => ['InsumosController', 'index'],
-    'GET|/insumos/create' => ['InsumosController', 'create'],
-    'POST|/insumos/store' => ['InsumosController', 'store'],
-    'GET|/insumos/edit/{id}' => ['InsumosController', 'edit'],
-    'POST|/insumos/update/{id}' => ['InsumosController', 'update'],
-    'POST|/insumos/delete/{id}' => ['InsumosController', 'delete'],
-    'GET|/insumos/search' => ['InsumosController', 'search'],
-    'GET|/insumos/stock-bajo' => ['InsumosController', 'stockBajo'],
+    'GET|/insumos' => [InsumosController::class, 'index'],
+    'GET|/insumos/create' => [InsumosController::class, 'create'],
+    'POST|/insumos/store' => [InsumosController::class, 'store'],
+    'GET|/insumos/edit/{id}' => [InsumosController::class, 'edit'],
+    'POST|/insumos/update/{id}' => [InsumosController::class, 'update'],
+    'POST|/insumos/delete/{id}' => [InsumosController::class, 'delete'],
+    'GET|/insumos/search' => [InsumosController::class, 'search'],
+    'GET|/insumos/stock-bajo' => [InsumosController::class, 'stockBajo'],
 
     // Recetas
-    'GET|/recetas' => ['RecetasController', 'index'],
-    'GET|/recetas/create' => ['RecetasController', 'create'],
-    'POST|/recetas/store' => ['RecetasController', 'store'],
-    'GET|/recetas/edit/{id}' => ['RecetasController', 'edit'],
-    'GET|/recetas/show/{id}' => ['RecetasController', 'show'],
-    'POST|/recetas/update/{id}' => ['RecetasController', 'update'],
-    'POST|/recetas/delete/{id}' => ['RecetasController', 'delete'],
-    'POST|/recetas/calcular' => ['RecetasController', 'calcular'],
-    'GET|/recetas/calcular' => ['RecetasController', 'calcular'],
-    'POST|/recetas/add-insumo' => ['RecetasController', 'addInsumo'],
-    'POST|/recetas/remove-insumo' => ['RecetasController', 'removeInsumo'],
+    'GET|/recetas' => [RecetasController::class, 'index'],
+    'GET|/recetas/create' => [RecetasController::class, 'create'],
+    'POST|/recetas/store' => [RecetasController::class, 'store'],
+    'GET|/recetas/edit/{id}' => [RecetasController::class, 'edit'],
+    'GET|/recetas/show/{id}' => [RecetasController::class, 'show'],
+    'POST|/recetas/update/{id}' => [RecetasController::class, 'update'],
+    'POST|/recetas/delete/{id}' => [RecetasController::class, 'delete'],
+    'POST|/recetas/calcular' => [RecetasController::class, 'calcular'],
+    'GET|/recetas/calcular' => [RecetasController::class, 'calcular'],
+    'POST|/recetas/add-insumo' => [RecetasController::class, 'addInsumo'],
+    'POST|/recetas/remove-insumo' => [RecetasController::class, 'removeInsumo'],
 
     // Ventas
-    'GET|/ventas' => ['VentasController', 'index'],
-    'GET|/ventas/create' => ['VentasController', 'create'],
-    'POST|/ventas/store' => ['VentasController', 'store'],
-    'GET|/ventas/show/{id}' => ['VentasController', 'show'],
-    'GET|/ventas/ticket/{id}' => ['VentasController', 'ticket'],
+    'GET|/ventas' => [VentasController::class, 'index'],
+    'GET|/ventas/create' => [VentasController::class, 'create'],
+    'POST|/ventas/store' => [VentasController::class, 'store'],
+    'GET|/ventas/show/{id}' => [VentasController::class, 'show'],
+    'GET|/ventas/ticket/{id}' => [VentasController::class, 'ticket'],
 
     // Clientes
-    'GET|/clientes' => ['ClientesController', 'index'],
-    'GET|/clientes/create' => ['ClientesController', 'create'],
-    'POST|/clientes/store' => ['ClientesController', 'store'],
-    'GET|/clientes/edit/{id}' => ['ClientesController', 'edit'],
-    'POST|/clientes/update/{id}' => ['ClientesController', 'update'],
-    'POST|/clientes/delete/{id}' => ['ClientesController', 'delete'],
-    'GET|/clientes/show/{id}' => ['ClientesController', 'show'],
-    'GET|/clientes/search' => ['ClientesController', 'search'],
+    'GET|/clientes' => [ClientesController::class, 'index'],
+    'GET|/clientes/create' => [ClientesController::class, 'create'],
+    'POST|/clientes/store' => [ClientesController::class, 'store'],
+    'GET|/clientes/edit/{id}' => [ClientesController::class, 'edit'],
+    'POST|/clientes/update/{id}' => [ClientesController::class, 'update'],
+    'POST|/clientes/delete/{id}' => [ClientesController::class, 'delete'],
+    'GET|/clientes/show/{id}' => [ClientesController::class, 'show'],
+    'GET|/clientes/search' => [ClientesController::class, 'search'],
 
     // Pedidos
-    'GET|/pedidos' => ['PedidosController', 'index'],
-    'GET|/pedidos/create' => ['PedidosController', 'create'],
-    'POST|/pedidos/store' => ['PedidosController', 'store'],
-    'GET|/pedidos/show/{id}' => ['PedidosController', 'show'],
-    'POST|/pedidos/update/{id}' => ['PedidosController', 'update'],
-    'POST|/pedidos/registrar-pago' => ['PedidosController', 'registrarPago'],
-    'POST|/pedidos/asignar-repartidor/{id}' => ['PedidosController', 'asignarRepartidor'],
+    'GET|/pedidos' => [PedidosController::class, 'index'],
+    'GET|/pedidos/create' => [PedidosController::class, 'create'],
+    'POST|/pedidos/store' => [PedidosController::class, 'store'],
+    'GET|/pedidos/show/{id}' => [PedidosController::class, 'show'],
+    'POST|/pedidos/update/{id}' => [PedidosController::class, 'update'],
+    'POST|/pedidos/registrar-pago' => [PedidosController::class, 'registrarPago'],
+    'POST|/pedidos/asignar-repartidor/{id}' => [PedidosController::class, 'asignarRepartidor'],
 
     // Producciones
-    'GET|/producciones' => ['ProduccionesController', 'index'],
-    'GET|/producciones/create' => ['ProduccionesController', 'create'],
-    'POST|/producciones/store' => ['ProduccionesController', 'store'],
-    'GET|/producciones/show/{id}' => ['ProduccionesController', 'show'],
+    'GET|/producciones' => [ProduccionesController::class, 'index'],
+    'GET|/producciones/create' => [ProduccionesController::class, 'create'],
+    'POST|/producciones/store' => [ProduccionesController::class, 'store'],
+    'GET|/producciones/show/{id}' => [ProduccionesController::class, 'show'],
 
     // Auditorías
-    'GET|/auditorias' => ['AuditoriasController', 'index'],
-    'GET|/auditorias/show/{id}' => ['AuditoriasController', 'show'],
-    'POST|/auditorias/deshacer' => ['AuditoriasController', 'deshacer'],
-    'GET|/auditorias/estadisticas' => ['AuditoriasController', 'estadisticas'],
+    'GET|/auditorias' => [AuditoriasController::class, 'index'],
+    'GET|/auditorias/show/{id}' => [AuditoriasController::class, 'show'],
+    'POST|/auditorias/deshacer' => [AuditoriasController::class, 'deshacer'],
+    'GET|/auditorias/estadisticas' => [AuditoriasController::class, 'estadisticas'],
 
     // Respaldos
-    'GET|/respaldos' => ['RespaldosController', 'index'],
-    'POST|/respaldos/generar' => ['RespaldosController', 'generar'],
-    'POST|/respaldos/restaurar' => ['RespaldosController', 'restaurar'],
-    'GET|/respaldos/descargar/{id}' => ['RespaldosController', 'descargar'],
+    'GET|/respaldos' => [RespaldosController::class, 'index'],
+    'POST|/respaldos/generar' => [RespaldosController::class, 'generar'],
+    'POST|/respaldos/restaurar' => [RespaldosController::class, 'restaurar'],
+    'GET|/respaldos/descargar/{id}' => [RespaldosController::class, 'descargar'],
 
     // Sugerencias de Compra
-    'GET|/sugerencias' => ['SugerenciasController', 'index'],
-    'POST|/sugerencias/generar' => ['SugerenciasController', 'generar'],
-    'POST|/sugerencias/aprobar' => ['SugerenciasController', 'aprobar'],
-    'POST|/sugerencias/rechazar' => ['SugerenciasController', 'rechazar'],
-    'POST|/sugerencias/completar' => ['SugerenciasController', 'completar'],
+    'GET|/sugerencias' => [SugerenciasController::class, 'index'],
+    'POST|/sugerencias/generar' => [SugerenciasController::class, 'generar'],
+    'POST|/sugerencias/aprobar' => [SugerenciasController::class, 'aprobar'],
+    'POST|/sugerencias/rechazar' => [SugerenciasController::class, 'rechazar'],
+    'POST|/sugerencias/completar' => [SugerenciasController::class, 'completar'],
 
     // Reportes
-    'GET|/reportes' => ['ReportesController', 'index'],
-    'GET|/reportes/ventas' => ['ReportesController', 'ventas'],
-    'GET|/reportes/productos' => ['ReportesController', 'productos'],
-    'GET|/reportes/clientes' => ['ReportesController', 'clientes'],
-    'GET|/reportes/vencimientos' => ['ReportesController', 'vencimientos'],
-    'GET|/reportes/compras' => ['ReportesController', 'compras'],
-    'GET|/reportes/insumos' => ['ReportesController', 'insumos'],
-    'GET|/reportes/producciones' => ['ReportesController', 'producciones'],
-    'GET|/reportes/pedidos' => ['ReportesController', 'pedidos'],
+    'GET|/reportes' => [ReportesController::class, 'index'],
+    'GET|/reportes/ventas' => [ReportesController::class, 'ventas'],
+    'GET|/reportes/productos' => [ReportesController::class, 'productos'],
+    'GET|/reportes/clientes' => [ReportesController::class, 'clientes'],
+    'GET|/reportes/vencimientos' => [ReportesController::class, 'vencimientos'],
+    'GET|/reportes/compras' => [ReportesController::class, 'compras'],
+    'GET|/reportes/insumos' => [ReportesController::class, 'insumos'],
+    'GET|/reportes/producciones' => [ReportesController::class, 'producciones'],
+    'GET|/reportes/pedidos' => [ReportesController::class, 'pedidos'],
 
     // Usuarios
-    'GET|/usuarios' => ['UsuariosController', 'index'],
-    'GET|/usuarios/perfil' => ['UsuariosController', 'perfil'],
-    'GET|/usuarios/actividad' => ['UsuariosController', 'actividad'],
-    'POST|/usuarios/actualizar-perfil' => ['UsuariosController', 'actualizarPerfil'],
-    'POST|/usuarios/cambiar-estado' => ['UsuariosController', 'cambiarEstado'],
-    'GET|/usuarios/edit' => ['UsuariosController', 'edit'],
-    'POST|/usuarios/update' => ['UsuariosController', 'update'],
+    'GET|/usuarios' => [UsuariosController::class, 'index'],
+    'GET|/usuarios/perfil' => [UsuariosController::class, 'perfil'],
+    'GET|/usuarios/actividad' => [UsuariosController::class, 'actividad'],
+    'POST|/usuarios/actualizar-perfil' => [UsuariosController::class, 'actualizarPerfil'],
+    'POST|/usuarios/cambiar-estado' => [UsuariosController::class, 'cambiarEstado'],
+    'GET|/usuarios/edit' => [UsuariosController::class, 'edit'],
+    'POST|/usuarios/update' => [UsuariosController::class, 'update'],
 
     // Sucursales (Admin only)
-    'GET|/sucursales' => ['SucursalesController', 'index'],
-    'GET|/sucursales/create' => ['SucursalesController', 'create'],
-    'POST|/sucursales/store' => ['SucursalesController', 'store'],
-    'GET|/sucursales/show/{id}' => ['SucursalesController', 'show'],
-    'GET|/sucursales/edit/{id}' => ['SucursalesController', 'edit'],
-    'POST|/sucursales/update/{id}' => ['SucursalesController', 'update'],
-    'POST|/sucursales/cambiar-estado' => ['SucursalesController', 'cambiarEstado'],
-    'POST|/sucursales/regenerar-clave/{id}' => ['SucursalesController', 'regenerarClave'],
+    'GET|/sucursales' => [SucursalesController::class, 'index'],
+    'GET|/sucursales/create' => [SucursalesController::class, 'create'],
+    'POST|/sucursales/store' => [SucursalesController::class, 'store'],
+    'GET|/sucursales/show/{id}' => [SucursalesController::class, 'show'],
+    'GET|/sucursales/edit/{id}' => [SucursalesController::class, 'edit'],
+    'POST|/sucursales/update/{id}' => [SucursalesController::class, 'update'],
+    'POST|/sucursales/cambiar-estado' => [SucursalesController::class, 'cambiarEstado'],
+    'POST|/sucursales/regenerar-clave/{id}' => [SucursalesController::class, 'regenerarClave'],
 
     // Cálculo de Insumos
-    'POST|/calculo-insumos/calcular' => ['CalculoInsumosController', 'calcularInsumos'],
-    'POST|/calculo-insumos/verificar' => ['CalculoInsumosController', 'verificarDisponibilidad'],
-    'GET|/recetas/list' => ['RecetasController', 'list'],
+    'POST|/calculo-insumos/calcular' => [CalculoInsumosController::class, 'calcularInsumos'],
+    'POST|/calculo-insumos/verificar' => [CalculoInsumosController::class, 'verificarDisponibilidad'],
+    'GET|/recetas/list' => [RecetasController::class, 'list'],
 
     // Predicciones
-    'GET|/predicciones' => ['PrediccionesController', 'index'],
-    'GET|/predicciones/data' => ['PrediccionesController', 'getDatosVentas'],
-    'POST|/predicciones/generar' => ['PrediccionesController', 'generarSugerenciasAutomaticas'],
+    'GET|/predicciones' => [PrediccionesController::class, 'index'],
+    'GET|/predicciones/data' => [PrediccionesController::class, 'getDatosVentas'],
+    'POST|/predicciones/generar' => [PrediccionesController::class, 'generarSugerenciasAutomaticas'],
 
     // Proveedores
-    'GET|/proveedores' => ['ProveedoresController', 'index'],
-    'GET|/proveedores/create' => ['ProveedoresController', 'create'],
-    'POST|/proveedores/store' => ['ProveedoresController', 'store'],
-    'GET|/proveedores/edit/{id}' => ['ProveedoresController', 'edit'],
-    'POST|/proveedores/update/{id}' => ['ProveedoresController', 'update'],
-    'POST|/proveedores/delete/{id}' => ['ProveedoresController', 'delete'],
-    'GET|/proveedores/show/{id}' => ['ProveedoresController', 'show'],
-    'GET|/proveedores/insumos-sin-proveedor' => ['ProveedoresController', 'insumosSinProveedor'],
+    'GET|/proveedores' => [ProveedoresController::class, 'index'],
+    'GET|/proveedores/create' => [ProveedoresController::class, 'create'],
+    'POST|/proveedores/store' => [ProveedoresController::class, 'store'],
+    'GET|/proveedores/edit/{id}' => [ProveedoresController::class, 'edit'],
+    'POST|/proveedores/update/{id}' => [ProveedoresController::class, 'update'],
+    'POST|/proveedores/delete/{id}' => [ProveedoresController::class, 'delete'],
+    'GET|/proveedores/show/{id}' => [ProveedoresController::class, 'show'],
+    'GET|/proveedores/insumos-sin-proveedor' => [ProveedoresController::class, 'insumosSinProveedor'],
 
     // Compras
-    'GET|/compras' => ['ComprasController', 'index'],
-    'GET|/compras/create' => ['ComprasController', 'create'],
-    'POST|/compras/store' => ['ComprasController', 'store'],
-    'GET|/compras/show/{id}' => ['ComprasController', 'show'],
+    'GET|/compras' => [ComprasController::class, 'index'],
+    'GET|/compras/create' => [ComprasController::class, 'create'],
+    'POST|/compras/store' => [ComprasController::class, 'store'],
+    'GET|/compras/show/{id}' => [ComprasController::class, 'show'],
 
     // Control de Lotes / Vencimientos
-    'GET|/lotes' => ['LotesController', 'index'],
-    'POST|/lotes/ajustar' => ['LotesController', 'ajustar'],
+    'GET|/lotes' => [LotesController::class, 'index'],
+    'POST|/lotes/ajustar' => [LotesController::class, 'ajustar'],
 
     // System Config
-    'GET|/config/refresh-tasa' => ['ConfigController', 'refreshTasa'],
+    'GET|/config/refresh-tasa' => [ConfigController::class, 'refreshTasa'],
 
     // Chat Interno
-    'GET|/chat'                        => ['ChatController', 'index'],
-    'GET|/chat/conversaciones'         => ['ChatController', 'getConversaciones'],
-    'GET|/chat/usuarios'               => ['ChatController', 'getUsuarios'],
-    'POST|/chat/conversacion-directa'  => ['ChatController', 'getOrCreateDirecta'],
-    'GET|/chat/mensajes/{id}'          => ['ChatController', 'getMensajes'],
-    'POST|/chat/enviar/{id}'           => ['ChatController', 'enviar'],
-    'GET|/chat/poll'                   => ['ChatController', 'poll'],
-    'GET|/chat/sync'                   => ['ChatController', 'sync'],
+    'GET|/chat'                        => [ChatController::class, 'index'],
+    'GET|/chat/conversaciones'         => [ChatController::class, 'getConversaciones'],
+    'GET|/chat/usuarios'               => [ChatController::class, 'getUsuarios'],
+    'POST|/chat/conversacion-directa'  => [ChatController::class, 'getOrCreateDirecta'],
+    'GET|/chat/mensajes/{id}'          => [ChatController::class, 'getMensajes'],
+    'POST|/chat/enviar/{id}'           => [ChatController::class, 'enviar'],
+    'GET|/chat/poll'                   => [ChatController::class, 'poll'],
+    'GET|/chat/sync'                   => [ChatController::class, 'sync'],
 ];
