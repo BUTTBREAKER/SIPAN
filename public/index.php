@@ -79,12 +79,15 @@ if ($isDeliveryPath) {
 
 // Remover el subdirectorio base si no estamos en la raíz
 $script_name = dirname($_SERVER['SCRIPT_NAME']);
+
 // Detectar protocolo (compatible con proxy/túnel como Cloudflare)
 $protocol = $isSecure ? 'https' : 'http';
+
 $base_url = $protocol . '://' . $_SERVER['HTTP_HOST'] . $script_name;
+
 define('BASE_URL', rtrim($base_url, '/\\') . '/');
 
-if ($script_name !== '/' && $script_name !== '\\') {
+if (!in_array($script_name, ['/', '\\'])) {
     $path = str_replace($script_name, '', $path);
 }
 
