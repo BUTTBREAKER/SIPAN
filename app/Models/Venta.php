@@ -124,6 +124,47 @@ class Venta extends BaseModel
         return $this->db->fetchAll($sql, $venta_ids);
     }
 
+    /**
+     * Obtiene el desglose de pagos por método en un rango de fechas (Optimización Bolt)
+     * Utiliza UNION ALL para combinar pagos modernos (venta_pagos) y legacy (ventas)
+     * en una sola consulta agregada en el servidor de BD.
+     */
+    public function getPaymentBreakdown($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT metodo_pago, SUM(monto) as total
+                FROM (
+                    -- Pagos desde tabla detalle (moderno)
+                    SELECT vp.metodo_pago, vp.monto
+                    FROM venta_pagos vp
+                    INNER JOIN ventas v ON vp.id_venta = v.id
+                    WHERE v.id_sucursal = ?
+                      AND v.fecha_venta >= ?
+                      AND v.fecha_venta <= ?
+                      AND v.estado = 'completada'
+
+                    UNION ALL
+
+                    -- Pagos desde tabla maestra (legacy) para ventas sin detalle de pagos
+                    -- Solo si el método no es 'mixto' y no tiene registros en venta_pagos
+                    SELECT v.metodo_pago, v.total as monto
+                    FROM ventas v
+                    WHERE v.id_sucursal = ?
+                      AND v.fecha_venta >= ?
+                      AND v.fecha_venta <= ?
+                      AND v.estado = 'completada'
+                      AND v.metodo_pago != 'mixto'
+                      AND NOT EXISTS (SELECT 1 FROM venta_pagos vp WHERE vp.id_venta = v.id)
+                ) as combined_payments
+                GROUP BY metodo_pago";
+
+        $params = [
+            $sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59',
+            $sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59'
+        ];
+
+        return $this->db->fetchAll($sql, $params);
+    }
+
     public function getWithDetails($sucursal_id, $fecha_inicio = null, $fecha_fin = null)
     {
         // Bolt Optimization: Removed redundant LEFT JOIN on venta_productos and COUNT(vp.id).
