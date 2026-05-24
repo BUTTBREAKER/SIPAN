@@ -128,39 +128,42 @@ foreach ($routes as $route => [$controllerName, $controllerMethod]) {
 
     $params = matchRoute($routePath, $path);
 
-    if ($params !== false) {
-        $matched = true;
-        $methodName = $controllerMethod;
+    if ($params === false) {
+        continue;
+    }
 
-        try {
-            if (class_exists($controllerName)) {
-                $controller = Container::getInstance()->get($controllerName);
+    $matched = true;
+    $methodName = $controllerMethod;
 
-                if (method_exists($controller, $methodName)) {
-                    call_user_func_array([$controller, $methodName], $params);
-                } else {
-                    throw new Exception("Método no encontrado: {$methodName}");
-                }
-            } else {
-                throw new Exception("Controlador no encontrado: {$controllerName}");
-            }
-        } catch (Throwable $exception) {
-            http_response_code(500);
-            $message = "Error: {$exception->getMessage()}";
-
-            if ($acceptJson) {
-                header('Content-Type: application/json');
-                echo json_encode([
-                    'success' => false,
-                    'message' => $message,
-                ]);
-            } else {
-                echo $message;
-            }
+    try {
+        if (!class_exists($controllerName)) {
+            throw new Exception("Controlador no encontrado: $controllerName");
         }
 
-        break;
+        $controller = Container::getInstance()->get($controllerName);
+
+        if (!method_exists($controller, $methodName)) {
+            throw new Exception("Método no encontrado: $methodName");
+        }
+
+        call_user_func_array([$controller, $methodName], $params);
+    } catch (Throwable $exception) {
+        http_response_code(500);
+        $message = "Error: {$exception->getMessage()}";
+
+        if ($acceptJson) {
+            header('Content-Type: application/json');
+
+            echo json_encode([
+                'success' => false,
+                'message' => $message,
+            ]);
+        } else {
+            echo $message;
+        }
     }
+
+    break;
 }
 
 // Si no se encontró ruta, mostrar 404
