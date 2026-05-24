@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Middlewares\AuthMiddleware;
 use App\Models\Receta;
 use App\Models\Insumo;
 

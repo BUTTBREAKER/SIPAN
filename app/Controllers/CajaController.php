@@ -4,7 +4,6 @@ namespace App\Controllers;
 
 use App\Models\Caja;
 use App\Models\Sucursal;
-use App\Middlewares\AuthMiddleware;
 
 class CajaController
 {

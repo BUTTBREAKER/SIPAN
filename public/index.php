@@ -1,7 +1,6 @@
 <?php
 
 use App\Route;
-use flight\Container;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
