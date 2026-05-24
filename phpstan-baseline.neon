@@ -1,31 +1,31 @@
 parameters:
-	ignoreErrors:
-		-
-			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
-			identifier: whitespace.fileEnd
-			count: 1
-			path: app/Views/dashboard/index.php
+    ignoreErrors:
+        -
+            rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+            identifier: whitespace.fileEnd
+            count: 1
+            path: app/Views/dashboard/index.php
 
-		-
-			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
-			identifier: whitespace.fileEnd
-			count: 1
-			path: app/Views/producciones/show.php
+        -
+            rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+            identifier: whitespace.fileEnd
+            count: 1
+            path: app/Views/producciones/show.php
 
-		-
-			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
-			identifier: whitespace.fileEnd
-			count: 1
-			path: app/Views/recetas/edit.php
+        -
+            rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+            identifier: whitespace.fileEnd
+            count: 1
+            path: app/Views/recetas/edit.php
 
-		-
-			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
-			identifier: whitespace.fileEnd
-			count: 1
-			path: app/Views/sucursales/edit.php
+        -
+            rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+            identifier: whitespace.fileEnd
+            count: 1
+            path: app/Views/sucursales/edit.php
 
-		-
-			rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
-			identifier: whitespace.fileEnd
-			count: 1
-			path: app/Views/sucursales/show.php
+        -
+            rawMessage: File ends with a trailing whitespace. This may cause problems when running the code in the web browser. Remove the closing ?> mark or remove the whitespace.
+            identifier: whitespace.fileEnd
+            count: 1
+            path: app/Views/sucursales/show.php
