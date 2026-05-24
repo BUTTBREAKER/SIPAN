@@ -1,7 +1,4 @@
 {
-    "name": "sipan/sistema-panaderia",
-    "description": "Sistema Integral para Panaderías",
-    "type": "project",
     "require": {
         "php": ">=7.4",
         "ext-json": "*",
