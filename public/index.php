@@ -2,6 +2,10 @@
 
 use App\Route;
 use Leaf\Http\Session;
+use Mpdf\PsrHttpMessageShim\Request;
+use Mpdf\PsrHttpMessageShim\Response;
+use Mpdf\PsrHttpMessageShim\Stream;
+use Mpdf\PsrHttpMessageShim\Uri;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -29,37 +33,50 @@ if ($_ENV['app_env'] === 'production') {
     ini_set('error_log', __DIR__ . '/../storage/logs/sipan-debug.log');
 }
 
-// Detectar la ruta ANTES de iniciar la sesión para poder variar el nombre de la sesión
-$request_uri = $_SERVER['REQUEST_URI'] ?? '/';
-$path = parse_url($request_uri, PHP_URL_PATH) ?: '/';
-
-// Asegurar que la ruta comience con /
-if (!str_starts_with($path, '/')) {
-    $path = "/$path";
-}
-
-// Detectar si la ruta es para el sistema de delivery
-$isDeliveryPath = str_contains($path, '/delivery');
-
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
 $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
 
-// Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
-$sessionParams = session_get_cookie_params();
+// Detectar protocolo (compatible con proxy/túnel como Cloudflare)
+$scheme = $isSecure ? 'https' : 'http';
 
-session_set_cookie_params([
-    'lifetime' => $_ENV['session_lifetime'],
-    'path' => $sessionParams['path'],
-    'domain' => $sessionParams['domain'],
+$headers = [];
+
+foreach (headers_list() as $header) {
+    [$headerName, $headerValues] = explode(':', $header);
+
+    $headers[$headerName] = $headerValues;
+}
+
+$uri = (new Uri($_SERVER['REQUEST_URI']))
+    ->withHost($_SERVER['SERVER_NAME'])
+    ->withPort($_SERVER['SERVER_PORT'])
+    ->withScheme($scheme);
+
+$request = (new Request($_SERVER['REQUEST_METHOD'], $uri, $headers))
+    ->withBody(Stream::createFromResource(fopen('php://input', 'r')))
+    ->withProtocolVersion(ltrim($_SERVER['SERVER_PROTOCOL'], 'HTTP/'));
+
+$response = (new Response)
+    ->withBody(Stream::createFromResource(fopen('php://output', 'w')))
+    ->withProtocolVersion($request->getProtocolVersion());
+
+// Detectar si la ruta es para el sistema de delivery
+$isDeliveryPath = str_contains($uri->getPath(), '/delivery');
+
+// Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
+$sessionParams = [
+    'lifetime' => filter_var($_ENV['session_lifetime'], FILTER_VALIDATE_INT),
     'secure' => $isSecure,
     'httponly' => true,
-    'samesite' => 'Lax',
-]);
+    'samesite' => 'Strict',
+] + session_get_cookie_params();
+
+session_set_cookie_params($sessionParams);
 
 if (session_status() === PHP_SESSION_NONE) {
     // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
     $baseSessionName = $_ENV['session_name'];
-    $finalSessionName = $isDeliveryPath ? $baseSessionName . '_DELIVERY' : $baseSessionName;
+    $finalSessionName = $isDeliveryPath ? "{$baseSessionName}_DELIVERY" : $baseSessionName;
 
     session_name($finalSessionName);
     Session::start();
@@ -81,31 +98,13 @@ if ($isDeliveryPath) {
 // Remover el subdirectorio base si no estamos en la raíz
 $script_name = dirname($_SERVER['SCRIPT_NAME']);
 
-// Detectar protocolo (compatible con proxy/túnel como Cloudflare)
-$protocol = $isSecure ? 'https' : 'http';
-
-$base_url = $protocol . '://' . $_SERVER['HTTP_HOST'] . $script_name;
-
-define('BASE_URL', rtrim($base_url, '/\\') . '/');
-
-if (!in_array($script_name, ['/', '\\'])) {
-    $path = str_replace($script_name, '', $path);
-}
-
-// Remover index.php si está presente
-$path = str_replace('/index.php', '', $path);
-
-// Limpiar la ruta
-$path = rtrim($path, '/') ?: '/';
-
-// Método HTTP
-$method = $_SERVER['REQUEST_METHOD'];
+define('BASE_URL', $uri->withQuery('')->__toString());
 
 // Debug (comentar en producción)
 error_log(
     $_ENV['app_debug']
-        ? "Path: $path, Method: $method, URI: $request_uri"
-        : "$method | $request_uri"
+        ? "Path: {$uri->getPath()}, Method: {$request->getMethod()}, URI: {$request->getRequestTarget()}"
+        : "{$request->getMethod()} {$request->getRequestTarget()}"
 );
 
 // Enrutador
@@ -122,14 +121,11 @@ $acceptJson = str_contains($_SERVER['HTTP_ACCEPT'], 'application/json');
 
 /** @var Route */
 foreach ($routes as $route) {
-    $routeMethod = $route->getMethod();
-    $routePath = $route->getPath();
-
-    if ($routeMethod !== $method) {
+    if ($route->getMethod() !== $request->getMethod()) {
         continue;
     }
 
-    $params = matchRoute($routePath, $path);
+    $params = matchRoute($route->getPath(), $uri->getPath());
 
     if ($params === false) {
         continue;
@@ -138,29 +134,41 @@ foreach ($routes as $route) {
     $matched = true;
 
     try {
+        ob_start();
         call_user_func($route->getCallable(), $params);
+        $response->getBody()->write(ob_get_clean() ?: '');
+
+        echo $response->getBody()->getContents();
     } catch (Throwable $exception) {
-        http_response_code(500);
+        $response = $response->withStatus(500);
         $message = "Error: {$exception->getMessage()}";
 
         if ($acceptJson) {
-            header('Content-Type: application/json');
+            $response = $response->withHeader('Content-Type', 'application/json');
 
-            echo json_encode([
+            $response->getBody()->write(json_encode([
                 'success' => false,
                 'message' => $message,
-            ]);
+            ]) ?: '');
         } else {
-            echo $message;
+            $response->getBody()->write($message);
         }
     }
+
+    http_response_code($response->getStatusCode());
+    echo $response->getBody()->getContents();
 
     break;
 }
 
 // Si no se encontró ruta, mostrar 404
 if (!$matched) {
-    http_response_code(404);
+    $response = $response->withStatus(404);
+
+    ob_start();
 
     require __DIR__ . '/../app/Views/404.php';
+
+    $response->getBody()->write(ob_get_clean() ?: '');
+    echo $response->getBody()->getContents();
 }
