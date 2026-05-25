@@ -1,20 +1,17 @@
 <?php
 
 use App\Route;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\ServerRequest;
+use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7\Uri;
 use Leaf\Http\Session;
-use Mpdf\PsrHttpMessageShim\Request;
-use Mpdf\PsrHttpMessageShim\Response;
-use Mpdf\PsrHttpMessageShim\Stream;
-use Mpdf\PsrHttpMessageShim\Uri;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 // SIPAN - Sistema Integral para Panaderías
 // Archivo principal de enrutamiento
-
-// Habilitar buffering de salida para prevenir errores de cabeceras
-ob_start();
 
 // Cargar configuración
 (new Dotenv())->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
@@ -52,12 +49,12 @@ $uri = (new Uri($_SERVER['REQUEST_URI']))
     ->withPort($_SERVER['SERVER_PORT'])
     ->withScheme($scheme);
 
-$request = (new Request($_SERVER['REQUEST_METHOD'], $uri, $headers))
-    ->withBody(Stream::createFromResource(fopen('php://input', 'r')))
+$request = (new ServerRequest($_SERVER['REQUEST_METHOD'], $uri, $headers))
+    ->withBody(new Stream(fopen('php://input', 'r')))
     ->withProtocolVersion(ltrim($_SERVER['SERVER_PROTOCOL'], 'HTTP/'));
 
 $response = (new Response)
-    ->withBody(Stream::createFromResource(fopen('php://output', 'w')))
+    ->withBody(new Stream(fopen('php://output', 'w')))
     ->withProtocolVersion($request->getProtocolVersion());
 
 // Detectar si la ruta es para el sistema de delivery
