@@ -29,7 +29,7 @@ if ($_ENV['app_env'] === 'production') {
     ini_set('error_log', __DIR__ . '/../storage/logs/php-errors.log');
 } else {
     // Desarrollo: Mostrar todos los errores
-    ini_set('display_errors', $_ENV['app_debug']);
+    ini_set('display_errors', strval($_ENV['app_debug']));
     ini_set('error_log', __DIR__ . '/../storage/logs/sipan-debug.log');
 }
 
@@ -42,7 +42,7 @@ $scheme = $isSecure ? 'https' : 'http';
 $headers = [];
 
 foreach (headers_list() as $header) {
-    [$headerName, $headerValues] = explode(':', $header);
+    [$headerName, $headerValues] = explode(':', strval($header));
 
     $headers[$headerName] = $headerValues;
 }
@@ -75,7 +75,7 @@ session_set_cookie_params($sessionParams);
 
 if (session_status() === PHP_SESSION_NONE) {
     // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
-    $baseSessionName = $_ENV['session_name'];
+    $baseSessionName = strval($_ENV['session_name']);
     $finalSessionName = $isDeliveryPath ? "{$baseSessionName}_DELIVERY" : $baseSessionName;
 
     session_name($finalSessionName);
