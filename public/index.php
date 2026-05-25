@@ -1,6 +1,7 @@
 <?php
 
 use App\Route;
+use Leaf\Http\Session;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -61,7 +62,7 @@ if (session_status() === PHP_SESSION_NONE) {
     $finalSessionName = $isDeliveryPath ? $baseSessionName . '_DELIVERY' : $baseSessionName;
 
     session_name($finalSessionName);
-    session_start();
+    Session::start();
 }
 
 // Habilitar log de debug
