@@ -37,3 +37,11 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Request-Level Caching for Critical Middleware Checks]
+**Learning:** High-frequency middleware checks, such as verifying an active cash box on every request, create significant database overhead. Implementing a static in-memory cache for these status checks ensures they are only queried once per request.
+**Action:** Use static properties for request-level caching in model methods that are called globally or frequently within the same request lifecycle.
+
+## 2025-01-24 - [Query Consolidation via Conditional Aggregation]
+**Learning:** Fetching an entity's initial state (e.g., opening balance) and its aggregated related records (e.g., movement totals) via separate queries is inefficient. Using `LEFT JOIN` and conditional aggregation (`SUM(CASE...)`) allows for calculating these values in a single database round-trip.
+**Action:** Consolidate related entity and aggregate fetches into a single SQL query whenever possible.
