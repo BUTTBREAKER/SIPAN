@@ -9,14 +9,15 @@
         "leafs/session": "^4.0",
         "mpdf/mpdf": "^8.3",
         "phpoffice/phpspreadsheet": "1.30.4",
+        "psr/http-server-handler": "^1.0",
+        "psr/http-server-middleware": "^1.0",
         "symfony/dotenv": "5.4.48",
         "symfony/polyfill-php80": "^1.37"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app"
-        },
-        "files": ["app/helpers.php"]
+        }
     },
     "require-dev": {
         "phpstan/extension-installer": "^1.4",

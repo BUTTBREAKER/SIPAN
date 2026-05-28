@@ -6,6 +6,9 @@ use GuzzleHttp\Psr7\ServerRequest;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Uri;
 use Leaf\Http\Session;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -36,25 +39,26 @@ $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] =
 // Detectar protocolo (compatible con proxy/túnel como Cloudflare)
 $scheme = $isSecure ? 'https' : 'http';
 
-$headers = [];
-
-foreach (headers_list() as $header) {
-    [$headerName, $headerValues] = explode(':', strval($header));
-
-    $headers[$headerName] = $headerValues;
-}
-
 $uri = (new Uri($_SERVER['REQUEST_URI']))
     ->withHost($_SERVER['SERVER_NAME'])
     ->withPort($_SERVER['SERVER_PORT'])
     ->withScheme($scheme);
 
-$request = (new ServerRequest($_SERVER['REQUEST_METHOD'], $uri, $headers))
+$request = (new ServerRequest($_SERVER['REQUEST_METHOD'], $uri))
     ->withBody(new Stream(fopen('php://input', 'r')))
-    ->withProtocolVersion(ltrim($_SERVER['SERVER_PROTOCOL'], 'HTTP/'));
+    ->withCookieParams($_COOKIE)
+    ->withProtocolVersion(ltrim($_SERVER['SERVER_PROTOCOL'], 'HTTP/'))
+    ->withQueryParams($_GET)
+    ->withUploadedFiles($_FILES);
+
+foreach (headers_list() as $header) {
+    [$name, $value] = explode(':', strval($header));
+
+    $request = $request->withHeader($name, $value);
+}
 
 $response = (new Response)
-    ->withBody(new Stream(fopen('php://output', 'w')))
+    ->withBody(new Stream(fopen('php://output', 'w+')))
     ->withProtocolVersion($request->getProtocolVersion());
 
 // Detectar si la ruta es para el sistema de delivery
@@ -92,9 +96,6 @@ if ($isDeliveryPath) {
 }
 // ---------------------------------------------------------------
 
-// Remover el subdirectorio base si no estamos en la raíz
-$script_name = dirname($_SERVER['SCRIPT_NAME']);
-
 define('BASE_URL', $uri->withQuery('')->__toString());
 
 // Debug (comentar en producción)
@@ -122,9 +123,9 @@ foreach ($routes as $route) {
         continue;
     }
 
-    $params = matchRoute($route->getPath(), $uri->getPath());
+    $params = $route->getParams($uri);
 
-    if ($params === false) {
+    if (!$params) {
         continue;
     }
 
@@ -153,7 +154,7 @@ foreach ($routes as $route) {
     }
 
     http_response_code($response->getStatusCode());
-    echo $response->getBody()->getContents();
+    echo $response->getBody();
 
     break;
 }
