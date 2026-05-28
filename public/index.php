@@ -58,7 +58,7 @@ foreach (headers_list() as $header) {
 }
 
 $response = (new Response)
-    ->withBody(new Stream(fopen('php://output', 'w+')))
+    ->withBody(new Stream(fopen('php://temp', 'w+')))
     ->withProtocolVersion($request->getProtocolVersion());
 
 // Detectar si la ruta es para el sistema de delivery
@@ -119,13 +119,13 @@ $acceptJson = str_contains($_SERVER['HTTP_ACCEPT'], 'application/json');
 
 /** @var Route */
 foreach ($routes as $route) {
-    if ($route->getMethod() !== $request->getMethod()) {
+    if (!$route->matchRequestMethod($request)) {
         continue;
     }
 
-    $params = $route->getParams($uri);
+    $params = $route->getParamsFromUri($uri);
 
-    if (!$params) {
+    if ($params === false) {
         continue;
     }
 
@@ -135,8 +135,6 @@ foreach ($routes as $route) {
         ob_start();
         call_user_func($route->getCallable(), $params);
         $response->getBody()->write(ob_get_clean() ?: '');
-
-        echo $response->getBody()->getContents();
     } catch (Throwable $exception) {
         $response = $response->withStatus(500);
         $message = "Error: {$exception->getMessage()}";
@@ -168,5 +166,5 @@ if (!$matched) {
     require __DIR__ . '/../app/Views/404.php';
 
     $response->getBody()->write(ob_get_clean() ?: '');
-    echo $response->getBody()->getContents();
+    echo $response->getBody();
 }

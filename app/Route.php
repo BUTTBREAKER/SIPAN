@@ -7,6 +7,7 @@ namespace App;
 use Closure;
 use Exception;
 use flight\Container;
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
 
 final class Route
@@ -52,17 +53,12 @@ final class Route
         };
     }
 
-    function getMethod(): string
-    {
-        return $this->method;
-    }
-
     function getCallable(): callable
     {
         return $this->callable;
     }
 
-    function getParams(UriInterface $uri): array
+    function getParamsFromUri(UriInterface $uri)
     {
         $pattern = $this->path;
 
@@ -75,6 +71,10 @@ final class Route
             return $matches;
         }
 
-        return [];
+        return false;
+    }
+
+    function matchRequestMethod(RequestInterface $request): bool {
+        return $this->method === $request->getMethod();
     }
 }
