@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2026-05-30 - [Cash Box Query Consolidation and Request-Level Caching]
+**Learning:** Fetching a cash box record and its movement aggregates in separate queries is an avoidable O(1) bottleneck. Consolidating these via `LEFT JOIN` and `GROUP BY` reduces latency. Additionally, frequently accessed state methods like `getActiva()` benefit greatly from request-level caching with explicit invalidation in state-changing methods (`abrir`, `cerrar`) to maintain consistency.
+**Action:** Always look for "get record + aggregate" patterns and consolidate them into a single SQL query. Implement static property caching for high-frequency "active state" lookups and ensure invalidation logic is placed immediately after successful DB writes.
