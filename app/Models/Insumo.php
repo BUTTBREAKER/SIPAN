@@ -9,11 +9,7 @@ class Insumo extends BaseModel
     // ✅ Nuevo método compatible con el controlador
     public function getAllBySucursal($sucursal_id)
     {
-        $sql = "SELECT i.*, p.nombre as proveedor_nombre 
-                FROM {$this->table} i
-                LEFT JOIN providers p ON i.id_proveedor = p.id
-                WHERE i.id_sucursal = ? 
-                ORDER BY i.nombre";
+        // Bolt Optimization: Removed redundant SQL string assignment.
         // Corregir nombre de tabla si es 'proveedores' en lugar de 'providers'
         // Asumiendo 'proveedores' por el SQL anterior
         $sql = "SELECT i.*, GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre 
