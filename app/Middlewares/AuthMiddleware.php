@@ -50,7 +50,7 @@ class AuthMiddleware
 
         // Rutas exceptuadas de comprobación de caja
         $excepciones = [
-            '/login', '/logout', '/cajas/abrir', '/cajas/aprir', '/auth/verificar-sucursal',
+            '/login', '/logout', '/cajas/abrir', '/auth/verificar-sucursal',
             '/auth/cambiar-sucursal', '/cajas'
         ];
 
@@ -77,7 +77,7 @@ class AuthMiddleware
                 'type' => 'warning',
                 'content' => 'Debes realizar la apertura de caja antes de continuar.'
             ];
-            header('Location: /cajas/aprir');
+            header('Location: /cajas/abrir');
             exit;
         }
 
