@@ -34,7 +34,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                             <?= number_format($produccion['cantidad_producida'], 2) ?> unidades
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Fecha de Producción:</strong><br>
@@ -45,7 +45,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                             <?= htmlspecialchars($produccion['usuario_nombre']) ?>
                         </div>
                     </div>
-                    
+
                     <?php if (!empty($produccion['observaciones'])) : ?>
                     <div class="row mb-3">
                         <div class="col-12">
@@ -56,7 +56,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <?php endif; ?>
                 </div>
             </div>
-            
+
             <div class="card mt-3">
                 <div class="card-header">
                     <h5><i class="fas fa-box"></i> Insumos Utilizados</h5>
@@ -111,7 +111,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
@@ -139,7 +139,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     <?php endif; ?>
                 </div>
             </div>
-            
+
             <div class="card mt-3">
                 <div class="card-header">
                     <h5><i class="fas fa-cog"></i> Acciones</h5>
@@ -158,4 +158,3 @@ require_once __DIR__ . '/../layouts/sidebar.php';
 </div>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
-

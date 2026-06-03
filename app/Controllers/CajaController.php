@@ -22,6 +22,11 @@ class CajaController
         $cajaActiva = $this->cajaModel->getActiva($id_sucursal);
         $historial = $this->cajaModel->getHistorial($id_sucursal);
 
+        $resumen = null;
+        if ($cajaActiva) {
+            $resumen = $this->cajaModel->getResumen($cajaActiva['id']);
+        }
+
         $currentPage = 'cajas';
         $title = 'Caja Chica';
         require_once __DIR__ . '/../Views/cajas/index.php';

@@ -62,10 +62,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </div>
                         <h6 class="mb-0 text-muted">Ingresos</h6>
                     </div>
-                    <?php
-                        $resumen = (new \App\Models\Caja())->getResumen($cajaActiva['id']);
-                    ?>
-                    <h3 class="mb-0 fw-bold text-success">+ <?php echo SIPAN::formatMoney($resumen['ingresos']); ?></h3>
+                    <h3 class="mb-0 fw-bold text-success">+ <?php echo SIPAN::formatMoney($resumen['ingresos'] ?? 0); ?></h3>
                 </div>
             </div>
         </div>
