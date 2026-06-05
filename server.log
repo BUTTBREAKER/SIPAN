@@ -1,0 +1,10 @@
+[Fri Jun  5 00:13:28 2026] PHP 8.3.6 Development Server (http://localhost:61001) started
+[Fri Jun  5 00:15:17 2026] [::1]:33716 Accepted
+[Fri Jun  5 00:15:17 2026] [::1]:33716 [200]: GET /login
+[Fri Jun  5 00:15:17 2026] [::1]:33716 Closing
+[Fri Jun  5 00:16:30 2026] [::1]:53304 Accepted
+[Fri Jun  5 00:16:30 2026] [::1]:53304 [200]: GET /login
+[Fri Jun  5 00:16:30 2026] [::1]:53304 Closing
+[Fri Jun  5 00:17:26 2026] [::1]:47866 Accepted
+[Fri Jun  5 00:17:26 2026] [::1]:47866 [200]: GET /login
+[Fri Jun  5 00:17:26 2026] [::1]:47866 Closing

@@ -317,7 +317,9 @@ CREATE TABLE IF NOT EXISTS notificaciones (
     INDEX idx_usuario (id_usuario),
     INDEX idx_sucursal (id_sucursal),
     INDEX idx_leida (leida),
-    INDEX idx_fecha (fecha_creacion)
+    INDEX idx_fecha (fecha_creacion),
+    -- Bolt Optimization: Composite index for NOT EXISTS check in sp_verificar_stock_bajo and dashboard polling.
+    INDEX idx_referencia_leida_fecha (referencia_tipo, referencia_id, leida, fecha_creacion)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
