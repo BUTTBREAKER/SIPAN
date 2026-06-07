@@ -10,12 +10,26 @@ class Caja extends BaseModel
     protected $table = 'cajas';
 
     /**
+     * Request-level cache for active cash boxes.
+     * @var array<int, array|null>
+     */
+    private static $activeCajaCache = [];
+
+    /**
      * Obtiene la caja activa para una sucursal
+     * Bolt Optimization: Implemented request-level caching to avoid redundant queries (O(1) vs O(N)).
      */
     public function getActiva($id_sucursal)
     {
+        if (array_key_exists($id_sucursal, self::$activeCajaCache)) {
+            return self::$activeCajaCache[$id_sucursal];
+        }
+
         $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
-        return $this->db->fetchOne($sql, [$id_sucursal]);
+        $result = $this->db->fetchOne($sql, [$id_sucursal]);
+
+        self::$activeCajaCache[$id_sucursal] = $result;
+        return $result;
     }
 
     /**
@@ -25,7 +39,7 @@ class Caja extends BaseModel
     {
         $total_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->create([
+        $id = $this->create([
             'id_sucursal' => $id_sucursal,
             'id_usuario_apertura' => $id_usuario,
             'monto_apertura' => $total_usd,
@@ -34,31 +48,41 @@ class Caja extends BaseModel
             'estado' => 'abierta',
             'fecha_apertura' => date('Y-m-d H:i:s')
         ]);
+
+        if ($id) {
+            unset(self::$activeCajaCache[$id_sucursal]);
+        }
+
+        return $id;
     }
 
     /**
      * Obtiene el resumen de una caja (totales de ingresos y egresos)
+     * Bolt Optimization: Consolidated 2 database round-trips into 1 using a LEFT JOIN and conditional aggregation.
      */
     public function getResumen($id_caja)
     {
         $sql = "SELECT 
-                    SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) as ingresos,
-                    SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) as egresos
-                FROM caja_movimientos 
-                WHERE id_caja = ?";
+                    c.monto_apertura,
+                    SUM(CASE WHEN m.tipo = 'ingreso' THEN m.monto ELSE 0 END) as ingresos,
+                    SUM(CASE WHEN m.tipo = 'egreso' THEN m.monto ELSE 0 END) as egresos
+                FROM {$this->table} c
+                LEFT JOIN caja_movimientos m ON c.id = m.id_caja
+                WHERE c.id = ?
+                GROUP BY c.id";
+
         $res = $this->db->fetchOne($sql, [$id_caja]);
 
-        $caja = $this->find($id_caja);
-        $monto_apertura = $caja['monto_apertura'] ?? 0;
+        $monto_apertura = $res['monto_apertura'] ?? 0;
+        $ingresos = $res['ingresos'] ?? 0;
+        $egresos = $res['egresos'] ?? 0;
 
-        $resumen = [
+        return [
             'apertura' => $monto_apertura,
-            'ingresos' => $res['ingresos'] ?? 0,
-            'egresos' => $res['egresos'] ?? 0,
-            'esperado' => $monto_apertura + ($res['ingresos'] ?? 0) - ($res['egresos'] ?? 0)
+            'ingresos' => $ingresos,
+            'egresos' => $egresos,
+            'esperado' => $monto_apertura + $ingresos - $egresos
         ];
-
-        return $resumen;
     }
 
     /**
@@ -66,10 +90,15 @@ class Caja extends BaseModel
      */
     public function cerrar($id_caja, $id_usuario, $monto_usd, $monto_bs, $tasa, $observaciones = '')
     {
+        $caja = $this->find($id_caja);
+        if (!$caja) {
+            return false;
+        }
+
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->update($id_caja, [
+        $success = $this->update($id_caja, [
             'id_usuario_cierre' => $id_usuario,
             'monto_cierre' => $total_cierre_usd,
             'monto_cierre_usd' => $monto_usd,
@@ -79,6 +108,12 @@ class Caja extends BaseModel
             'fecha_cierre' => date('Y-m-d H:i:s'),
             'observaciones' => $observaciones
         ]);
+
+        if ($success) {
+            unset(self::$activeCajaCache[$caja['id_sucursal']]);
+        }
+
+        return $success;
     }
 
     /**
