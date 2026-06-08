@@ -74,7 +74,8 @@ final class Route
         return false;
     }
 
-    function matchRequestMethod(RequestInterface $request): bool {
+    function matchRequestMethod(RequestInterface $request): bool
+    {
         return $this->method === $request->getMethod();
     }
 }

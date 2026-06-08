@@ -20,7 +20,7 @@ require_once __DIR__ . '/../layouts/header.php';
 
 <!-- Bento Grid Layout -->
 <div class="bento-grid">
-    
+
     <!-- 1. Estadísticas (Top Row) -->
     <?php if ($user_rol !== 'cajero') : ?>
         <div class="stat-card success span-1">
@@ -124,7 +124,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <h3 class="card-title m-0"><i class="fas fa-box"></i> Stock Bajo: Productos</h3>
             <a href="/productos" class="btn btn-sm btn-secondary">Ver Todos</a>
         </div>
-        
+
         <?php if (empty($data['productos_stock_bajo'])) : ?>
             <div class="text-center text-muted py-4">
                 <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
@@ -155,7 +155,7 @@ require_once __DIR__ . '/../layouts/header.php';
             <h3 class="card-title m-0"><i class="fas fa-cubes"></i> Stock Bajo: Insumos</h3>
             <a href="/insumos" class="btn btn-sm btn-secondary">Ver Todos</a>
         </div>
-        
+
         <?php if (empty($data['insumos_stock_bajo'])) : ?>
             <div class="text-center text-muted py-4">
                 <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
@@ -217,7 +217,7 @@ require_once __DIR__ . '/../layouts/header.php';
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-let ventasChart; 
+let ventasChart;
 
 document.addEventListener('DOMContentLoaded', function() {
     Chart.defaults.font.family = "'Outfit', sans-serif";
@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 1. Gráfico de Ventas
     const ctxVentas = document.getElementById('ventasChart').getContext('2d');
     const ventasData = <?= json_encode($data['ventas_ultimos_dias']) ?>;
-    
+
     // Gradiente para el gráfico
     const gradient = ctxVentas.createLinearGradient(0, 0, 0, 400);
     gradient.addColorStop(0, 'rgba(210, 105, 30, 0.2)');
@@ -256,13 +256,13 @@ document.addEventListener('DOMContentLoaded', function() {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                tooltip: { 
+                tooltip: {
                     backgroundColor: '#3E2723',
                     titleColor: '#FFF',
                     bodyColor: '#FFF',
                     padding: 10,
                     cornerRadius: 8,
-                    callbacks: { label: (c) => '$ ' + c.parsed.y.toFixed(2) } 
+                    callbacks: { label: (c) => '$ ' + c.parsed.y.toFixed(2) }
                 }
             },
             scales: {
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 2. Gráfico Productos
     const ctxProd = document.getElementById('productosChart').getContext('2d');
     const prodData = <?= json_encode($data['productos_mas_vendidos']) ?>;
-    
+
     new Chart(ctxProd, {
         type: 'doughnut',
         data: {
@@ -351,4 +351,3 @@ actualizarReloj();
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
-

@@ -7,6 +7,12 @@ class Sucursal extends BaseModel
     protected $table = 'sucursales';
 
     /**
+     * Request-level cache for active sucursales
+     * @var array|null
+     */
+    protected static $activeSucursalesCache = null;
+
+    /**
      * Obtener todas las sucursales de un negocio
      */
     public function getByNegocio($negocio_id)
@@ -18,11 +24,19 @@ class Sucursal extends BaseModel
 
     /**
      * Obtener solo sucursales activas
+     * Bolt Optimization: Uses request-level static cache to avoid redundant DB queries.
      */
     public function getActivas($negocio_id = null)
     {
+        if (self::$activeSucursalesCache !== null) {
+            return self::$activeSucursalesCache;
+        }
+
         $sql = "SELECT * FROM {$this->table} WHERE estado = 'activa' ORDER BY nombre";
-        return $this->db->fetchAll($sql);
+        $result = $this->db->fetchAll($sql);
+
+        self::$activeSucursalesCache = $result;
+        return $result;
     }
 
     /**
