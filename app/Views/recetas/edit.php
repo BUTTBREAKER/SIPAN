@@ -23,29 +23,29 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         <label class="form-label">Nombre de la Receta <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" x-model="formData.nombre" required>
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Rendimiento <span class="text-danger">*</span></label>
                         <input type="number" class="form-control" x-model="formData.rendimiento" required step="0.01" min="0">
                         <small class="text-muted">Cantidad de unidades que produce esta receta</small>
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <label class="form-label">Instrucciones</label>
                     <textarea class="form-control" x-model="formData.instrucciones" rows="4" placeholder="Pasos para preparar la receta..."></textarea>
                 </div>
-                
+
                 <hr>
-                
+
                 <h5 class="mb-3">Insumos de la Receta</h5>
-                
+
                 <div class="mb-3">
                     <button type="button" @click="agregarInsumo()" class="btn btn-success">
                         <i class="fas fa-plus"></i> Agregar Insumo
                     </button>
                 </div>
-                
+
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
@@ -82,7 +82,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         </tbody>
                     </table>
                 </div>
-                
+
                 <div class="d-flex gap-2 mt-4">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Guardar Cambios
@@ -109,18 +109,18 @@ function editRecetaApp(receta, insumosDisponibles, recetaInsumos) {
             cantidad: ri.cantidad
         })),
         insumosDisponibles: insumosDisponibles,
-        
+
         agregarInsumo() {
             this.insumos.push({
                 id_insumo: '',
                 cantidad: ''
             });
         },
-        
+
         eliminarInsumo(index) {
             this.insumos.splice(index, 1);
         },
-        
+
         async handleSubmit() {
             if (this.insumos.length === 0) {
                 Swal.fire({
@@ -131,21 +131,21 @@ function editRecetaApp(receta, insumosDisponibles, recetaInsumos) {
                 });
                 return;
             }
-            
+
             const data = {
                 ...this.formData,
                 insumos: this.insumos
             };
-            
+
             try {
                 const response = await fetch('/recetas/update/<?= $receta['id'] ?>', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     Swal.fire({
                         icon: 'success',
@@ -177,4 +177,3 @@ function editRecetaApp(receta, insumosDisponibles, recetaInsumos) {
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
-

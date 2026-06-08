@@ -36,14 +36,14 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                             <?php endif; ?>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <strong>Dirección:</strong><br>
                             <?= htmlspecialchars($sucursal['direccion']) ?>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Teléfono:</strong><br>
@@ -54,7 +54,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                             <?= htmlspecialchars($sucursal['correo'] ?? 'No especificado') ?>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <strong>Clave de Sucursal:</strong><br>
@@ -66,7 +66,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="card mt-3">
                 <div class="card-header">
                     <h5><i class="fas fa-users"></i> Empleados de esta Sucursal</h5>
@@ -108,7 +108,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header">
@@ -131,7 +131,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                     </div>
                 </div>
             </div>
-            
+
             <div class="card mt-3">
                 <div class="card-header">
                     <h5><i class="fas fa-cog"></i> Acciones</h5>
@@ -164,14 +164,14 @@ async function regenerarClave(id) {
         confirmButtonText: 'Sí, regenerar',
         cancelButtonText: 'Cancelar'
     });
-    
+
     if (result.isConfirmed) {
         try {
             const response = await fetch(`/sucursales/regenerar-clave/${id}`, {
                 method: 'POST'
             });
             const data = await response.json();
-            
+
             if (data.success) {
                 Swal.fire({
                     icon: 'success',
@@ -200,4 +200,3 @@ async function regenerarClave(id) {
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
-

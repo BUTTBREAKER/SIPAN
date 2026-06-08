@@ -10,22 +10,37 @@ class Caja extends BaseModel
     protected $table = 'cajas';
 
     /**
+     * Request-level cache for active cash box
+     * @var array
+     */
+    protected static $activeCajaCache = [];
+
+    /**
      * Obtiene la caja activa para una sucursal
+     * Bolt Optimization: Uses request-level static cache to avoid redundant DB queries.
      */
     public function getActiva($id_sucursal)
     {
+        if (array_key_exists($id_sucursal, self::$activeCajaCache)) {
+            return self::$activeCajaCache[$id_sucursal];
+        }
+
         $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
-        return $this->db->fetchOne($sql, [$id_sucursal]);
+        $result = $this->db->fetchOne($sql, [$id_sucursal]);
+
+        self::$activeCajaCache[$id_sucursal] = $result;
+        return $result;
     }
 
     /**
      * Abre una nueva caja con soporte multimoneda
+     * Bolt Optimization: Invalidates active caja cache on successful open.
      */
     public function abrir($id_sucursal, $id_usuario, $monto_usd, $monto_bs, $tasa)
     {
         $total_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->create([
+        $res = $this->create([
             'id_sucursal' => $id_sucursal,
             'id_usuario_apertura' => $id_usuario,
             'monto_apertura' => $total_usd,
@@ -34,42 +49,65 @@ class Caja extends BaseModel
             'estado' => 'abierta',
             'fecha_apertura' => date('Y-m-d H:i:s')
         ]);
+
+        if ($res) {
+            unset(self::$activeCajaCache[$id_sucursal]);
+        }
+
+        return $res;
     }
 
     /**
      * Obtiene el resumen de una caja (totales de ingresos y egresos)
+     * Bolt Optimization: Consolidated two database round-trips into one using a LEFT JOIN
+     * and conditional aggregation. Includes a safety check to return 0.0 if no result is found.
      */
     public function getResumen($id_caja)
     {
-        $sql = "SELECT 
-                    SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) as ingresos,
-                    SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) as egresos
-                FROM caja_movimientos 
-                WHERE id_caja = ?";
+        $sql = "SELECT c.monto_apertura,
+                    SUM(CASE WHEN m.tipo = 'ingreso' THEN m.monto ELSE 0 END) as ingresos,
+                    SUM(CASE WHEN m.tipo = 'egreso' THEN m.monto ELSE 0 END) as egresos
+                FROM {$this->table} c
+                LEFT JOIN caja_movimientos m ON c.id = m.id_caja
+                WHERE c.id = ?
+                GROUP BY c.id";
+
         $res = $this->db->fetchOne($sql, [$id_caja]);
 
-        $caja = $this->find($id_caja);
-        $monto_apertura = $caja['monto_apertura'] ?? 0;
+        if (!$res) {
+            return [
+                'apertura' => 0.0,
+                'ingresos' => 0.0,
+                'egresos' => 0.0,
+                'esperado' => 0.0
+            ];
+        }
 
-        $resumen = [
+        $monto_apertura = (float)($res['monto_apertura'] ?? 0);
+        $ingresos = (float)($res['ingresos'] ?? 0);
+        $egresos = (float)($res['egresos'] ?? 0);
+
+        return [
             'apertura' => $monto_apertura,
-            'ingresos' => $res['ingresos'] ?? 0,
-            'egresos' => $res['egresos'] ?? 0,
-            'esperado' => $monto_apertura + ($res['ingresos'] ?? 0) - ($res['egresos'] ?? 0)
+            'ingresos' => $ingresos,
+            'egresos' => $egresos,
+            'esperado' => $monto_apertura + $ingresos - $egresos
         ];
-
-        return $resumen;
     }
 
     /**
      * Cierra una caja con soporte multimoneda
+     * Bolt Optimization: Invalidates active caja cache on successful close.
      */
     public function cerrar($id_caja, $id_usuario, $monto_usd, $monto_bs, $tasa, $observaciones = '')
     {
+        $caja = $this->find($id_caja);
+        $id_sucursal = $caja['id_sucursal'] ?? null;
+
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->update($id_caja, [
+        $res = $this->update($id_caja, [
             'id_usuario_cierre' => $id_usuario,
             'monto_cierre' => $total_cierre_usd,
             'monto_cierre_usd' => $monto_usd,
@@ -79,6 +117,12 @@ class Caja extends BaseModel
             'fecha_cierre' => date('Y-m-d H:i:s'),
             'observaciones' => $observaciones
         ]);
+
+        if ($res && $id_sucursal) {
+            unset(self::$activeCajaCache[$id_sucursal]);
+        }
+
+        return $res;
     }
 
     /**

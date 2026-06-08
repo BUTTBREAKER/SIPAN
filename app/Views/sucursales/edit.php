@@ -27,7 +27,7 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         <label class="form-label">Nombre de la Sucursal <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" x-model="formData.nombre" required>
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Estado <span class="text-danger">*</span></label>
                         <select class="form-select" x-model="formData.estado" required>
@@ -36,29 +36,29 @@ require_once __DIR__ . '/../layouts/sidebar.php';
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <label class="form-label">Dirección <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" x-model="formData.direccion" required>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Teléfono</label>
                         <input type="text" class="form-control" x-model="formData.telefono" @input="formData.telefono = SIPAN.formatPhone($event.target.value)">
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Correo</label>
                         <input type="email" class="form-control" x-model="formData.correo">
                     </div>
                 </div>
-                
+
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i> <strong>Clave de Sucursal:</strong> <?= htmlspecialchars($sucursal['clave_sucursal']) ?>
                     <br><small>Para cambiar la clave, use el botón "Regenerar Clave" en la vista de detalle</small>
                 </div>
-                
+
                 <div class="d-flex gap-2 mt-4">
                     <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
                         <template x-if="!isSubmitting">
@@ -88,11 +88,11 @@ function editSucursalApp(sucursal) {
             correo: sucursal.correo || '',
             estado: sucursal.estado
         },
-        
+
         async handleSubmit() {
             this.isSubmitting = true;
             const csrfToken = document.querySelector('input[name="csrf_token"]').value;
-            
+
             try {
                 const response = await fetch('/sucursales/update/<?= $sucursal['id'] ?>', {
                     method: 'POST',
@@ -102,9 +102,9 @@ function editSucursalApp(sucursal) {
                     },
                     body: JSON.stringify(this.formData)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     Swal.fire({
                         icon: 'success',
@@ -138,4 +138,3 @@ function editSucursalApp(sucursal) {
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
-
