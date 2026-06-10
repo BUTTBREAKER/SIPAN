@@ -19,7 +19,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <i class="fas fa-lock me-2"></i> Cerrar Caja
                     </a>
                 <?php else : ?>
-                    <a href="/cajas/aprir" class="btn btn-success d-flex align-items-center">
+                    <a href="/cajas/abrir" class="btn btn-success d-flex align-items-center">
                         <i class="fas fa-unlock me-2"></i> Abrir Caja
                     </a>
                 <?php endif; ?>
@@ -62,10 +62,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </div>
                         <h6 class="mb-0 text-muted">Ingresos</h6>
                     </div>
-                    <?php
-                        $resumen = (new \App\Models\Caja())->getResumen($cajaActiva['id']);
-                    ?>
-                    <h3 class="mb-0 fw-bold text-success">+ <?php echo SIPAN::formatMoney($resumen['ingresos']); ?></h3>
+                    <h3 class="mb-0 fw-bold text-success">+ <?php echo SIPAN::formatMoney($resumen['ingresos'] ?? 0); ?></h3>
                 </div>
             </div>
         </div>
@@ -78,7 +75,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </div>
                         <h6 class="mb-0 text-muted">Egresos</h6>
                     </div>
-                    <h3 class="mb-0 fw-bold text-danger">- <?php echo SIPAN::formatMoney($resumen['egresos']); ?></h3>
+                    <h3 class="mb-0 fw-bold text-danger">- <?php echo SIPAN::formatMoney($resumen['egresos'] ?? 0); ?></h3>
                 </div>
             </div>
         </div>
@@ -91,7 +88,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         </div>
                         <h6 class="mb-0 opacity-75">Saldo Actual</h6>
                     </div>
-                    <h3 class="mb-0 fw-bold"><?php echo SIPAN::formatMoney($resumen['esperado']); ?></h3>
+                    <h3 class="mb-0 fw-bold"><?php echo SIPAN::formatMoney($resumen['esperado'] ?? 0); ?></h3>
                 </div>
             </div>
         </div>
