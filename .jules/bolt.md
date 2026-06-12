@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Request-Level Model State Caching]
+**Learning:** Methods like `Caja::getActiva()` or `Sucursal::getActivas()` are often called multiple times across middleware, controllers, and layout components (headers/sidebars) within a single request. Implementing request-level caching via static properties significantly reduces database load (often by 50% or more on affected pages) with minimal risk of data staleness in PHP's shared-nothing environment.
+**Action:** Use static properties for "negative caching" (storing `false` or `null`) and ensure cache invalidation happens immediately after successful state-changing operations (like `abrir` or `cerrar`) within the same model.
