@@ -97,11 +97,11 @@ class Insumo extends BaseModel
 
     public function updateProveedor($insumo_id, $proveedor_id, $precio = 0)
     {
-        // Primero eliminar cualquier relación existente (para mantener una relación 1 a 1 lógica desde la UI, 
+        // Primero eliminar cualquier relación existente (para mantener una relación 1 a 1 lógica desde la UI,
         // aunque la DB permita muchos a muchos)
         $sqlDelete = "DELETE FROM proveedor_insumos WHERE id_insumo = ?";
         $this->db->execute($sqlDelete, [$insumo_id]);
-        
+
         if (!empty($proveedor_id)) {
             $sqlInsert = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio) VALUES (?, ?, ?)";
             $this->db->execute($sqlInsert, [$proveedor_id, $insumo_id, $precio]);
