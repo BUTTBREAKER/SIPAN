@@ -10,22 +10,37 @@ class Caja extends BaseModel
     protected $table = 'cajas';
 
     /**
+     * Cache para la caja activa por sucursal a nivel de request (Optimización Bolt)
+     * @var array
+     */
+    private static $activeCajaCache = [];
+
+    /**
      * Obtiene la caja activa para una sucursal
+     * Optimización Bolt: Implementa cache a nivel de request para reducir consultas redundantes.
      */
     public function getActiva($id_sucursal)
     {
+        if (array_key_exists($id_sucursal, self::$activeCajaCache)) {
+            return self::$activeCajaCache[$id_sucursal];
+        }
+
         $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
-        return $this->db->fetchOne($sql, [$id_sucursal]);
+        $result = $this->db->fetchOne($sql, [$id_sucursal]);
+
+        self::$activeCajaCache[$id_sucursal] = $result;
+        return $result;
     }
 
     /**
      * Abre una nueva caja con soporte multimoneda
+     * Optimización Bolt: Invalida el cache de la caja activa.
      */
     public function abrir($id_sucursal, $id_usuario, $monto_usd, $monto_bs, $tasa)
     {
         $total_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->create([
+        $result = $this->create([
             'id_sucursal' => $id_sucursal,
             'id_usuario_apertura' => $id_usuario,
             'monto_apertura' => $total_usd,
@@ -34,6 +49,12 @@ class Caja extends BaseModel
             'estado' => 'abierta',
             'fecha_apertura' => date('Y-m-d H:i:s')
         ]);
+
+        if ($result) {
+            unset(self::$activeCajaCache[$id_sucursal]);
+        }
+
+        return $result;
     }
 
     /**
@@ -63,13 +84,17 @@ class Caja extends BaseModel
 
     /**
      * Cierra una caja con soporte multimoneda
+     * Optimización Bolt: Invalida el cache de la caja activa.
      */
     public function cerrar($id_caja, $id_usuario, $monto_usd, $monto_bs, $tasa, $observaciones = '')
     {
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->update($id_caja, [
+        $caja = $this->find($id_caja);
+        $sucursal_id = $caja['id_sucursal'] ?? null;
+
+        $result = $this->update($id_caja, [
             'id_usuario_cierre' => $id_usuario,
             'monto_cierre' => $total_cierre_usd,
             'monto_cierre_usd' => $monto_usd,
@@ -79,6 +104,12 @@ class Caja extends BaseModel
             'fecha_cierre' => date('Y-m-d H:i:s'),
             'observaciones' => $observaciones
         ]);
+
+        if ($result && $sucursal_id) {
+            unset(self::$activeCajaCache[$sucursal_id]);
+        }
+
+        return $result;
     }
 
     /**
