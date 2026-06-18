@@ -9,11 +9,6 @@ class Insumo extends BaseModel
     // ✅ Nuevo método compatible con el controlador
     public function getAllBySucursal($sucursal_id)
     {
-        $sql = "SELECT i.*, p.nombre as proveedor_nombre 
-                FROM {$this->table} i
-                LEFT JOIN providers p ON i.id_proveedor = p.id
-                WHERE i.id_sucursal = ? 
-                ORDER BY i.nombre";
         // Corregir nombre de tabla si es 'proveedores' en lugar de 'providers'
         // Asumiendo 'proveedores' por el SQL anterior
         $sql = "SELECT i.*, GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre 
@@ -97,11 +92,11 @@ class Insumo extends BaseModel
 
     public function updateProveedor($insumo_id, $proveedor_id, $precio = 0)
     {
-        // Primero eliminar cualquier relación existente (para mantener una relación 1 a 1 lógica desde la UI, 
+        // Primero eliminar cualquier relación existente (para mantener una relación 1 a 1 lógica desde la UI,
         // aunque la DB permita muchos a muchos)
         $sqlDelete = "DELETE FROM proveedor_insumos WHERE id_insumo = ?";
         $this->db->execute($sqlDelete, [$insumo_id]);
-        
+
         if (!empty($proveedor_id)) {
             $sqlInsert = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio) VALUES (?, ?, ?)";
             $this->db->execute($sqlInsert, [$proveedor_id, $insumo_id, $precio]);
