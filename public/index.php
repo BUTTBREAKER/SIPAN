@@ -1,5 +1,14 @@
 <?php
 
+use App\Route;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\ServerRequest;
+use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7\Uri;
+use Leaf\Http\Session;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -7,229 +16,155 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // SIPAN - Sistema Integral para Panaderías
 // Archivo principal de enrutamiento
 
-// Habilitar buffering de salida para prevenir errores de cabeceras
-ob_start();
-
 // Cargar configuración
 (new Dotenv())->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
 $_ENV['app_debug'] = filter_var($_ENV['app_debug'], FILTER_VALIDATE_BOOL);
 
 // Configurar errores según entorno
+error_reporting(E_ALL);
+
 if ($_ENV['app_env'] === 'production') {
     // Producción: No mostrar errores en pantalla, solo registrar en log
-    error_reporting(E_ALL);
-    ini_set('display_errors', false);
+    ini_set('display_errors', 'Off');
     ini_set('error_log', __DIR__ . '/../storage/logs/php-errors.log');
 } else {
     // Desarrollo: Mostrar todos los errores
-    error_reporting(E_ALL);
-    ini_set('display_errors', $_ENV['app_debug']);
+    ini_set('display_errors', strval($_ENV['app_debug']));
     ini_set('error_log', __DIR__ . '/../storage/logs/sipan-debug.log');
 }
-
-// Detectar la ruta ANTES de iniciar la sesión para poder variar el nombre de la sesión
-$request_uri = $_SERVER['REQUEST_URI'] ?? '/';
-$path = parse_url($request_uri, PHP_URL_PATH) ?? '/';
-
-// Asegurar que la ruta comience con /
-if (!str_starts_with($path, '/')) {
-    $path = "/$path";
-}
-
-// Detectar si la ruta es para el sistema de delivery
-$isDeliveryPath = (stripos($path, '/delivery') === 0);
 
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
 $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
 
-// Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
-$sessionParams = session_get_cookie_params();
+// Detectar protocolo (compatible con proxy/túnel como Cloudflare)
+$scheme = $isSecure ? 'https' : 'http';
 
-session_set_cookie_params([
-    'lifetime' => $_ENV['session_lifetime'] ?? 86400 /* 1 day */,
-    'path' => $sessionParams['path'],
-    'domain' => $sessionParams['domain'],
+$uri = (new Uri($_SERVER['REQUEST_URI']))
+    ->withHost($_SERVER['SERVER_NAME'])
+    ->withPort($_SERVER['SERVER_PORT'])
+    ->withScheme($scheme);
+
+$request = (new ServerRequest($_SERVER['REQUEST_METHOD'], $uri))
+    ->withBody(new Stream(fopen('php://input', 'r')))
+    ->withCookieParams($_COOKIE)
+    ->withProtocolVersion(ltrim($_SERVER['SERVER_PROTOCOL'], 'HTTP/'))
+    ->withQueryParams($_GET)
+    ->withUploadedFiles($_FILES);
+
+foreach (headers_list() as $header) {
+    [$name, $value] = explode(':', strval($header));
+
+    $request = $request->withHeader($name, $value);
+}
+
+$response = (new Response)
+    ->withBody(new Stream(fopen('php://temp', 'w+')))
+    ->withProtocolVersion($request->getProtocolVersion());
+
+// Detectar si la ruta es para el sistema de delivery
+$isDeliveryPath = str_contains($uri->getPath(), '/delivery');
+
+// Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
+$sessionParams = [
+    'lifetime' => filter_var($_ENV['session_lifetime'], FILTER_VALIDATE_INT),
     'secure' => $isSecure,
     'httponly' => true,
-    'samesite' => 'Lax'
-]);
+    'samesite' => 'Strict',
+] + session_get_cookie_params();
+
+session_set_cookie_params($sessionParams);
 
 if (session_status() === PHP_SESSION_NONE) {
     // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
-    $baseSessionName = $_ENV['session_name'] ?? 'SIPAN_SESSION';
-    $finalSessionName = $isDeliveryPath ? $baseSessionName . '_DELIVERY' : $baseSessionName;
+    $baseSessionName = strval($_ENV['session_name']);
+    $finalSessionName = $isDeliveryPath ? "{$baseSessionName}_DELIVERY" : $baseSessionName;
 
     session_name($finalSessionName);
-    session_start();
+    Session::start();
 }
 
 // Habilitar log de debug
-ini_set('log_errors', true);
+ini_set('log_errors', 'Off');
 
 // La ruta ya fue detectada arriba
 // ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
 // Si la ruta empieza con /delivery y no es un archivo físico (ya manejado por el servidor)
-if (stripos($path, '/delivery') === 0) {
-    if (file_exists(__DIR__ . '/../delivery/index.php')) {
-        require_once __DIR__ . '/../delivery/index.php';
-        exit;
-    }
+if ($isDeliveryPath) {
+    require_once __DIR__ . '/../delivery/index.php';
+
+    exit;
 }
 // ---------------------------------------------------------------
 
-// Remover el subdirectorio base si no estamos en la raíz
-$script_name = dirname($_SERVER['SCRIPT_NAME']);
-// Detectar protocolo (compatible con proxy/túnel como Cloudflare)
-$protocol = ($isSecure) ? 'https' : 'http';
-$base_url = $protocol . '://' . $_SERVER['HTTP_HOST'] . $script_name;
-define('BASE_URL', rtrim($base_url, '/\\') . '/');
-
-if ($script_name !== '/' && $script_name !== '\\') {
-    $path = str_replace($script_name, '', $path);
-}
-
-// Remover index.php si está presente
-$path = str_replace('/index.php', '', $path);
-
-// Limpiar la ruta
-$path = rtrim($path, '/') ?: '/';
+define('BASE_URL', $uri->withQuery('')->__toString());
 
 // Debug (comentar en producción)
-if ($_ENV['app_debug']) {
-    error_log("Path: $path, Method: {$_SERVER['REQUEST_METHOD']}, URI: $request_uri");
-} else {
-    // Log todas las peticiones
-    $log_message = "{$_SERVER['REQUEST_METHOD']} | {$_SERVER['REQUEST_URI']}";
-    error_log($log_message);
-}
-
-// Método HTTP
-$method = $_SERVER['REQUEST_METHOD'];
+error_log(
+    $_ENV['app_debug']
+        ? "Path: {$uri->getPath()}, Method: {$request->getMethod()}, URI: {$request->getRequestTarget()}"
+        : "{$request->getMethod()} {$request->getRequestTarget()}"
+);
 
 // Enrutador
 $routes = [];
 
-foreach (glob(__DIR__ . '/../routes/*.php') as $routesFilePath) {
+foreach (glob(__DIR__ . '/../routes/*.php') ?: [] as $routesFilePath) {
     $routes += require $routesFilePath;
 }
 
 // Buscar ruta coincidente
 $matched = false;
 $params = [];
+$acceptJson = str_contains($_SERVER['HTTP_ACCEPT'], 'application/json');
 
-foreach ($routes as $route => $handler) {
-    list($routeMethod, $routePath) = explode('|', $route);
-
-    if ($routeMethod !== $method) {
+/** @var Route */
+foreach ($routes as $route) {
+    if (!$route->matchRequestMethod($request)) {
         continue;
     }
 
-    $params = matchRoute($routePath, $path);
+    $params = $route->getParamsFromUri($uri);
 
-    if ($params !== false) {
-        $matched = true;
-        $controllerName = 'App\\Controllers\\' . $handler[0];
-        $methodName = $handler[1];
-
-        try {
-            if (class_exists($controllerName)) {
-                $controller = new $controllerName();
-
-                if (method_exists($controller, $methodName)) {
-                    call_user_func_array([$controller, $methodName], $params);
-                } else {
-                    http_response_code(500);
-                    if (
-                        $_SERVER['HTTP_ACCEPT'] === 'application/json'
-                        || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
-                    ) {
-                        header('Content-Type: application/json');
-                        echo json_encode(['success' => false, 'message' => "Método no encontrado: {$methodName}"]);
-                    } else {
-                        echo "Método no encontrado: {$methodName}";
-                    }
-                }
-            } else {
-                http_response_code(500);
-                if (
-                    $_SERVER['HTTP_ACCEPT'] === 'application/json'
-                    || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
-                ) {
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => "Controlador no encontrado: {$controllerName}"]);
-                } else {
-                    echo "Controlador no encontrado: {$controllerName}";
-                }
-            }
-        } catch (Exception $e) {
-            http_response_code(500);
-            if (
-                $_SERVER['HTTP_ACCEPT'] === 'application/json'
-                || strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
-            ) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
-            } else {
-                echo "Error: " . $e->getMessage();
-            }
-        }
-
-        break;
+    if ($params === false) {
+        continue;
     }
+
+    $matched = true;
+
+    try {
+        ob_start();
+        call_user_func($route->getCallable(), $params);
+        $response->getBody()->write(ob_get_clean() ?: '');
+    } catch (Throwable $exception) {
+        $response = $response->withStatus(500);
+        $message = "Error: {$exception->getMessage()}";
+
+        if ($acceptJson) {
+            $response = $response->withHeader('Content-Type', 'application/json');
+
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => $message,
+            ]) ?: '');
+        } else {
+            $response->getBody()->write($message);
+        }
+    }
+
+    http_response_code($response->getStatusCode());
+    echo $response->getBody();
+
+    break;
 }
 
 // Si no se encontró ruta, mostrar 404
 if (!$matched) {
-    http_response_code(404);
-    echo "<!DOCTYPE html>
-    <html lang='es'>
-    <head>
-        <meta charset='UTF-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <title>404 - Página no encontrada</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                margin: 0;
-                background: linear-gradient(135deg, #D4A574 0%, #8B6F47 100%);
-                color: white;
-            }
-            .error-container {
-                text-align: center;
-            }
-            .error-code {
-                font-size: 8rem;
-                font-weight: bold;
-                margin: 0;
-            }
-            .error-message {
-                font-size: 1.5rem;
-                margin: 1rem 0;
-            }
-            .error-link {
-                display: inline-block;
-                margin-top: 2rem;
-                padding: 1rem 2rem;
-                background: white;
-                color: #8B6F47;
-                text-decoration: none;
-                border-radius: 8px;
-                font-weight: bold;
-            }
-        </style>
-    </head>
-    <body>
-        <div class='error-container'>
-            <h1 class='error-code'>404</h1>
-            <p class='error-message'>Página no encontrada</p>
-            <p>La ruta solicitada no existe en el sistema.</p>
-            <p>Ruta: {$path}</p>
-            <a href='/dashboard' class='error-link'>Volver al Dashboard</a>
-        </div>
-    </body>
-    </html>";
+    $response = $response->withStatus(404);
+
+    ob_start();
+
+    require __DIR__ . '/../app/Views/404.php';
+
+    $response->getBody()->write(ob_get_clean() ?: '');
+    echo $response->getBody();
 }

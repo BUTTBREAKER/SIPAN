@@ -45,7 +45,7 @@ class Configuracion extends BaseModel
     {
         $exists = $this->get($key);
         $success = false;
-        
+
         if ($exists !== null) {
             $sql = "UPDATE {$this->table} SET valor = ? WHERE clave = ?";
             $success = $this->db->execute($sql, [$value, $key]);
@@ -60,7 +60,7 @@ class Configuracion extends BaseModel
                 self::$tasaBcvChecked = true;
             }
         }
-        
+
         return $success;
     }
 

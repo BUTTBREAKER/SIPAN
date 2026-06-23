@@ -20,11 +20,6 @@ class ReportesController
 
     public function __construct()
     {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: /login');
-            exit;
-        }
-
         $this->ventaModel = new Venta();
         $this->productoModel = new Producto();
         $this->clienteModel = new Cliente();

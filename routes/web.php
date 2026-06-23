@@ -1,188 +1,371 @@
 <?php
 
+use App\Controllers\AuditoriasController;
+use App\Controllers\AuthController;
+use App\Controllers\CajaController;
+use App\Controllers\CalculoInsumosController;
+use App\Controllers\ChatController;
+use App\Controllers\ClientesController;
+use App\Controllers\ComprasController;
+use App\Controllers\ConfigController;
+use App\Controllers\DashboardController;
+use App\Controllers\InsumosController;
+use App\Controllers\LotesController;
+use App\Controllers\NotificacionesController;
+use App\Controllers\PedidosController;
+use App\Controllers\PrediccionesController;
+use App\Controllers\ProduccionesController;
+use App\Controllers\ProductosController;
+use App\Controllers\ProveedoresController;
+use App\Controllers\RecetasController;
+use App\Controllers\ReportesController;
+use App\Controllers\RespaldosController;
+use App\Controllers\SucursalesController;
+use App\Controllers\SugerenciasController;
+use App\Controllers\UsuariosController;
+use App\Controllers\VentasController;
+use App\Middlewares\AuthMiddleware;
+use App\Route;
+
+$redirectToLoginIfUserIsNotLogged = static function (): void {
+    if (!isset($_SESSION['user_id'])) {
+        header('Location: /login');
+        exit;
+    }
+};
+
+$checkIfUserIsAdministrator = static function (): void {
+    AuthMiddleware::checkRole(['administrador']);
+};
+
 return [
     // Autenticación
-    'GET|/' => ['AuthController', 'showLogin'],
-    'GET|/login' => ['AuthController', 'showLogin'],
-    'POST|/login' => ['AuthController', 'login'],
-    'GET|/logout' => ['AuthController', 'logout'],
-    'GET|/register' => ['AuthController', 'showRegister'],
-    'POST|/auth/register' => ['AuthController', 'register'],
-    'POST|/auth/verificar-clave-sucursal' => ['AuthController', 'verificarClaveSucursal'],
-    'GET|/notificaciones/no-leidas' => ['NotificacionesController', 'getNoLeidas'],
-    'POST|/notificaciones/marcar-leida/{id}' => ['NotificacionesController', 'marcarLeida'],
-    'POST|/notificaciones/marcar-todas-leidas' => ['NotificacionesController', 'marcarTodasLeidas'],
-    'POST|/auth/verificar-sucursal' => ['AuthController', 'verificarSucursal'],
-    'POST|/auth/cambiar-sucursal' => ['AuthController', 'cambiarSucursal'],
+    new Route('GET', '/', [AuthController::class, 'showLogin']),
+    new Route('GET', '/login', [AuthController::class, 'showLogin']),
+    new Route('POST', '/login', [AuthController::class, 'login']),
+    new Route('GET', '/logout', [AuthController::class, 'logout']),
+    new Route('GET', '/register', [AuthController::class, 'showRegister']),
+    new Route('POST', '/auth/register', [AuthController::class, 'register']),
+    new Route('POST', '/auth/verificar-clave-sucursal', [AuthController::class, 'verificarClaveSucursal']),
+    new Route(
+        'GET',
+        '/notificaciones/no-leidas',
+        [AuthMiddleware::class, 'check'],
+        [NotificacionesController::class, 'getNoLeidas'],
+    ),
+    new Route(
+        'POST',
+        '/notificaciones/marcar-leida/{id}',
+        [AuthMiddleware::class, 'check'],
+        [NotificacionesController::class, 'marcarLeida'],
+    ),
+    new Route(
+        'POST',
+        '/notificaciones/marcar-todas-leidas',
+        [AuthMiddleware::class, 'check'],
+        [NotificacionesController::class, 'marcarTodasLeidas'],
+    ),
+    new Route('POST', '/auth/verificar-sucursal', [AuthController::class, 'verificarSucursal']),
+    new Route('POST', '/auth/cambiar-sucursal', [AuthController::class, 'cambiarSucursal']),
 
     // Caja Chica
-    'GET|/cajas' => ['CajaController', 'index'],
-    'GET|/cajas/aprir' => ['CajaController', 'abrirPanel'],
-    'POST|/cajas/abrir' => ['CajaController', 'abrir'],
-    'GET|/cajas/cerrar' => ['CajaController', 'cerrarPanel'],
-    'POST|/cajas/cerrar' => ['CajaController', 'cerrar'],
-    'GET|/cajas/movimientos' => ['CajaController', 'movimientos'],
-    'POST|/cajas/movimientos' => ['CajaController', 'addMovimiento'],
+    new Route('GET', '/cajas', [CajaController::class, 'index']),
+    new Route('GET', '/cajas/aprir', [CajaController::class, 'abrirPanel']),
+    new Route('POST', '/cajas/abrir', [CajaController::class, 'abrir']),
+    new Route('GET', '/cajas/cerrar', [CajaController::class, 'cerrarPanel']),
+    new Route('POST', '/cajas/cerrar', [CajaController::class, 'cerrar']),
+    new Route('GET', '/cajas/movimientos', [CajaController::class, 'movimientos']),
+    new Route('POST', '/cajas/movimientos', [CajaController::class, 'addMovimiento']),
 
     // Dashboard
-    'GET|/dashboard' => ['DashboardController', 'index'],
-    'GET|/dashboard/notificaciones' => ['DashboardController', 'getNotificaciones'],
-    'POST|/dashboard/notificacion/leida' => ['DashboardController', 'marcarNotificacionLeida'],
+    new Route('GET', '/dashboard', [DashboardController::class, 'index']),
+    new Route('GET', '/dashboard/notificaciones', [DashboardController::class, 'getNotificaciones']),
+    new Route('POST', '/dashboard/notificacion/leida', [DashboardController::class, 'marcarNotificacionLeida']),
 
     // Productos
-    'GET|/productos' => ['ProductosController', 'index'],
-    'GET|/productos/create' => ['ProductosController', 'create'],
-    'POST|/productos/store' => ['ProductosController', 'store'],
-    'GET|/productos/edit/{id}' => ['ProductosController', 'edit'],
-    'POST|/productos/update/{id}' => ['ProductosController', 'update'],
-    'POST|/productos/delete/{id}' => ['ProductosController', 'delete'],
-    'GET|/productos/search' => ['ProductosController', 'search'],
-    'GET|/productos/stock-bajo' => ['ProductosController', 'stockBajo'],
+    new Route('GET', '/productos', [ProductosController::class, 'index']),
+    new Route('GET', '/productos/create', [ProductosController::class, 'create']),
+    new Route('POST', '/productos/store', [ProductosController::class, 'store']),
+    new Route('GET', '/productos/edit/{id}', [ProductosController::class, 'edit']),
+    new Route('POST', '/productos/update/{id}', [ProductosController::class, 'update']),
+    new Route('POST', '/productos/delete/{id}', [ProductosController::class, 'delete']),
+    new Route('GET', '/productos/search', [ProductosController::class, 'search']),
+    new Route('GET', '/productos/stock-bajo', [ProductosController::class, 'stockBajo']),
 
     // Insumos
-    'GET|/insumos' => ['InsumosController', 'index'],
-    'GET|/insumos/create' => ['InsumosController', 'create'],
-    'POST|/insumos/store' => ['InsumosController', 'store'],
-    'GET|/insumos/edit/{id}' => ['InsumosController', 'edit'],
-    'POST|/insumos/update/{id}' => ['InsumosController', 'update'],
-    'POST|/insumos/delete/{id}' => ['InsumosController', 'delete'],
-    'GET|/insumos/search' => ['InsumosController', 'search'],
-    'GET|/insumos/stock-bajo' => ['InsumosController', 'stockBajo'],
+    new Route('GET', '/insumos', [InsumosController::class, 'index']),
+    new Route('GET', '/insumos/create', [InsumosController::class, 'create']),
+    new Route('POST', '/insumos/store', [InsumosController::class, 'store']),
+    new Route('GET', '/insumos/edit/{id}', [InsumosController::class, 'edit']),
+    new Route('POST', '/insumos/update/{id}', [InsumosController::class, 'update']),
+    new Route('POST', '/insumos/delete/{id}', [InsumosController::class, 'delete']),
+    new Route('GET', '/insumos/search', [InsumosController::class, 'search']),
+    new Route('GET', '/insumos/stock-bajo', [InsumosController::class, 'stockBajo']),
 
     // Recetas
-    'GET|/recetas' => ['RecetasController', 'index'],
-    'GET|/recetas/create' => ['RecetasController', 'create'],
-    'POST|/recetas/store' => ['RecetasController', 'store'],
-    'GET|/recetas/edit/{id}' => ['RecetasController', 'edit'],
-    'GET|/recetas/show/{id}' => ['RecetasController', 'show'],
-    'POST|/recetas/update/{id}' => ['RecetasController', 'update'],
-    'POST|/recetas/delete/{id}' => ['RecetasController', 'delete'],
-    'POST|/recetas/calcular' => ['RecetasController', 'calcular'],
-    'GET|/recetas/calcular' => ['RecetasController', 'calcular'],
-    'POST|/recetas/add-insumo' => ['RecetasController', 'addInsumo'],
-    'POST|/recetas/remove-insumo' => ['RecetasController', 'removeInsumo'],
+    new Route('GET', '/recetas', [RecetasController::class, 'index']),
+    new Route('GET', '/recetas/create', [RecetasController::class, 'create']),
+    new Route('POST', '/recetas/store', [RecetasController::class, 'store']),
+    new Route('GET', '/recetas/edit/{id}', [RecetasController::class, 'edit']),
+    new Route('GET', '/recetas/show/{id}', [RecetasController::class, 'show']),
+    new Route('POST', '/recetas/update/{id}', [RecetasController::class, 'update']),
+    new Route('POST', '/recetas/delete/{id}', [RecetasController::class, 'delete']),
+    new Route('POST', '/recetas/calcular', [RecetasController::class, 'calcular']),
+    new Route('GET', '/recetas/calcular', [RecetasController::class, 'calcular']),
+    new Route('POST', '/recetas/add-insumo', [RecetasController::class, 'addInsumo']),
+    new Route('POST', '/recetas/remove-insumo', [RecetasController::class, 'removeInsumo']),
 
     // Ventas
-    'GET|/ventas' => ['VentasController', 'index'],
-    'GET|/ventas/create' => ['VentasController', 'create'],
-    'POST|/ventas/store' => ['VentasController', 'store'],
-    'GET|/ventas/show/{id}' => ['VentasController', 'show'],
-    'GET|/ventas/ticket/{id}' => ['VentasController', 'ticket'],
+    new Route('GET', '/ventas', [VentasController::class, 'index']),
+    new Route('GET', '/ventas/create', [VentasController::class, 'create']),
+    new Route('POST', '/ventas/store', [VentasController::class, 'store']),
+    new Route('GET', '/ventas/show/{id}', [VentasController::class, 'show']),
+    new Route('GET', '/ventas/ticket/{id}', [VentasController::class, 'ticket']),
 
     // Clientes
-    'GET|/clientes' => ['ClientesController', 'index'],
-    'GET|/clientes/create' => ['ClientesController', 'create'],
-    'POST|/clientes/store' => ['ClientesController', 'store'],
-    'GET|/clientes/edit/{id}' => ['ClientesController', 'edit'],
-    'POST|/clientes/update/{id}' => ['ClientesController', 'update'],
-    'POST|/clientes/delete/{id}' => ['ClientesController', 'delete'],
-    'GET|/clientes/show/{id}' => ['ClientesController', 'show'],
-    'GET|/clientes/search' => ['ClientesController', 'search'],
+    new Route('GET', '/clientes', [ClientesController::class, 'index']),
+    new Route('GET', '/clientes/create', [ClientesController::class, 'create']),
+    new Route('POST', '/clientes/store', [ClientesController::class, 'store']),
+    new Route('GET', '/clientes/edit/{id}', [ClientesController::class, 'edit']),
+    new Route('POST', '/clientes/update/{id}', [ClientesController::class, 'update']),
+    new Route('POST', '/clientes/delete/{id}', [ClientesController::class, 'delete']),
+    new Route('GET', '/clientes/show/{id}', [ClientesController::class, 'show']),
+    new Route('GET', '/clientes/search', [ClientesController::class, 'search']),
 
     // Pedidos
-    'GET|/pedidos' => ['PedidosController', 'index'],
-    'GET|/pedidos/create' => ['PedidosController', 'create'],
-    'POST|/pedidos/store' => ['PedidosController', 'store'],
-    'GET|/pedidos/show/{id}' => ['PedidosController', 'show'],
-    'POST|/pedidos/update/{id}' => ['PedidosController', 'update'],
-    'POST|/pedidos/registrar-pago' => ['PedidosController', 'registrarPago'],
-    'POST|/pedidos/asignar-repartidor/{id}' => ['PedidosController', 'asignarRepartidor'],
+    new Route('GET', '/pedidos', [PedidosController::class, 'index']),
+    new Route('GET', '/pedidos/create', [PedidosController::class, 'create']),
+    new Route('POST', '/pedidos/store', [PedidosController::class, 'store']),
+    new Route('GET', '/pedidos/show/{id}', [PedidosController::class, 'show']),
+    new Route('POST', '/pedidos/update/{id}', [PedidosController::class, 'update']),
+    new Route('POST', '/pedidos/registrar-pago', [PedidosController::class, 'registrarPago']),
+    new Route('POST', '/pedidos/asignar-repartidor/{id}', [PedidosController::class, 'asignarRepartidor']),
 
     // Producciones
-    'GET|/producciones' => ['ProduccionesController', 'index'],
-    'GET|/producciones/create' => ['ProduccionesController', 'create'],
-    'POST|/producciones/store' => ['ProduccionesController', 'store'],
-    'GET|/producciones/show/{id}' => ['ProduccionesController', 'show'],
+    new Route('GET', '/producciones', [ProduccionesController::class, 'index']),
+    new Route('GET', '/producciones/create', [ProduccionesController::class, 'create']),
+    new Route('POST', '/producciones/store', [ProduccionesController::class, 'store']),
+    new Route('GET', '/producciones/show/{id}', [ProduccionesController::class, 'show']),
 
     // Auditorías
-    'GET|/auditorias' => ['AuditoriasController', 'index'],
-    'GET|/auditorias/show/{id}' => ['AuditoriasController', 'show'],
-    'POST|/auditorias/deshacer' => ['AuditoriasController', 'deshacer'],
-    'GET|/auditorias/estadisticas' => ['AuditoriasController', 'estadisticas'],
+    new Route('GET', '/auditorias', [AuditoriasController::class, 'index']),
+    new Route('GET', '/auditorias/show/{id}', [AuditoriasController::class, 'show']),
+    new Route('POST', '/auditorias/deshacer', [AuditoriasController::class, 'deshacer']),
+    new Route('GET', '/auditorias/estadisticas', [AuditoriasController::class, 'estadisticas']),
 
     // Respaldos
-    'GET|/respaldos' => ['RespaldosController', 'index'],
-    'POST|/respaldos/generar' => ['RespaldosController', 'generar'],
-    'POST|/respaldos/restaurar' => ['RespaldosController', 'restaurar'],
-    'GET|/respaldos/descargar/{id}' => ['RespaldosController', 'descargar'],
+    new Route('GET', '/respaldos', [RespaldosController::class, 'index']),
+    new Route('POST', '/respaldos/generar', [RespaldosController::class, 'generar']),
+    new Route('POST', '/respaldos/restaurar', [RespaldosController::class, 'restaurar']),
+    new Route('GET', '/respaldos/descargar/{id}', [RespaldosController::class, 'descargar']),
 
     // Sugerencias de Compra
-    'GET|/sugerencias' => ['SugerenciasController', 'index'],
-    'POST|/sugerencias/generar' => ['SugerenciasController', 'generar'],
-    'POST|/sugerencias/aprobar' => ['SugerenciasController', 'aprobar'],
-    'POST|/sugerencias/rechazar' => ['SugerenciasController', 'rechazar'],
-    'POST|/sugerencias/completar' => ['SugerenciasController', 'completar'],
+    new Route('GET', '/sugerencias', [SugerenciasController::class, 'index']),
+    new Route('POST', '/sugerencias/generar', [SugerenciasController::class, 'generar']),
+    new Route('POST', '/sugerencias/aprobar', [SugerenciasController::class, 'aprobar']),
+    new Route('POST', '/sugerencias/rechazar', [SugerenciasController::class, 'rechazar']),
+    new Route('POST', '/sugerencias/completar', [SugerenciasController::class, 'completar']),
 
     // Reportes
-    'GET|/reportes' => ['ReportesController', 'index'],
-    'GET|/reportes/ventas' => ['ReportesController', 'ventas'],
-    'GET|/reportes/productos' => ['ReportesController', 'productos'],
-    'GET|/reportes/clientes' => ['ReportesController', 'clientes'],
-    'GET|/reportes/vencimientos' => ['ReportesController', 'vencimientos'],
-    'GET|/reportes/compras' => ['ReportesController', 'compras'],
-    'GET|/reportes/insumos' => ['ReportesController', 'insumos'],
-    'GET|/reportes/producciones' => ['ReportesController', 'producciones'],
-    'GET|/reportes/pedidos' => ['ReportesController', 'pedidos'],
+    new Route(
+        'GET',
+        '/reportes',
+        $redirectToLoginIfUserIsNotLogged,
+        [ReportesController::class, 'index'],
+    ),
+    new Route(
+        'GET',
+        '/reportes/ventas',
+        $redirectToLoginIfUserIsNotLogged,
+        [ReportesController::class, 'ventas'],
+    ),
+    new Route(
+        'GET',
+        '/reportes/productos',
+        $redirectToLoginIfUserIsNotLogged,
+        [ReportesController::class, 'productos'],
+    ),
+    new Route(
+        'GET',
+        '/reportes/clientes',
+        $redirectToLoginIfUserIsNotLogged,
+        [ReportesController::class, 'clientes'],
+    ),
+    // new Route(
+    //     'GET',
+    //     '/reportes/vencimientos',
+    //     $redirectToLoginIfUserIsNotLogged,
+    //     [ReportesController::class, 'vencimientos'],
+    // ),
+    // new Route(
+    //     'GET',
+    //     '/reportes/compras',
+    //     $redirectToLoginIfUserIsNotLogged,
+    //     [ReportesController::class, 'compras'],
+    // ),
+    new Route(
+        'GET',
+        '/reportes/insumos',
+        $redirectToLoginIfUserIsNotLogged,
+        [ReportesController::class, 'insumos'],
+    ),
+    new Route(
+        'GET',
+        '/reportes/producciones',
+        $redirectToLoginIfUserIsNotLogged,
+        [ReportesController::class, 'producciones'],
+    ),
+    new Route(
+        'GET',
+        '/reportes/pedidos',
+        $redirectToLoginIfUserIsNotLogged,
+        [ReportesController::class, 'pedidos'],
+    ),
 
     // Usuarios
-    'GET|/usuarios' => ['UsuariosController', 'index'],
-    'GET|/usuarios/perfil' => ['UsuariosController', 'perfil'],
-    'GET|/usuarios/actividad' => ['UsuariosController', 'actividad'],
-    'POST|/usuarios/actualizar-perfil' => ['UsuariosController', 'actualizarPerfil'],
-    'POST|/usuarios/cambiar-estado' => ['UsuariosController', 'cambiarEstado'],
-    'GET|/usuarios/edit' => ['UsuariosController', 'edit'],
-    'POST|/usuarios/update' => ['UsuariosController', 'update'],
+    new Route(
+        'GET',
+        '/usuarios',
+        [AuthMiddleware::class, 'check'],
+        [UsuariosController::class, 'index'],
+    ),
+    new Route(
+        'GET',
+        '/usuarios/perfil',
+        [AuthMiddleware::class, 'check'],
+        [UsuariosController::class, 'perfil'],
+    ),
+    new Route(
+        'GET',
+        '/usuarios/actividad',
+        [AuthMiddleware::class, 'check'],
+        [UsuariosController::class, 'actividad'],
+    ),
+    new Route(
+        'POST',
+        '/usuarios/actualizar-perfil',
+        [AuthMiddleware::class, 'check'],
+        [UsuariosController::class, 'actualizarPerfil'],
+    ),
+    new Route(
+        'POST',
+        '/usuarios/cambiar-estado',
+        [AuthMiddleware::class, 'check'],
+        [UsuariosController::class, 'cambiarEstado'],
+    ),
+    new Route(
+        'GET',
+        '/usuarios/edit',
+        [AuthMiddleware::class, 'check'],
+        [UsuariosController::class, 'edit'],
+    ),
+    new Route(
+        'POST',
+        '/usuarios/update',
+        [AuthMiddleware::class, 'check'],
+        [UsuariosController::class, 'update'],
+    ),
 
     // Sucursales (Admin only)
-    'GET|/sucursales' => ['SucursalesController', 'index'],
-    'GET|/sucursales/create' => ['SucursalesController', 'create'],
-    'POST|/sucursales/store' => ['SucursalesController', 'store'],
-    'GET|/sucursales/show/{id}' => ['SucursalesController', 'show'],
-    'GET|/sucursales/edit/{id}' => ['SucursalesController', 'edit'],
-    'POST|/sucursales/update/{id}' => ['SucursalesController', 'update'],
-    'POST|/sucursales/cambiar-estado' => ['SucursalesController', 'cambiarEstado'],
-    'POST|/sucursales/regenerar-clave/{id}' => ['SucursalesController', 'regenerarClave'],
+    new Route(
+        'GET',
+        '/sucursales',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'index'],
+    ),
+    new Route(
+        'GET',
+        '/sucursales/create',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'create'],
+    ),
+    new Route(
+        'POST',
+        '/sucursales/store',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'store'],
+    ),
+    new Route(
+        'GET',
+        '/sucursales/show/{id}',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'show'],
+    ),
+    new Route(
+        'GET',
+        '/sucursales/edit/{id}',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'edit'],
+    ),
+    new Route(
+        'POST',
+        '/sucursales/update/{id}',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'update'],
+    ),
+    new Route(
+        'POST',
+        '/sucursales/cambiar-estado',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'cambiarEstado'],
+    ),
+    new Route(
+        'POST',
+        '/sucursales/regenerar-clave/{id}',
+        $checkIfUserIsAdministrator,
+        [SucursalesController::class, 'regenerarClave'],
+    ),
 
     // Cálculo de Insumos
-    'POST|/calculo-insumos/calcular' => ['CalculoInsumosController', 'calcularInsumos'],
-    'POST|/calculo-insumos/verificar' => ['CalculoInsumosController', 'verificarDisponibilidad'],
-    'GET|/recetas/list' => ['RecetasController', 'list'],
+    new Route(
+        'POST',
+        '/calculo-insumos/calcular',
+        [AuthMiddleware::class, 'check'],
+        [CalculoInsumosController::class, 'calcularInsumos'],
+    ),
+    new Route(
+        'POST',
+        '/calculo-insumos/verificar',
+        [AuthMiddleware::class, 'check'],
+        [CalculoInsumosController::class, 'verificarDisponibilidad'],
+    ),
+    new Route('GET', '/recetas/list', [RecetasController::class, 'list']),
 
     // Predicciones
-    'GET|/predicciones' => ['PrediccionesController', 'index'],
-    'GET|/predicciones/data' => ['PrediccionesController', 'getDatosVentas'],
-    'POST|/predicciones/generar' => ['PrediccionesController', 'generarSugerenciasAutomaticas'],
+    new Route('GET', '/predicciones', [PrediccionesController::class, 'index']),
+    new Route('GET', '/predicciones/data', [PrediccionesController::class, 'getDatosVentas']),
+    new Route('POST', '/predicciones/generar', [PrediccionesController::class, 'generarSugerenciasAutomaticas']),
 
     // Proveedores
-    'GET|/proveedores' => ['ProveedoresController', 'index'],
-    'GET|/proveedores/create' => ['ProveedoresController', 'create'],
-    'POST|/proveedores/store' => ['ProveedoresController', 'store'],
-    'GET|/proveedores/edit/{id}' => ['ProveedoresController', 'edit'],
-    'POST|/proveedores/update/{id}' => ['ProveedoresController', 'update'],
-    'POST|/proveedores/delete/{id}' => ['ProveedoresController', 'delete'],
-    'GET|/proveedores/show/{id}' => ['ProveedoresController', 'show'],
-    'GET|/proveedores/insumos-sin-proveedor' => ['ProveedoresController', 'insumosSinProveedor'],
+    new Route('GET', '/proveedores', [ProveedoresController::class, 'index']),
+    new Route('GET', '/proveedores/create', [ProveedoresController::class, 'create']),
+    new Route('POST', '/proveedores/store', [ProveedoresController::class, 'store']),
+    new Route('GET', '/proveedores/edit/{id}', [ProveedoresController::class, 'edit']),
+    new Route('POST', '/proveedores/update/{id}', [ProveedoresController::class, 'update']),
+    new Route('POST', '/proveedores/delete/{id}', [ProveedoresController::class, 'delete']),
+    new Route('GET', '/proveedores/show/{id}', [ProveedoresController::class, 'show']),
+    new Route('GET', '/proveedores/insumos-sin-proveedor', [ProveedoresController::class, 'insumosSinProveedor']),
 
     // Compras
-    'GET|/compras' => ['ComprasController', 'index'],
-    'GET|/compras/create' => ['ComprasController', 'create'],
-    'POST|/compras/store' => ['ComprasController', 'store'],
-    'GET|/compras/show/{id}' => ['ComprasController', 'show'],
+    new Route('GET', '/compras', [ComprasController::class, 'index']),
+    new Route('GET', '/compras/create', [ComprasController::class, 'create']),
+    new Route('POST', '/compras/store', [ComprasController::class, 'store']),
+    new Route('GET', '/compras/show/{id}', [ComprasController::class, 'show']),
 
     // Control de Lotes / Vencimientos
-    'GET|/lotes' => ['LotesController', 'index'],
-    'POST|/lotes/ajustar' => ['LotesController', 'ajustar'],
+    new Route('GET', '/lotes', [LotesController::class, 'index']),
+    new Route('POST', '/lotes/ajustar', [LotesController::class, 'ajustar']),
 
     // System Config
-    'GET|/config/refresh-tasa' => ['ConfigController', 'refreshTasa'],
+    new Route('GET', '/config/refresh-tasa', [ConfigController::class, 'refreshTasa']),
 
     // Chat Interno
-    'GET|/chat'                        => ['ChatController', 'index'],
-    'GET|/chat/conversaciones'         => ['ChatController', 'getConversaciones'],
-    'GET|/chat/usuarios'               => ['ChatController', 'getUsuarios'],
-    'POST|/chat/conversacion-directa'  => ['ChatController', 'getOrCreateDirecta'],
-    'GET|/chat/mensajes/{id}'          => ['ChatController', 'getMensajes'],
-    'POST|/chat/enviar/{id}'           => ['ChatController', 'enviar'],
-    'GET|/chat/poll'                   => ['ChatController', 'poll'],
-    'GET|/chat/sync'                   => ['ChatController', 'sync'],
+    new Route('GET', '/chat', [ChatController::class, 'index']),
+    new Route('GET', '/chat/conversaciones', [ChatController::class, 'getConversaciones']),
+    new Route('GET', '/chat/usuarios', [ChatController::class, 'getUsuarios']),
+    new Route('POST', '/chat/conversacion-directa', [ChatController::class, 'getOrCreateDirecta']),
+    new Route('GET', '/chat/mensajes/{id}', [ChatController::class, 'getMensajes']),
+    new Route('POST', '/chat/enviar/{id}', [ChatController::class, 'enviar']),
+    new Route('GET', '/chat/poll', [ChatController::class, 'poll']),
+    new Route('GET', '/chat/sync', [ChatController::class, 'sync']),
 ];

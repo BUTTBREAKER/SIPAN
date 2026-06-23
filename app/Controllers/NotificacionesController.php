@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Middlewares\AuthMiddleware;
 use App\Models\Notificacion;
 
 class NotificacionesController
@@ -11,7 +10,6 @@ class NotificacionesController
 
     public function __construct()
     {
-        AuthMiddleware::checkAuth();
         $this->notificacionModel = new Notificacion();
     }
 

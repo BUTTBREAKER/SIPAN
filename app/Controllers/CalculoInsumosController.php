@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Middlewares\AuthMiddleware;
 use App\Models\Receta;
 use App\Models\Insumo;
 
@@ -13,7 +12,6 @@ class CalculoInsumosController
 
     public function __construct()
     {
-        AuthMiddleware::checkAuth();
         $this->recetaModel = new Receta();
         $this->insumoModel = new Insumo();
     }

@@ -1,9 +1,0 @@
-{
-    "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
-    "formatter": {
-        "useEditorconfig": true
-    },
-    "files": {
-        "includes": ["**/*", "!public/assets/js/driver.js.iife.js"]
-    }
-}
