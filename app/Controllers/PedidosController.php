@@ -15,7 +15,7 @@ class PedidosController
 
     public function __construct()
     {
-        require_once __DIR__ . '/../../Helpers/CSRF.php';
+        require_once __DIR__ . '/../Helpers/CSRF.php';
         $this->pedidoModel = new Pedido();
         $this->clienteModel = new Cliente();
         $this->productoModel = new Producto();

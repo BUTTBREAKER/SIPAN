@@ -7,35 +7,20 @@ class Configuracion extends BaseModel
     protected $table = 'configuracion';
 
     /**
-     * Cache for request-level storage
-     * @var array<string, mixed>
-     */
-    private static $cache = [];
-
-    /**
-     * Flag to avoid re-checking BCV rate multiple times per request
-     * @var bool
-     */
-    private static $tasaBcvChecked = false;
-     * Bolt Optimization: In-memory cache for BCV rate to avoid redundant queries in same request.
-     */
-    private static $cachedTasa = null;
-
-    /**
-     * Caching en memoria a nivel de request (Optimización Bolt)
+     * Request-level in-memory cache to avoid redundant DB queries.
      * @var array<string, mixed>
      */
     protected static $cache = [];
 
     /**
-     * Bandera para asegurar que la tasa BCV se verifique solo una vez por request (Optimización Bolt)
+     * Flag to ensure BCV rate is verified only once per request.
      * @var bool
      */
     protected static $tasaBcvChecked = false;
 
     /**
      * Get value by key
-     * Bolt Optimization: Uses request-level in-memory cache to avoid redundant DB queries.
+     * Uses request-level in-memory cache to avoid redundant DB queries.
      */
     public function get($key, $default = null)
     {
@@ -54,7 +39,7 @@ class Configuracion extends BaseModel
 
     /**
      * Set value by key
-     * Bolt Optimization: Updates request-level cache.
+     * Updates request-level cache after a successful write.
      */
     public function set($key, $value)
     {
@@ -80,8 +65,8 @@ class Configuracion extends BaseModel
     }
 
     /**
-     * Get BCV Rate, updating from API if expired (> 1 hour)
-     * Bolt Optimization: Ensures API/DB check happens only once per request.
+     * Get BCV Rate, updating from API if expired (> 1 hour).
+     * Ensures API/DB check happens only once per request.
      */
     public function getTasaBCV()
     {
@@ -89,8 +74,6 @@ class Configuracion extends BaseModel
 
         if (self::$tasaBcvChecked && array_key_exists($key, self::$cache)) {
             return (float)(self::$cache[$key] ?? 50.00);
-        if (array_key_exists($key, self::$cache) && self::$cache[$key] !== null) {
-            return (float)self::$cache[$key];
         }
 
         $sql = "SELECT valor, updated_at FROM {$this->table} WHERE clave = ? LIMIT 1";
@@ -105,20 +88,16 @@ class Configuracion extends BaseModel
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
             if ($newRate) {
-                // self::$cache[$key] updated by set()
                 $this->set($key, $newRate);
                 return (float)$newRate;
             }
         }
 
         return (float)$rate;
-        self::$cachedTasa = (float)$rate;
-        return self::$cachedTasa;
     }
 
     /**
-     * Manually refresh the BCV Rate
-     * Bolt Optimization: Updates request-level cache.
+     * Manually refresh the BCV Rate from the API.
      */
     public function updateTasaBCV()
     {
@@ -128,14 +107,13 @@ class Configuracion extends BaseModel
             $this->set($key, $newRate);
             self::$tasaBcvChecked = true;
             return (float)$newRate;
-            return self::$cachedTasa;
         }
         return false;
     }
 
     /**
-     * Fetch from Rafnixg API
-     * Bolt Optimization: Reduced timeout to 3s for better resilience.
+     * Fetch current USD/VES rate from Rafnixg BCV API.
+     * Timeout is 3s for resilience.
      */
     private function fetchFromApi()
     {
@@ -145,7 +123,7 @@ class Configuracion extends BaseModel
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3); // Optimización Bolt: Reducido de 10 a 3 segundos
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
@@ -160,14 +138,12 @@ class Configuracion extends BaseModel
                 if (isset($data['dollar'])) {
                     return (float)$data['dollar'];
                 }
-
                 if (isset($data['USD'])) {
                     return (float)$data['USD'];
                 }
                 if (isset($data['usd'])) {
                     return (float)$data['usd'];
                 }
-
                 if (isset($data['price'])) {
                     return (float)$data['price'];
                 }

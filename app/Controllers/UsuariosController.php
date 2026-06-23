@@ -14,7 +14,7 @@ class UsuariosController
     public function __construct()
     {
         AuthMiddleware::checkAuth();
-        require_once __DIR__ . '/../../Helpers/CSRF.php';
+        require_once __DIR__ . '/../Helpers/CSRF.php';
         $this->usuarioModel = new Usuario();
         $this->auditoriaModel = new Auditoria();
     }
