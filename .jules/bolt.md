@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Derived Table Optimization for Chat Activity]
+**Learning:** When refactoring correlated subqueries into derived tables for unread message counts or latest activity, ensuring user-specific filters are present *inside* the subquery is critical. Joining a global aggregate to a user-specific list is an anti-pattern that causes performance to degrade linearly with total system volume.
+**Action:** Always include contextual filters (like 'user_id' or 'sucursal_id') inside derived tables to maintain O(N+M) performance as the dataset grows beyond the user's scope.
