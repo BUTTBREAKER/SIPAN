@@ -83,6 +83,7 @@ class Configuracion extends BaseModel
         $lastUpdate = $row ? strtotime($row['updated_at']) : 0;
 
         self::$cache[$key] = $rate;
+        self::$tasaBcvChecked = true; // Mark as checked to prevent redundant queries
 
         // Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
