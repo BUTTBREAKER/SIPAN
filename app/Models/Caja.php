@@ -10,12 +10,25 @@ class Caja extends BaseModel
     protected $table = 'cajas';
 
     /**
+     * Cache para almacenar la caja activa por sucursal y evitar consultas redundantes en la misma petición.
+     * @var array<int|string, mixed>
+     */
+    protected static $cacheActiva = [];
+
+    /**
      * Obtiene la caja activa para una sucursal
      */
     public function getActiva($id_sucursal)
     {
+        if (isset(self::$cacheActiva[$id_sucursal])) {
+            return self::$cacheActiva[$id_sucursal];
+        }
+
         $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
-        return $this->db->fetchOne($sql, [$id_sucursal]);
+        $result = $this->db->fetchOne($sql, [$id_sucursal]);
+
+        self::$cacheActiva[$id_sucursal] = $result;
+        return $result;
     }
 
     /**
@@ -25,7 +38,7 @@ class Caja extends BaseModel
     {
         $total_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->create([
+        $res = $this->create([
             'id_sucursal' => $id_sucursal,
             'id_usuario_apertura' => $id_usuario,
             'monto_apertura' => $total_usd,
@@ -34,6 +47,12 @@ class Caja extends BaseModel
             'estado' => 'abierta',
             'fecha_apertura' => date('Y-m-d H:i:s')
         ]);
+
+        if ($res) {
+            self::$cacheActiva = [];
+        }
+
+        return $res;
     }
 
     /**
@@ -69,7 +88,7 @@ class Caja extends BaseModel
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->update($id_caja, [
+        $res = $this->update($id_caja, [
             'id_usuario_cierre' => $id_usuario,
             'monto_cierre' => $total_cierre_usd,
             'monto_cierre_usd' => $monto_usd,
@@ -79,6 +98,12 @@ class Caja extends BaseModel
             'fecha_cierre' => date('Y-m-d H:i:s'),
             'observaciones' => $observaciones
         ]);
+
+        if ($res) {
+            self::$cacheActiva = [];
+        }
+
+        return $res;
     }
 
     /**

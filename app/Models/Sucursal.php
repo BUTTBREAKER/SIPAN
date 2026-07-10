@@ -7,6 +7,12 @@ class Sucursal extends BaseModel
     protected $table = 'sucursales';
 
     /**
+     * Cache para almacenar sucursales activas y evitar consultas redundantes.
+     * @var array<string, mixed>
+     */
+    protected static $cacheActivas = [];
+
+    /**
      * Obtener todas las sucursales de un negocio
      */
     public function getByNegocio($negocio_id)
@@ -18,11 +24,20 @@ class Sucursal extends BaseModel
 
     /**
      * Obtener solo sucursales activas
+     * Implementa cache a nivel de petición para mejorar el rendimiento en el header y vistas.
      */
     public function getActivas($negocio_id = null)
     {
+        $cacheKey = (string)($negocio_id ?? 'all');
+        if (isset(self::$cacheActivas[$cacheKey])) {
+            return self::$cacheActivas[$cacheKey];
+        }
+
         $sql = "SELECT * FROM {$this->table} WHERE estado = 'activa' ORDER BY nombre";
-        return $this->db->fetchAll($sql);
+        $result = $this->db->fetchAll($sql);
+
+        self::$cacheActivas[$cacheKey] = $result;
+        return $result;
     }
 
     /**
