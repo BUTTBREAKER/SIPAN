@@ -15,6 +15,8 @@ class ChatMensaje
 
     /**
      * Obtener conversaciones del usuario con último mensaje y conteo no leídos
+     * Optimización Bolt: Reemplazadas subconsultas correlacionadas por tablas derivadas (JOINs).
+     * Se filtran los mensajes por participación del usuario para evitar escaneos globales.
      */
     public function getConversaciones($userId)
     {
@@ -27,11 +29,8 @@ class ChatMensaje
                     m.mensaje AS ultimo_mensaje,
                     m.created_at AS ultimo_mensaje_fecha,
                     m_user.primer_nombre AS ultimo_mensaje_autor,
-                    -- Conteo no leídos
-                    (SELECT COUNT(*) FROM chat_mensajes cm2
-                     WHERE cm2.id_conversacion = c.id
-                       AND cm2.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                       AND cm2.id_usuario != ?) AS no_leidos,
+                    -- Conteo no leídos (desde tabla derivada)
+                    COALESCE(unread.no_leidos, 0) AS no_leidos,
                     -- Info del otro participante (para directas)
                     other_user.id AS otro_usuario_id,
                     CONCAT_WS(' ', other_user.primer_nombre, other_user.apellido_paterno) AS otro_usuario_nombre,
@@ -40,22 +39,35 @@ class ChatMensaje
                     s.nombre AS otro_usuario_sucursal
                 FROM chat_participantes cp
                 INNER JOIN chat_conversaciones c ON c.id = cp.id_conversacion
-                -- Último mensaje (subquery para obtener el más reciente)
-                LEFT JOIN chat_mensajes m ON m.id = (
-                    SELECT m2.id FROM chat_mensajes m2
-                    WHERE m2.id_conversacion = c.id
-                    ORDER BY m2.created_at DESC LIMIT 1
-                )
+                -- Último mensaje (tabla derivada para O(N+M) en lugar de O(N*M))
+                LEFT JOIN (
+                    SELECT m2.id_conversacion, MAX(m2.id) as last_id
+                    FROM chat_mensajes m2
+                    INNER JOIN chat_participantes cp_filter ON m2.id_conversacion = cp_filter.id_conversacion
+                    WHERE cp_filter.id_usuario = ?
+                    GROUP BY m2.id_conversacion
+                ) m_last ON m_last.id_conversacion = c.id
+                LEFT JOIN chat_mensajes m ON m.id = m_last.last_id
                 LEFT JOIN usuarios m_user ON m_user.id = m.id_usuario
+                -- Conteo no leídos (tabla derivada)
+                LEFT JOIN (
+                    SELECT cm2.id_conversacion, COUNT(*) as no_leidos
+                    FROM chat_mensajes cm2
+                    INNER JOIN chat_participantes cp2 ON cm2.id_conversacion = cp2.id_conversacion
+                    WHERE cp2.id_usuario = ?
+                      AND cm2.created_at > COALESCE(cp2.ultimo_leido, '1970-01-01')
+                      AND cm2.id_usuario != ?
+                    GROUP BY cm2.id_conversacion
+                ) unread ON unread.id_conversacion = c.id
                 -- Otro participante (para conversaciones directas)
-                LEFT JOIN chat_participantes cp2 ON cp2.id_conversacion = c.id 
-                    AND cp2.id_usuario != ? AND c.tipo = 'directa'
-                LEFT JOIN usuarios other_user ON other_user.id = cp2.id_usuario
+                LEFT JOIN chat_participantes cp_other ON cp_other.id_conversacion = c.id
+                    AND cp_other.id_usuario != ? AND c.tipo = 'directa'
+                LEFT JOIN usuarios other_user ON other_user.id = cp_other.id_usuario
                 LEFT JOIN sucursales s ON s.id = other_user.id_sucursal
                 WHERE cp.id_usuario = ?
                 ORDER BY COALESCE(m.created_at, c.created_at) DESC";
 
-        return $this->db->fetchAll($sql, [$userId, $userId, $userId]);
+        return $this->db->fetchAll($sql, [$userId, $userId, $userId, $userId, $userId]);
     }
 
     /**
@@ -165,20 +177,16 @@ class ChatMensaje
 
     /**
      * Contar total de mensajes no leídos del usuario (para sidebar badge)
+     * Optimización Bolt: Reemplazada subconsulta correlacionada por un JOIN con filtrado por usuario.
      */
     public function contarNoLeidos($userId)
     {
-        $sql = "SELECT COALESCE(SUM(sub.no_leidos), 0) AS total
-                FROM (
-                    SELECT (
-                        SELECT COUNT(*) FROM chat_mensajes cm
-                        WHERE cm.id_conversacion = cp.id_conversacion
-                          AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                          AND cm.id_usuario != ?
-                    ) AS no_leidos
-                    FROM chat_participantes cp
-                    WHERE cp.id_usuario = ?
-                ) sub";
+        $sql = "SELECT COUNT(*) AS total
+                FROM chat_participantes cp
+                INNER JOIN chat_mensajes cm ON cm.id_conversacion = cp.id_conversacion
+                WHERE cp.id_usuario = ?
+                  AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
+                  AND cm.id_usuario != ?";
 
         $result = $this->db->fetchOne($sql, [$userId, $userId]);
         return (int)($result['total'] ?? 0);
