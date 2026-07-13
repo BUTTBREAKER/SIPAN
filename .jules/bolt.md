@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Optimizing Chat Polling SQL]
+**Learning:** Chat polling (via `ChatController::sync`) is a high-frequency operation (every 15s). The `ChatMensaje` model previously used correlated scalar subqueries (O(N) overhead per request) for unread counts and latest message retrieval. Replacing these with JOINs to derived tables (using `GROUP BY` and `MAX(id)`) and ensuring user-specific participation filters are *inside* those derived tables maintains O(N+M) performance and avoids expensive global table scans as the message volume grows.
+**Action:** Replace correlated scalar subqueries in high-frequency SELECT lists with JOINed derived tables, ensuring necessary filters are propagated into the sub-selection for optimal indexing.
