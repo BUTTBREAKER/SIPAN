@@ -1,3 +1,7 @@
+## 2025-01-24 - [Request-level Configuration Caching Check Regression]
+**Learning:** Request-level caching can sometimes have a regression where a flag (e.g. `self::$tasaBcvChecked`) is not properly set after the first cache write or fetch, causing succeeding invocations to bypass the cache check entirely and make duplicate DB/API calls.
+**Action:** Always ensure any tracking properties (like cache flags) are updated correctly during any successful database load or manual cache write.
+
 ## 2025-01-24 - [Date Gap Filling Optimization]
 **Learning:** Filling date gaps in time-series results using nested loops (O(N*M)) is a common anti-pattern in this codebase. Using `array_column` to create an associative array (hash map) allows for O(N + M) performance, which is significantly better as the period or number of sales increases.
 **Action:** Always look for nested loops over database results when generating reports or chart data and replace them with hash map lookups.
