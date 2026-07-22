@@ -1,3 +1,7 @@
+## 2025-01-24 - [Request-Level Cache Missing Flag Implementation]
+**Learning:** Even when a request-level cache array and check-flag are declared, failing to set the verification check flag (e.g., `self::$tasaBcvChecked = true`) inside the getter method (`getTasaBCV`) leaves the system executing database queries on every call, rendering the caching mechanism completely useless.
+**Action:** When implementing or debugging request-level in-memory caching mechanisms, ensure all logical paths (e.g., database fetch paths) set the corresponding `checked` flag or store the result to avoid redundant lookups.
+
 ## 2025-01-24 - [Date Gap Filling Optimization]
 **Learning:** Filling date gaps in time-series results using nested loops (O(N*M)) is a common anti-pattern in this codebase. Using `array_column` to create an associative array (hash map) allows for O(N + M) performance, which is significantly better as the period or number of sales increases.
 **Action:** Always look for nested loops over database results when generating reports or chart data and replace them with hash map lookups.
