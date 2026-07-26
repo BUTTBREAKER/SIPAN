@@ -57,7 +57,7 @@ foreach (headers_list() as $header) {
     $request = $request->withHeader($name, $value);
 }
 
-$response = (new Response)
+$response = (new Response())
     ->withBody(new Stream(fopen('php://temp', 'w+')))
     ->withProtocolVersion($request->getProtocolVersion());
 
