@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-25 - [Tasa BCV Cache Regression Fix]
+**Learning:** In-memory request-level caching relies on correctly setting the verification flags (e.g., `self::$tasaBcvChecked = true`) inside the getter method (`getTasaBCV`). If the flag is omitted, the model will continuously query the database/API on subsequent calls, leading to redundant queries and API requests.
+**Action:** Always verify that cache flags are updated within the getter/setter methods and run automated validation tests (like `verify_tasa_optimization.php`) to confirm query counts.
