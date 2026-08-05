@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-02-13 - [PHP Assertion Visibility in Tests]
+**Learning:** PHP assertions (`assert()`) are disabled by default in some CLI environments depending on `ini` configurations (`zend.assertions = -1` or `0`). When writing or running verification scripts that rely on PHP `assert()` statement validation, always run the command using `php -d zend.assertions=1 tests/<test_file>.php` to ensure the assertions are actually executed and evaluated. Otherwise, assertions will be silently ignored, potentially hiding failing test cases.
+**Action:** Always run test/verification suites with assertion flags enabled so silent assertion failures are avoided.
