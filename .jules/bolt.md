@@ -34,6 +34,10 @@
 **Learning:** Global configuration values (like BCV exchange rate) are often accessed multiple times across different components (header, sales creation, reports) during a single request. Implementing a simple in-memory static cache in the model prevents redundant database queries and expensive external API calls without the risk of stale data between requests in standard PHP-FPM environments.
 **Action:** Identify frequently accessed configuration keys and implement static properties for request-level caching in the `Configuracion` model or similar utility classes.
 
+## 2025-01-24 - [Tasa BCV Cache Regression]
+**Learning:** When implementing request-level caching flags (like `static::$tasaBcvChecked`), ensure that the flag is actually set to `true` inside the query path. Omitting the flag assignment causes subsequent cache calls to miss, triggering redundant queries and defeating the purpose of the optimization.
+**Action:** Always verify cache hits with specific mock test scripts that assert query counts for consecutive calls.
+
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
