@@ -22,7 +22,7 @@ class AuthMiddleware
                 echo json_encode(['success' => false, 'message' => 'Sesión expirada o no autorizada']);
                 exit;
             }
-            
+
             header('Location: /login');
             exit;
         }
