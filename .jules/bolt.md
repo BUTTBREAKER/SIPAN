@@ -1,3 +1,7 @@
+## 2025-01-24 - [Request-level Configuration Caching Flag]
+**Learning:** Having static request-level cache properties without setting the associated "checked/loaded" boolean flag to `true` when storing the retrieved DB values leads to silent caching failures, causing every subsequent call to still execute a database lookup.
+**Action:** Ensure that anytime a request-level static cache is populated, any controlling status/checked boolean flags are updated accordingly in the same code path.
+
 ## 2025-01-24 - [Date Gap Filling Optimization]
 **Learning:** Filling date gaps in time-series results using nested loops (O(N*M)) is a common anti-pattern in this codebase. Using `array_column` to create an associative array (hash map) allows for O(N + M) performance, which is significantly better as the period or number of sales increases.
 **Action:** Always look for nested loops over database results when generating reports or chart data and replace them with hash map lookups.
