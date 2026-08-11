@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2026-06-23 - [Request-Level Cache State Verification]
+**Learning:** Even with an established request-level static cache design, overlooking state updates (e.g., forgetting to set the verification flag `self::$tasaBcvChecked = true` after retrieving the BCV rate) completely disables the caching benefits, causing redundant queries on every high-frequency poll or page request.
+**Action:** Always verify that cache control flags are explicitly set and updated in all execution pathways, and implement precise unit tests with database mock query counters to prevent silent cache misses.
