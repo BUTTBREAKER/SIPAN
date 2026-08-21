@@ -93,6 +93,7 @@ class Configuracion extends BaseModel
             }
         }
 
+        self::$tasaBcvChecked = true;
         return (float)$rate;
     }
 
