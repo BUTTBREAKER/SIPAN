@@ -4,6 +4,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Models\Compra;
 use App\Models\Pedido;
+use App\Models\Proveedor;
 use App\Models\Insumo;
 use App\Models\Producto;
 use App\Models\Lote;
@@ -80,6 +81,10 @@ class MockPedido extends Pedido {
 
 class MockLote extends Lote {
     public function __construct($db) { $this->db = $db; $this->table = 'lotes'; }
+}
+
+class MockProveedor extends Proveedor {
+    public function __construct($db) { $this->db = $db; $this->table = 'proveedores'; }
 }
 
 function testOptimizations() {
@@ -176,6 +181,36 @@ function testOptimizations() {
         echo "✅ Pedido optimization verified (Mocked)!\n";
     } else {
         echo "❌ Pedido optimization verification failed!\n";
+    }
+
+    echo "\n--- Testing Proveedor::addInsumos Optimization (Mocked) ---\n";
+    $mockDb->queries = [];
+
+    $proveedorModel = new MockProveedor($mockDb);
+    $insumosParaProveedor = [
+        ['id_insumo' => 10, 'precio' => 15.5, 'tiempo_entrega' => 3],
+        ['id_insumo' => 20, 'precio' => 25.0, 'tiempo_entrega' => 5]
+    ];
+
+    $proveedorModel->addInsumos(5, $insumosParaProveedor);
+
+    $batchInsertFound = false;
+    foreach ($mockDb->queries as $q) {
+        if (is_array($q) && strpos($q['sql'], 'INSERT INTO proveedor_insumos') !== false) {
+            if (strpos($q['sql'], 'VALUES (?, ?, ?, ?), (?, ?, ?, ?)') !== false) {
+                $batchInsertFound = true;
+                echo "Found batch insert for proveedor insumos (multiple rows)\n";
+                if ($q['params'] === [5, 10, 15.5, 3, 5, 20, 25.0, 5]) {
+                    echo "✅ Parameters match batch insert format!\n";
+                }
+            }
+        }
+    }
+
+    if ($batchInsertFound) {
+        echo "✅ Proveedor optimization verified (Mocked)!\n";
+    } else {
+        echo "❌ Proveedor optimization verification failed!\n";
     }
 }
 
