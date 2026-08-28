@@ -15,7 +15,7 @@ SIPAN es un sistema web robusto y moderno diseñado para la gestión integral de
 
 ## Tecnologías Utilizadas
 
-- **Backend:** PHP 7.4+ (Arquitectura MVC personalizada)
+- **Backend:** PHP 8.0+ (Arquitectura MVC personalizada)
 - **Base de Datos:** MySQL 5.7+ / MariaDB
 - **Frontend:** Vanilla JS, Alpine.js, Grid.js, Chart.js, Tailwind CSS (en componentes específicos)
 - **Estilos:** CSS3 Moderno con efectos Glassmorphism.
@@ -39,7 +39,7 @@ SIPAN es un sistema web robusto y moderno diseñado para la gestión integral de
 ## Requisitos Previos
 
 - **Servidor Web**: Apache 2.4+ (Recomendado XAMPP en Windows)
-- **PHP**: Versión 7.4 o superior
+- **PHP**: Versión 8.0 o superior
 - **MySQL/MariaDB**: MySQL 5.7+ o MariaDB 10.3+
 - **Extensiones PHP obligatorias**: `pdo`, `pdo_mysql`, `json`, `mbstring`, `session`, `curl`
 
