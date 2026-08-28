@@ -70,7 +70,7 @@ return [
 
     // Caja Chica
     new Route('GET', '/cajas', [CajaController::class, 'index']),
-    new Route('GET', '/cajas/aprir', [CajaController::class, 'abrirPanel']),
+    new Route('GET', '/cajas/abrir', [CajaController::class, 'abrirPanel']),
     new Route('POST', '/cajas/abrir', [CajaController::class, 'abrir']),
     new Route('GET', '/cajas/cerrar', [CajaController::class, 'cerrarPanel']),
     new Route('POST', '/cajas/cerrar', [CajaController::class, 'cerrar']),
