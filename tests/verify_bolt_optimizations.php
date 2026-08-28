@@ -14,20 +14,32 @@ $_SESSION['sucursal_id'] = 1;
 $_SESSION['id_negocio'] = 1;
 
 // Mock Database to avoid real connection
-class MockDatabase {
+class MockDatabase
+{
     public $queries = [];
     public $lastInsertId = 999;
 
-    public function beginTransaction() { $this->queries[] = "BEGIN"; }
-    public function commit() { $this->queries[] = "COMMIT"; }
-    public function rollback() { $this->queries[] = "ROLLBACK"; }
+    public function beginTransaction()
+    {
+        $this->queries[] = "BEGIN";
+    }
+    public function commit()
+    {
+        $this->queries[] = "COMMIT";
+    }
+    public function rollback()
+    {
+        $this->queries[] = "ROLLBACK";
+    }
 
-    public function execute($sql, $params = []) {
+    public function execute($sql, $params = [])
+    {
         $this->queries[] = ['sql' => $sql, 'params' => $params];
         return 1;
     }
 
-    public function fetchAll($sql, $params = []) {
+    public function fetchAll($sql, $params = [])
+    {
         $this->queries[] = ['sql' => $sql, 'params' => $params];
         if (strpos($sql, 'FROM insumos') !== false) {
             return [['id' => 1, 'stock_actual' => 10, 'precio_unitario' => 100]];
@@ -38,11 +50,13 @@ class MockDatabase {
         return [];
     }
 
-    public function fetch($sql, $params = []) {
+    public function fetch($sql, $params = [])
+    {
         return $this->fetchOne($sql, $params);
     }
 
-    public function fetchOne($sql, $params = []) {
+    public function fetchOne($sql, $params = [])
+    {
         $this->queries[] = ['sql' => $sql, 'params' => $params];
         if (strpos($sql, 'FROM insumos') !== false) {
             return ['id' => 1, 'stock_actual' => 10, 'precio_unitario' => 100];
@@ -53,36 +67,69 @@ class MockDatabase {
         return [];
     }
 
-    public function lastInsertId() { return $this->lastInsertId++; }
+    public function lastInsertId()
+    {
+        return $this->lastInsertId++;
+    }
 }
 
 // Subclass to avoid constructor calling Database::getInstance()
-class MockCompra extends Compra {
+class MockCompra extends Compra
+{
     public $loteModel;
-    public function __construct($db) { $this->db = $db; $this->table = 'compras'; }
-    protected function hasColumn($column) { return true; }
-    public function create($data) {
+    public function __construct($db)
+    {
+        $this->db = $db;
+        $this->table = 'compras';
+    }
+    protected function hasColumn($column)
+    {
+        return true;
+    }
+    public function create($data)
+    {
         $this->db->execute("INSERT INTO {$this->table} ...", array_values($data));
         return $this->db->lastInsertId();
     }
 }
 
-class MockPedido extends Pedido {
-    public function __construct($db) { $this->db = $db; $this->table = 'pedidos'; }
-    protected function hasColumn($column) { return true; }
-    public function create($data) {
+class MockPedido extends Pedido
+{
+    public function __construct($db)
+    {
+        $this->db = $db;
+        $this->table = 'pedidos';
+    }
+    protected function hasColumn($column)
+    {
+        return true;
+    }
+    public function create($data)
+    {
         $this->db->execute("INSERT INTO {$this->table} ...", array_values($data));
         return $this->db->lastInsertId();
     }
-    public function query($sql, $params = []) { return $this->db->execute($sql, $params); }
-    public function fetchOne($sql, $params = []) { return $this->db->fetchOne($sql, $params); }
+    public function query($sql, $params = [])
+    {
+        return $this->db->execute($sql, $params);
+    }
+    public function fetchOne($sql, $params = [])
+    {
+        return $this->db->fetchOne($sql, $params);
+    }
 }
 
-class MockLote extends Lote {
-    public function __construct($db) { $this->db = $db; $this->table = 'lotes'; }
+class MockLote extends Lote
+{
+    public function __construct($db)
+    {
+        $this->db = $db;
+        $this->table = 'lotes';
+    }
 }
 
-function testOptimizations() {
+function testOptimizations()
+{
     $mockDb = new MockDatabase();
 
     $compraModel = new MockCompra($mockDb);

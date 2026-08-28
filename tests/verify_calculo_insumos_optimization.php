@@ -24,10 +24,12 @@ class VerifyCalculoInsumosOptimization
         }
 
         // 2. Check if it's using the array data correctly
-        if (strpos($content, '$insumo_receta[\'stock_actual\']') !== false &&
+        if (
+            strpos($content, '$insumo_receta[\'stock_actual\']') !== false &&
             strpos($content, '$insumo_receta[\'nombre\']') !== false &&
             strpos($content, '$insumo_receta[\'unidad_medida\']') !== false &&
-            strpos($content, '$insumo_receta[\'precio_unitario\']') !== false) {
+            strpos($content, '$insumo_receta[\'precio_unitario\']') !== false
+        ) {
             echo "✅ SUCCESS: Controller is correctly using data from \$insumo_receta array.\n";
         } else {
             echo "❌ FAILURE: Controller is not using the expected array keys from \$insumo_receta.\n";

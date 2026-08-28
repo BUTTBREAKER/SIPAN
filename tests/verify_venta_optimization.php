@@ -5,17 +5,20 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Models\Venta;
 
 // Mock DB class to capture SQL
-class MockDB {
+class MockDB
+{
     public $lastQuery = '';
     public $lastParams = [];
 
-    public function fetchAll($sql, $params = []) {
+    public function fetchAll($sql, $params = [])
+    {
         $this->lastQuery = $sql;
         $this->lastParams = $params;
         return [];
     }
 
-    public function fetchOne($sql, $params = []) {
+    public function fetchOne($sql, $params = [])
+    {
         $this->lastQuery = $sql;
         $this->lastParams = $params;
         return [];
@@ -23,8 +26,10 @@ class MockDB {
 }
 
 // Mock Venta model to use MockDB
-class MockVenta extends Venta {
-    public function __construct($db) {
+class MockVenta extends Venta
+{
+    public function __construct($db)
+    {
         $this->db = $db;
     }
 }

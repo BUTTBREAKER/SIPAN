@@ -4,28 +4,34 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use App\Models\Configuracion;
 
-class MockDatabase {
+class MockDatabase
+{
     public $queriesCount = 0;
     public $tasaValue = 55.50;
 
-    public function fetchOne($sql, $params = []) {
+    public function fetchOne($sql, $params = [])
+    {
         $this->queriesCount++;
         return ['valor' => $this->tasaValue, 'updated_at' => date('Y-m-d H:i:s')];
     }
 
-    public function execute($sql, $params = []) {
+    public function execute($sql, $params = [])
+    {
         return 1;
     }
 }
 
-class MockConfiguracion extends Configuracion {
-    public function __construct($db) {
+class MockConfiguracion extends Configuracion
+{
+    public function __construct($db)
+    {
         $this->db = $db;
         $this->table = 'configuracion';
     }
 }
 
-function testTasaOptimization() {
+function testTasaOptimization()
+{
     $mockDb = new MockDatabase();
     $configModel = new MockConfiguracion($mockDb);
 

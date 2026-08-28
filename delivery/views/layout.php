@@ -24,15 +24,14 @@
 </head>
 <body>
 
-    <?php if (!isset($hide_layout) || !$hide_layout): ?>
-
+    <?php if (!isset($hide_layout) || !$hide_layout) : ?>
         <!-- App Header: si la vista define $custom_header_html se usa ese; de lo contrario el header por defecto -->
-        <?php if (isset($custom_header_html)): ?>
+        <?php if (isset($custom_header_html)) : ?>
             <?= $custom_header_html ?>
-        <?php else: ?>
+        <?php else : ?>
         <header class="app-header">
             <div class="app-title">SIPAN DELIVERY</div>
-            <?php if (isset($_SESSION['user_nombre'])): ?>
+            <?php if (isset($_SESSION['user_nombre'])) : ?>
                 <div class="app-header__user">
                     <i class="fa-solid fa-user-circle"></i>
                     <?= htmlspecialchars(explode(' ', $_SESSION['user_nombre'])[0]) ?>
@@ -55,8 +54,7 @@
         }
         ?>
 
-    <?php if (!isset($hide_layout) || !$hide_layout): ?>
-
+    <?php if (!isset($hide_layout) || !$hide_layout) : ?>
         </main>
 
         <!-- Bottom Navigation -->

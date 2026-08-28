@@ -3,7 +3,8 @@
 require_once __DIR__ . '/../app/Models/BaseModel.php';
 require_once __DIR__ . '/../app/Models/Configuracion.php';
 
-class MockDB {
+class MockDB
+{
     public $queryCount = 0;
     public $lastSql = '';
     public $data = [
@@ -11,7 +12,8 @@ class MockDB {
         'sitio_nombre' => ['valor' => 'SIPAN Test']
     ];
 
-    public function fetchOne($sql, $params = []) {
+    public function fetchOne($sql, $params = [])
+    {
         $this->queryCount++;
         $this->lastSql = $sql;
         $key = $params[0];
@@ -24,7 +26,8 @@ class MockDB {
         return $this->data[$key] ?? null;
     }
 
-    public function execute($sql, $params = []) {
+    public function execute($sql, $params = [])
+    {
         $this->queryCount++;
         $this->lastSql = $sql;
         $key = $params[count($params) - 1];
@@ -40,13 +43,16 @@ class MockDB {
     }
 }
 
-class MockConfiguracion extends \App\Models\Configuracion {
-    public function __construct($db) {
+class MockConfiguracion extends \App\Models\Configuracion
+{
+    public function __construct($db)
+    {
         $this->db = $db;
     }
 }
 
-function runTest() {
+function runTest()
+{
     echo "--- Iniciando Test de Cache de Configuracion Refacturado ---\n";
 
     $mockDb = new MockDB();

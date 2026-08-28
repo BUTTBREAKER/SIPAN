@@ -10,17 +10,20 @@
 require_once __DIR__ . '/../app/Models/BaseModel.php';
 require_once __DIR__ . '/../app/Models/Producto.php';
 
-class MockDB {
+class MockDB
+{
     public $lastSql = '';
     public $lastParams = [];
-    public function fetchAll($sql, $params = []) {
+    public function fetchAll($sql, $params = [])
+    {
         $this->lastSql = $sql;
         $this->lastParams = $params;
         return [];
     }
 }
 
-function verify_producto_all() {
+function verify_producto_all()
+{
     $mockDb = new MockDB();
 
     // Create Producto instance without triggering its constructor (which tries to connect to DB)

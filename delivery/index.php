@@ -4,19 +4,19 @@ use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// Habilitar buffering de salida 
+// Habilitar buffering de salida
 ob_start();
 
 // Autocargador simple para el namespace Delivery\
 spl_autoload_register(function ($class) {
     $prefix = 'Delivery\\';
     $base_dir = __DIR__ . '/';
-    
+
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
         return;
     }
-    
+
     $relative_class = substr($class, $len);
     // Cambiar barras invertidas por barras normales y asegurarse de que la carpeta esté en minúscula (convención local)
     // Ejemplo: Middleware\AuthMiddleware -> middleware/AuthMiddleware.php
@@ -64,10 +64,11 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Función simple de enrutamiento
 // Función simple de enrutamiento
-function deliveryMatchRoute($routePath, $requestPath) {
+function deliveryMatchRoute($routePath, $requestPath)
+{
     $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $routePath);
     $pattern = "@^" . $pattern . "$@D";
-    
+
     if (preg_match($pattern, $requestPath, $matches)) {
         array_shift($matches);
         return $matches;
@@ -81,7 +82,7 @@ $routes = [
     'GET|/login' => ['AuthController', 'showLogin'],
     'POST|/login' => ['AuthController', 'login'],
     'GET|/logout' => ['AuthController', 'logout'],
-    
+
     'GET|/dashboard' => ['PedidosController', 'dashboard'],
     'GET|/api/dashboard' => ['PedidosController', 'apiDashboard'],
     'GET|/pedido/{id}' => ['PedidosController', 'show'],
@@ -97,19 +98,21 @@ $matched = false;
 foreach ($routes as $route => $handler) {
     list($routeMethod, $routePath) = explode('|', $route);
 
-    if ($routeMethod !== $method) continue;
+    if ($routeMethod !== $method) {
+        continue;
+    }
 
     $params = deliveryMatchRoute($routePath, $path);
 
     if ($params !== false) {
         $matched = true;
-        
+
         // Incluir manualmente para evitar problemas de namespace si no está en composer
         $controllerFile = __DIR__ . '/controllers/' . $handler[0] . '.php';
         if (file_exists($controllerFile)) {
             require_once $controllerFile;
             $controllerName = 'Delivery\\Controllers\\' . $handler[0];
-            
+
             if (class_exists($controllerName)) {
                 $controller = new $controllerName();
                 if (method_exists($controller, $handler[1])) {

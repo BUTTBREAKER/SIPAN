@@ -45,7 +45,7 @@ ob_start();
         </div>
     </div>
 
-    <?php if (!empty($cliente['telefono'])): ?>
+    <?php if (!empty($cliente['telefono'])) : ?>
     <div class="contact-grid">
         <a href="tel:<?= htmlspecialchars($cliente['telefono']) ?>" class="contact-btn contact-btn--call">
             <i class="fa-solid fa-phone"></i> Llamar
@@ -58,7 +58,7 @@ ob_start();
     </div>
     <?php endif; ?>
 
-    <?php if (!empty($cliente['direccion'])): ?>
+    <?php if (!empty($cliente['direccion'])) : ?>
     <div class="address-block">
         <i class="fa-solid fa-location-dot address-block__icon"></i>
         <div><?= htmlspecialchars($cliente['direccion']) ?></div>
@@ -72,7 +72,7 @@ ob_start();
 </div>
 
 <!-- Notas del Pedido -->
-<?php if (!empty($pedido['observaciones'])): ?>
+<?php if (!empty($pedido['observaciones'])) : ?>
 <div class="detail-card notes-card animate-fade-in" style="animation-delay:0.16s">
     <div class="section-title">Notas del Pedido</div>
     <div class="notes-content">"<?= htmlspecialchars($pedido['observaciones']) ?>"</div>
@@ -84,7 +84,7 @@ ob_start();
     <div class="section-title">Resumen de Cuenta</div>
 
     <div class="product-list">
-        <?php foreach ($productos as $prod): ?>
+        <?php foreach ($productos as $prod) : ?>
         <div class="product-row">
             <span class="product-qty"><?= (int)$prod['cantidad'] ?></span>
             <span class="product-name"><?= htmlspecialchars($prod['producto_nombre']) ?></span>
@@ -98,7 +98,7 @@ ob_start();
         <span><?= $moneda ?><?= number_format($pedido['subtotal'], 2) ?></span>
     </div>
 
-    <?php if ($pedido['descuento'] > 0): ?>
+    <?php if ($pedido['descuento'] > 0) : ?>
     <div class="summary-row summary-row--discount">
         <span>Descuento Aplicado</span>
         <span>-<?= $moneda ?><?= number_format($pedido['descuento'], 2) ?></span>
@@ -119,14 +119,14 @@ ob_start();
 </div>
 
 <!-- Acciones del Repartidor -->
-<?php if ($estado !== 'entregado' && $estado !== 'completado' && $estado !== 'cancelado'): ?>
+<?php if ($estado !== 'entregado' && $estado !== 'completado' && $estado !== 'cancelado') : ?>
 <div class="detail-card animate-fade-in" style="animation-delay:0.32s; border:2px solid var(--primary-light); margin-bottom:40px">
     <div class="section-title">Acciones de Entrega</div>
 
     <input type="hidden" id="pedido_id" value="<?= (int)$pedido['id'] ?>">
 
     <!-- Formulario de Cobro (Si hay deuda) -->
-    <?php if ($pedido['monto_deuda'] > 0 && ($estado === 'en_camino' || $estado === 'en_proceso' || $estado === 'pendiente')): ?>
+    <?php if ($pedido['monto_deuda'] > 0 && ($estado === 'en_camino' || $estado === 'en_proceso' || $estado === 'pendiente')) : ?>
     <div class="payment-collection-form" style="background:var(--bg-secondary); padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid var(--border-color);">
         <h4 style="margin:0 0 10px 0; font-size:15px; color:var(--text-secondary);">
             <i class="fa-solid fa-hand-holding-dollar"></i> Cobrar al Cliente
@@ -165,7 +165,7 @@ ob_start();
                   placeholder="Incidencias o notas..."></textarea>
     </div>
 
-    <?php if ($estado === 'pendiente' || $estado === 'en_proceso'): ?>
+    <?php if ($estado === 'pendiente' || $estado === 'en_proceso') : ?>
         <button type="button" id="btn-en-camino"
                 class="action-btn action-btn--camino"
                 onclick="mostrarConfirmacion('en_camino')">
@@ -173,14 +173,14 @@ ob_start();
         </button>
     <?php endif; ?>
 
-    <?php if ($estado === 'en_camino'): ?>
-        <?php if ($pedido['monto_deuda'] > 0): ?>
+    <?php if ($estado === 'en_camino') : ?>
+        <?php if ($pedido['monto_deuda'] > 0) : ?>
             <!-- Botón deshabilitado si hay deuda -->
             <button type="button" class="action-btn" disabled 
                     style="opacity:0.5; cursor:not-allowed; background:var(--bg-secondary); color:var(--text-primary); border:1px dashed var(--border-color);">
                 <i class="fa-solid fa-lock"></i> Cobra la deuda antes de confirmar entrega
             </button>
-        <?php else: ?>
+        <?php else : ?>
             <button type="button" id="btn-entregado"
                     class="action-btn action-btn--entregado"
                     onclick="mostrarConfirmacion('entregado')">

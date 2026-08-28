@@ -4,7 +4,8 @@ require_once __DIR__ . '/../app/Helpers/Predictor.php';
 
 use App\Helpers\Predictor;
 
-function generateLargeDataset($n) {
+function generateLargeDataset($n)
+{
     $data = [];
     $start_date = '2020-01-01';
     for ($i = 0; $i < $n; $i++) {
@@ -14,7 +15,8 @@ function generateLargeDataset($n) {
     return $data;
 }
 
-function testMediaMovil() {
+function testMediaMovil()
+{
     echo "--- Testing Media Movil ---\n";
     $dataset = generateLargeDataset(100);
     $period = 10;
@@ -42,7 +44,8 @@ function testMediaMovil() {
     }
 }
 
-function testRegresionLineal() {
+function testRegresionLineal()
+{
     echo "\n--- Testing Regresion Lineal ---\n";
     $dataset = generateLargeDataset(10);
     $result = Predictor::regresionLineal($dataset, 7);
@@ -55,7 +58,8 @@ function testRegresionLineal() {
     }
 }
 
-function benchmark() {
+function benchmark()
+{
     echo "\n--- Benchmarking ---\n";
     $large_n = 5000;
     $period = 1000;

@@ -17,7 +17,7 @@ class AuthMiddleware
         }
 
         // Si hay sesión pero no es repartidor, lo sacamos por seguridad
-        // Un administrador sí podría entrar para revisar la app si lo deseamos, 
+        // Un administrador sí podría entrar para revisar la app si lo deseamos,
         // pero por ahora estrictamente 'repartidor'
         if ($_SESSION['user_rol'] !== 'repartidor' && $_SESSION['user_rol'] !== 'administrador') {
             session_unset();

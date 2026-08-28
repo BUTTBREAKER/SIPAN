@@ -25,8 +25,7 @@ ob_start();
 
 <!-- Lista de Pedidos -->
 <div id="listaPedidos">
-    <?php if (empty($pedidos)): ?>
-
+    <?php if (empty($pedidos)) : ?>
         <div class="empty-state animate-fade-in">
             <div class="empty-state__icon empty-state__icon--primary">
                 <i class="fa-solid fa-box-open"></i>
@@ -40,9 +39,8 @@ ob_start();
             </div>
         </div>
 
-    <?php else: ?>
-
-        <?php foreach ($pedidos as $i => $p):
+    <?php else : ?>
+        <?php foreach ($pedidos as $i => $p) :
             $status_class    = '';
             $badge_class     = '';
             $status_label    = '';
@@ -70,7 +68,7 @@ ob_start();
                     $filter_category = 'entregados';
                     break;
             }
-        ?>
+            ?>
 
         <a href="/delivery/pedido/<?= (int)$p['id'] ?>"
            class="pedido-card <?= $status_class ?> animate-fade-in"
@@ -86,7 +84,7 @@ ob_start();
                 <?= htmlspecialchars($p['cliente_nombre'] . ' ' . $p['cliente_apellido']) ?>
             </div>
 
-            <?php if (!empty($p['cliente_direccion'])): ?>
+            <?php if (!empty($p['cliente_direccion'])) : ?>
             <div class="pedido-address">
                 <i class="fa-solid fa-location-dot"></i>
                 <span><?= htmlspecialchars($p['cliente_direccion']) ?></span>

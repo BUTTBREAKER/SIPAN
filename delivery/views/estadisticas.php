@@ -72,15 +72,15 @@ ob_start();
     </div>
     
     <div class="mini-chart">
-        <?php if(empty($stats['chart'])): ?>
+        <?php if (empty($stats['chart'])) : ?>
             <p style="text-align:center; color:var(--text-secondary); margin:20px 0;">No hay datos recientes.</p>
-        <?php else: 
+        <?php else :
             $max_entregas = max(array_column($stats['chart'], 'entregas')) ?: 1;
-        ?>
+            ?>
             <div class="chart-bars" style="display:flex; align-items:flex-end; gap:8px; height:120px; margin-top:15px;">
-                <?php foreach($stats['chart'] as $day): 
+                <?php foreach ($stats['chart'] as $day) :
                     $height = ($day['entregas'] / $max_entregas) * 100;
-                ?>
+                    ?>
                 <div class="chart-bar-group" style="flex:1; display:flex; flex-direction:column; align-items:center;">
                     <span style="font-size:11px; font-weight:600; margin-bottom:5px; color:var(--primary-color);"><?= $day['entregas'] ?></span>
                     <div class="bar" style="width:100%; height:<?= $height ?>%; background:var(--primary-light); border-radius:4px 4px 0 0; min-height:4px;"></div>

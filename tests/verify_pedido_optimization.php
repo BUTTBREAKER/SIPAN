@@ -11,11 +11,13 @@ $_SESSION['user_id'] = 1;
 $_SESSION['user_rol'] = 'administrador';
 $_ENV['moneda_principal'] = 'S/';
 
-class TestPedidoOptimization {
+class TestPedidoOptimization
+{
     private $pedidoModel;
     private $queries = [];
 
-    public function __construct() {
+    public function __construct()
+    {
         // Create model without constructor to avoid DB connection
         $this->pedidoModel = (new ReflectionClass(Pedido::class))->newInstanceWithoutConstructor();
 
@@ -34,31 +36,40 @@ class TestPedidoOptimization {
         $tableProp->setValue($this->pedidoModel, 'pedidos');
     }
 
-    private function createMockDB() {
+    private function createMockDB()
+    {
         $tester = $this;
-        return new class($tester) {
+        return new class ($tester) {
             private $tester;
-            public function __construct($tester) { $this->tester = $tester; }
-            public function fetchAll($sql, $params = []) {
+            public function __construct($tester)
+            {
+                $this->tester = $tester;
+            }
+            public function fetchAll($sql, $params = [])
+            {
                 $this->tester->recordQuery($sql, $params);
                 return []; // Return empty result
             }
-            public function fetchOne($sql, $params = []) {
+            public function fetchOne($sql, $params = [])
+            {
                 $this->tester->recordQuery($sql, $params);
                 return ['total' => 5]; // Return dummy result
             }
-            public function execute($sql, $params = []) {
+            public function execute($sql, $params = [])
+            {
                 $this->tester->recordQuery($sql, $params);
                 return true;
             }
         };
     }
 
-    public function recordQuery($sql, $params) {
+    public function recordQuery($sql, $params)
+    {
         $this->queries[] = ['sql' => $sql, 'params' => $params];
     }
 
-    public function run() {
+    public function run()
+    {
         echo "Starting verification of Pedido optimizations (Mocked DB)...\n";
 
         try {
@@ -74,7 +85,8 @@ class TestPedidoOptimization {
         }
     }
 
-    private function testCounts() {
+    private function testCounts()
+    {
         echo "Testing Pedido::getCountsBySucursal()... ";
         $this->queries = [];
         $this->pedidoModel->getCountsBySucursal(1);
@@ -89,7 +101,8 @@ class TestPedidoOptimization {
         echo "OK\n";
     }
 
-    private function testSargability() {
+    private function testSargability()
+    {
         echo "Testing SARGable query logic... ";
         $this->queries = [];
 
@@ -105,7 +118,8 @@ class TestPedidoOptimization {
         echo "OK\n";
     }
 
-    private function testActiveFilter() {
+    private function testActiveFilter()
+    {
         echo "Testing active status filtering and IN clause... ";
         $this->queries = [];
         $activeStatuses = ['pendiente', 'en_proceso', 'en_camino'];

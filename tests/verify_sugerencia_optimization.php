@@ -5,9 +5,11 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Models\SugerenciaCompra;
 
 // Mock Database
-class MockDatabase {
+class MockDatabase
+{
     public $lastQuery = '';
-    public function fetchAll($sql, $params = []) {
+    public function fetchAll($sql, $params = [])
+    {
         $this->lastQuery = $sql;
         return [
             [
@@ -28,14 +30,17 @@ class MockDatabase {
     }
 }
 
-class MockSugerencia extends SugerenciaCompra {
-    public function __construct($db) {
+class MockSugerencia extends SugerenciaCompra
+{
+    public function __construct($db)
+    {
         $this->db = $db;
         $this->table = 'sugerencias_compra';
     }
 }
 
-function verifyOptimization() {
+function verifyOptimization()
+{
     $db = new MockDatabase();
     $model = new MockSugerencia($db);
 

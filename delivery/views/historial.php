@@ -46,8 +46,7 @@ ob_start();
 </div>
 
 <div id="listaHistorial">
-    <?php if (empty($pedidos)): ?>
-
+    <?php if (empty($pedidos)) : ?>
         <div class="empty-state animate-fade-in" style="animation-delay:0.1s">
             <div class="empty-state__icon empty-state__icon--success">
                 <i class="fa-solid fa-clipboard-check"></i>
@@ -56,12 +55,11 @@ ob_start();
             <p class="empty-state__desc">No hay entregas para las fechas seleccionadas.</p>
         </div>
 
-    <?php else: ?>
-
+    <?php else : ?>
         <?php
         $fecha_actual = '';
         $i = 0;
-        foreach ($pedidos as $p):
+        foreach ($pedidos as $p) :
             $fecha_pedido = date('Y-m-d', strtotime($p['fecha_pedido']));
 
             if ($fecha_actual !== $fecha_pedido) {
@@ -74,7 +72,7 @@ ob_start();
                       </div>";
             }
             $i++;
-        ?>
+            ?>
 
         <a href="/delivery/pedido/<?= (int)$p['id'] ?>"
            class="pedido-card status-entregado pedido-card--row animate-fade-in"

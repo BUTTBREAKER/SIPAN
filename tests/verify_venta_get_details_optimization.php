@@ -5,9 +5,11 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Models\Venta;
 
 // Mock Database
-class MockDatabase {
+class MockDatabase
+{
     public $lastQuery = '';
-    public function fetchAll($sql, $params = []) {
+    public function fetchAll($sql, $params = [])
+    {
         $this->lastQuery = $sql;
         return [
             [
@@ -19,20 +21,31 @@ class MockDatabase {
             ]
         ];
     }
-    public function beginTransaction() {}
-    public function commit() {}
-    public function rollback() {}
-    public function execute($sql, $params = []) {}
+    public function beginTransaction()
+    {
+    }
+    public function commit()
+    {
+    }
+    public function rollback()
+    {
+    }
+    public function execute($sql, $params = [])
+    {
+    }
 }
 
-class MockVenta extends Venta {
-    public function __construct($db) {
+class MockVenta extends Venta
+{
+    public function __construct($db)
+    {
         $this->db = $db;
         $this->table = 'ventas';
     }
 }
 
-function verifyOptimization() {
+function verifyOptimization()
+{
     $db = new MockDatabase();
     $model = new MockVenta($db);
 

@@ -6,7 +6,8 @@
  * totals for today, the last 7 days, and the current month from a daily dataset.
  */
 
-function verify_aggregation($ventas_data) {
+function verify_aggregation($ventas_data)
+{
     $ventas_hoy = 0;
     $ventas_semana = 0;
     $ventas_mes = 0;
@@ -71,7 +72,9 @@ echo "Weekly Total (last 7 days + today): expected $expected_semana, got {$resul
 
 $expected_mes = 0;
 foreach ($mock_ventas as $v) {
-    if ($v['fecha_full'] >= $primer_dia_mes) $expected_mes += $v['total'];
+    if ($v['fecha_full'] >= $primer_dia_mes) {
+        $expected_mes += $v['total'];
+    }
 }
 echo "Monthly Total: expected $expected_mes, got {$results['mes']}\n";
 

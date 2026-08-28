@@ -25,10 +25,10 @@ class PedidosController
         // This avoids loading the entire branch history into memory.
         $activeStatuses = ['pendiente', 'en_proceso', 'en_camino'];
         $pedidos = $this->pedidoModel->getWithDetails($sucursal_id, $activeStatuses);
-        
+
         // Fetch counts separately to update all tabs correctly
         $counts = $this->pedidoModel->getCountsBySucursal($sucursal_id);
-        
+
         $total_pedidos = array_sum($counts);
         $total_pendientes = ($counts['pendiente'] ?? 0) + ($counts['en_proceso'] ?? 0);
         $total_en_camino = $counts['en_camino'] ?? 0;
@@ -36,7 +36,7 @@ class PedidosController
         // Compatibility for view: split active orders into categories
         $pendientes = [];
         $en_camino = [];
-        
+
         foreach ($pedidos as $p) {
             if ($p['estado_pedido'] === 'en_proceso' || $p['estado_pedido'] === 'pendiente') {
                 $pendientes[] = $p;
@@ -57,7 +57,7 @@ class PedidosController
         header('Content-Type: application/json');
 
         $sucursal_id = $_SESSION['sucursal_id'];
-        
+
         // Bolt Optimization: Use efficient status counts instead of fetching all records
         $counts = $this->pedidoModel->getCountsBySucursal($sucursal_id);
 
@@ -94,7 +94,7 @@ class PedidosController
         require_once __DIR__ . '/../../app/Models/Cliente.php';
         $clienteModel = new \App\Models\Cliente();
         $cliente = $clienteModel->find($pedido['id_cliente']);
-        
+
         $productos = $this->pedidoModel->getProductos($id);
         $pagos = $this->pedidoModel->getPagos($id);
 
@@ -104,14 +104,14 @@ class PedidosController
     public function updateEstado($id)
     {
         AuthMiddleware::check();
-        
+
         header('Content-Type: application/json');
 
         if (!\App\Helpers\CSRF::validateToken($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
             echo json_encode(['success' => false, 'message' => 'Token de seguridad inválido']);
             exit;
         }
-        
+
         $pedido = $this->pedidoModel->find($id);
 
         if (!$pedido) {
@@ -127,14 +127,14 @@ class PedidosController
 
         $nuevo_estado = $_POST['estado'] ?? '';
         $observaciones = $_POST['observaciones'] ?? null;
-        
+
         $estados_validos = ['en_camino', 'entregado', 'no_entregado'];
-        
+
         if (!in_array($nuevo_estado, $estados_validos)) {
             echo json_encode(['success' => false, 'message' => 'Estado inválido']);
             exit;
         }
-        
+
         try {
             // Si el repartidor cambia el estado a 'en_camino', se lo asignamos temporalmente para control
             if ($nuevo_estado === 'en_camino' && empty($pedido['id_repartidor'])) {
@@ -213,7 +213,9 @@ class PedidosController
             // 2. Actualizar montos del pedido
             $nuevo_pagado = floatval($pedido['monto_pagado']) + $monto;
             $nueva_deuda  = floatval($pedido['total']) - $nuevo_pagado;
-            if ($nueva_deuda < 0) $nueva_deuda = 0;
+            if ($nueva_deuda < 0) {
+                $nueva_deuda = 0;
+            }
 
             $nuevo_estado_pago = 'pendiente';
             if ($nueva_deuda <= 0.01) {
@@ -238,7 +240,9 @@ class PedidosController
                 'monto_deuda' => $nueva_deuda,
             ]);
         } catch (\Exception $e) {
-            if (isset($db)) $db->rollback();
+            if (isset($db)) {
+                $db->rollback();
+            }
             echo json_encode(['success' => false, 'message' => 'Error al registrar cobro: ' . $e->getMessage()]);
         }
         exit;
@@ -249,7 +253,7 @@ class PedidosController
         AuthMiddleware::check();
 
         $user_id = $_SESSION['user_id'];
-        
+
         // Filtros de fecha
         $fecha_desde = $_GET['desde'] ?? date('Y-m-01'); // Primer día del mes
         $fecha_hasta = $_GET['hasta'] ?? date('Y-m-d');
@@ -267,7 +271,7 @@ class PedidosController
                   AND p.fecha_pedido >= ? AND p.fecha_pedido <= ?
                 ORDER BY p.fecha_pedido DESC 
                 LIMIT 100";
-                
+
         $pedidos = $db->fetchAll($sql, [$user_id, $fecha_desde . ' 00:00:00', $fecha_hasta . ' 23:59:59']);
 
         // Resumen del período
@@ -292,7 +296,7 @@ class PedidosController
         AuthMiddleware::check();
 
         $user_id = $_SESSION['user_id'];
-        
+
         require_once __DIR__ . '/../../app/Core/Database.php';
         $db = \App\Core\Database::getInstance();
 
