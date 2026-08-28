@@ -9,8 +9,7 @@
                 "useSortedProperties": "on"
             }
         },
-        "enabled": true,
-        "includes": []
+        "enabled": true
     },
     "css": {
         "assist": { "enabled": true },
@@ -31,7 +30,7 @@
         }
     },
     "extends": [],
-    "files": { "ignoreUnknown": true, "includes": [], "maxSize": null },
+    "files": { "ignoreUnknown": true, "includes": ["**"], "maxSize": null },
     "formatter": {
         "attributePosition": "auto",
         "bracketSameLine": false,
