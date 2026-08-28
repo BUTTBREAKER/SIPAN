@@ -19,15 +19,20 @@
         "ext-pdo": "*",
         "firebase/php-jwt": "6.10.0",
         "flightphp/container": "^1.3",
-        "guzzlehttp/psr7": "^2.10",
+        "guzzlehttp/psr7": "^2.13",
         "leafs/session": "^4.0",
         "mpdf/mpdf": "^8.3",
         "php": ">=7.4",
         "phpoffice/phpspreadsheet": "^1.30",
         "psr/http-server-handler": "^1.0",
         "psr/http-server-middleware": "^1.0",
-        "symfony/dotenv": "5.4.48",
-        "symfony/polyfill-php80": "^1.37"
+        "symfony/dotenv": "^5.4",
+        "symfony/polyfill-php80": "^1.37",
+        "symfony/polyfill-php81": "^1.38",
+        "symfony/polyfill-php82": "^1.38",
+        "symfony/polyfill-php83": "^1.41",
+        "symfony/polyfill-php84": "^1.38",
+        "symfony/polyfill-php85": "^1.41"
     },
     "require-dev": {
         "phpstan/extension-installer": "^1.4",
