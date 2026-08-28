@@ -23,7 +23,7 @@
         "leafs/session": "^4.0",
         "mpdf/mpdf": "^8.3",
         "php": ">=7.4",
-        "phpoffice/phpspreadsheet": "1.30.4",
+        "phpoffice/phpspreadsheet": "^1.30",
         "psr/http-server-handler": "^1.0",
         "psr/http-server-middleware": "^1.0",
         "symfony/dotenv": "5.4.48",
