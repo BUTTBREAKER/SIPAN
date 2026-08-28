@@ -3,24 +3,22 @@
     "assist": {
         "actions": {
             "source": {
+                "noDuplicateClasses": "on",
                 "organizeImports": "on",
                 "useSortedAttributes": "on",
+                "useSortedEnumMembers": "on",
+                "useSortedInterfaceMembers": "on",
                 "useSortedKeys": "on",
-                "useSortedProperties": "on"
+                "useSortedPackageJson": "off",
+                "useSortedProperties": "on",
+                "useSortedSelectionSet": "on",
+                "useSortedTypeFields": "on"
             }
-        },
-        "enabled": true
+        }
     },
     "css": {
         "assist": { "enabled": true },
-        "formatter": {
-            "enabled": true,
-            "indentStyle": "space",
-            "indentWidth": 4,
-            "lineEnding": "lf",
-            "lineWidth": 80,
-            "quoteStyle": "single"
-        },
+        "formatter": { "quoteStyle": "single" },
         "globals": [],
         "linter": { "enabled": true },
         "parser": {
@@ -30,90 +28,54 @@
         }
     },
     "extends": [],
-    "files": { "ignoreUnknown": true, "includes": ["**"], "maxSize": null },
+    "files": {
+        "ignoreUnknown": true,
+        "includes": ["**", "!public/assets/js/driver.js.iife.js"],
+        "maxSize": null
+    },
     "formatter": {
         "attributePosition": "auto",
-        "bracketSameLine": false,
+        "bracketSameLine": true,
         "bracketSpacing": true,
-        "enabled": true,
-        "expand": "never",
+        "delimiterSpacing": false,
+        "expand": "auto",
         "formatWithErrors": false,
-        "includes": [],
         "indentStyle": "space",
         "indentWidth": 4,
         "lineEnding": "lf",
         "lineWidth": 80,
+        "trailingNewline": true,
         "useEditorconfig": true
     },
-    "graphql": {
-        "assist": { "enabled": true },
-        "formatter": {
-            "bracketSpacing": true,
-            "enabled": true,
-            "indentStyle": "space",
-            "indentWidth": 4,
-            "lineEnding": "lf",
-            "lineWidth": 80,
-            "quoteStyle": "single"
-        },
-        "linter": { "enabled": true }
-    },
-    "grit": {
-        "assist": { "enabled": true },
+    "html": {
         "formatter": {
             "enabled": true,
-            "indentStyle": "space",
-            "indentWidth": 4,
-            "lineEnding": "lf",
-            "lineWidth": 80
+            "indentScriptAndStyle": true,
+            "selfCloseVoidElements": "never",
+            "whitespaceSensitivity": "ignore"
         }
     },
-    "html": { "formatter": { "enabled": true } },
     "javascript": {
         "assist": { "enabled": true },
         "formatter": {
             "arrowParentheses": "asNeeded",
-            "attributePosition": "auto",
-            "bracketSameLine": false,
-            "bracketSpacing": true,
-            "enabled": true,
-            "expand": "never",
-            "indentStyle": "space",
-            "indentWidth": 4,
-            "jsxQuoteStyle": "single",
-            "lineEnding": "lf",
-            "lineWidth": 80,
             "operatorLinebreak": "after",
             "quoteProperties": "asNeeded",
             "quoteStyle": "single",
             "semicolons": "asNeeded",
-            "trailingCommas": "none"
+            "trailingCommas": "all"
         },
         "globals": [],
-        "jsxRuntime": "transparent",
         "linter": { "enabled": true },
-        "parser": {
-            "gritMetavariables": false,
-            "jsxEverywhere": false,
-            "unsafeParameterDecoratorsEnabled": false
-        }
+        "parser": { "unsafeParameterDecoratorsEnabled": false }
     },
     "json": {
         "assist": { "enabled": true },
-        "formatter": {
-            "bracketSpacing": true,
-            "enabled": true,
-            "expand": "never",
-            "indentStyle": "space",
-            "indentWidth": 4,
-            "lineEnding": "lf",
-            "lineWidth": 80,
-            "trailingCommas": "none"
-        },
+        "formatter": { "trailingCommas": "none" },
         "linter": { "enabled": true },
         "parser": { "allowComments": false, "allowTrailingCommas": false }
     },
-    "linter": { "domains": {}, "enabled": true, "includes": [], "rules": {} },
+    "linter": { "domains": {}, "enabled": true, "rules": {} },
     "overrides": [],
     "plugins": [],
     "root": true,

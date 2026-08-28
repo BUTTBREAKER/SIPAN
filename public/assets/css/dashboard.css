@@ -75,27 +75,26 @@
 
 /* Widget Styles for Grid */
 .bento-widget {
-    background: var(--bg-card);
-    border-radius: 20px;
-    /* Softer rounded corners */
-    padding: 1.5rem;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
+    position: relative;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    /* Softer rounded corners */
+    padding: 1.5rem;
+    overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
     transition:
         transform 0.2s ease,
         box-shadow 0.2s ease;
-    height: 100%;
-    /* Fill grid cell */
-    position: relative;
-    overflow: hidden;
 }
 
 .bento-widget:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
     border-color: var(--secondary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
 }
 
 /* Specific Widget Types */
@@ -109,42 +108,42 @@
 
 /* Stats Cards (Refined for Bento) */
 .stat-card {
-    background: var(--bg-card);
-    color: var(--text-main);
-    border-radius: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
     padding: 1.5rem;
+    overflow: hidden;
+    color: var(--text-main);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid var(--border-color);
 }
 
 .stat-card.success {
-    background-color: var(--success);
     color: #fff;
+    background-color: var(--success);
     border-color: transparent;
 }
 
 .stat-card.info {
-    background-color: var(--info);
     color: #fff;
+    background-color: var(--info);
     border-color: transparent;
 }
 
 .stat-card.warning {
-    background-color: var(--warning);
     color: #fff;
+    background-color: var(--warning);
     border-color: transparent;
 }
 
 .stat-card.danger {
-    background-color: var(--danger);
     color: #fff;
+    background-color: var(--danger);
     border-color: transparent;
 }
 
@@ -156,9 +155,9 @@
 
 /* Adjust icons */
 .stat-card .stat-icon {
+    font-size: 2.5rem;
     color: inherit;
     opacity: 0.3;
-    font-size: 2.5rem;
 }
 
 /* Quick Actions Grid inside Widget */
@@ -173,27 +172,27 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
-    background: var(--bg-body);
-    border-radius: 16px;
-    border: 1px solid transparent;
-    transition: all 0.2s;
-    text-align: center;
-    color: var(--text-main);
     aspect-ratio: 1 / 1;
+    padding: 1.5rem;
+    color: var(--text-main);
+    text-align: center;
+    background: var(--bg-body);
+    border: 1px solid transparent;
+    border-radius: 16px;
+    transition: all 0.2s;
     /* Square buttons */
 }
 
 .action-btn:hover {
     background: var(--bg-card);
     border-color: var(--secondary);
-    transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
 }
 
 .action-btn i {
-    font-size: 2rem;
     margin-bottom: 0.5rem;
+    font-size: 2rem;
     color: var(--secondary);
 }
 

@@ -1,17 +1,17 @@
 /* --- Grid.js Custom Theme "Pan Dorado" --- */
 /* Wrapper */
 .gridjs-container {
-    font-family: "Outfit", sans-serif !important;
+    font-family: 'Outfit', sans-serif !important;
     background: transparent !important;
-    box-shadow: none !important;
     border-radius: 0 !important;
+    box-shadow: none !important;
 }
 
 .gridjs-wrapper {
-    box-shadow: none !important;
+    overflow-x: auto !important;
     border: none !important;
     border-radius: 0 !important;
-    overflow-x: auto !important;
+    box-shadow: none !important;
     /* Force horizontal scroll */
 }
 
@@ -37,11 +37,11 @@
 .gridjs-search-input {
     width: 100% !important;
     padding: 0.7rem 1rem !important;
+    font-size: 0.9rem !important;
+    color: var(--text-main) !important;
+    background-color: var(--bg-card) !important;
     border: 1px solid var(--border-color) !important;
     border-radius: 8px !important;
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    font-size: 0.9rem !important;
     transition: all 0.3s ease;
 }
 
@@ -53,16 +53,16 @@
 
 /* Table Header */
 th.gridjs-th {
+    padding: 1rem !important;
+    font-family: 'Playfair Display', serif !important;
+    font-weight: 700 !important;
+    /* Visual anchor */
+    color: var(--primary) !important;
+    text-align: left !important;
+    text-transform: uppercase !important;
     background-color: transparent !important;
     border: none !important;
     border-bottom: 2px solid var(--primary) !important;
-    /* Visual anchor */
-    color: var(--primary) !important;
-    font-family: "Playfair Display", serif !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    padding: 1rem !important;
-    text-align: left !important;
 }
 
 th.gridjs-th-sort .gridjs-th-content {
@@ -73,18 +73,18 @@ th.gridjs-th-sort .gridjs-th-content {
 button.gridjs-sort {
     float: none !important;
     display: inline-block;
-    vertical-align: middle;
     margin-left: 5px;
+    vertical-align: middle;
 }
 
 /* Rows & Cells */
 td.gridjs-td {
+    padding: 1rem !important;
+    font-size: 0.95rem;
+    color: var(--text-main) !important;
     background-color: var(--bg-card) !important;
     border: none !important;
     border-bottom: 1px solid var(--border-color) !important;
-    color: var(--text-main) !important;
-    padding: 1rem !important;
-    font-size: 0.95rem;
 }
 
 /* First and Last cell rounded corners for "Card" look per row if desired, 
@@ -96,38 +96,38 @@ tr.gridjs-tr {
 }
 
 tr.gridjs-tr:hover td.gridjs-td {
-    background-color: rgba(210, 105, 30, 0.05) !important;
     cursor: default;
+    background-color: rgba(210, 105, 30, 0.05) !important;
 }
 
 /* Footer (Pagination) */
 .gridjs-footer {
+    padding: 1.5rem 0 0 0 !important;
     background-color: transparent !important;
     border: none !important;
-    padding: 1.5rem 0 0 0 !important;
     box-shadow: none !important;
 }
 
 .gridjs-pagination .gridjs-pages button {
-    border-radius: 8px !important;
-    border: 1px solid var(--border-color) !important;
-    background-color: var(--bg-card) !important;
-    color: var(--text-main) !important;
-    margin: 0 2px !important;
     padding: 0.5rem 1rem !important;
+    margin: 0 2px !important;
+    color: var(--text-main) !important;
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
 }
 
 .gridjs-pagination .gridjs-pages button:hover {
-    background-color: var(--primary-light) !important;
     color: #fff !important;
+    background-color: var(--primary-light) !important;
     border-color: var(--primary-light) !important;
 }
 
 .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
-    background-color: var(--primary) !important;
-    color: #fff !important;
-    border-color: var(--primary) !important;
     font-weight: bold;
+    color: #fff !important;
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
 }
 
 /* Loading Bar */
@@ -137,35 +137,35 @@ tr.gridjs-tr:hover td.gridjs-td {
 
 /* Actions Button overrides inside grid */
 .grid-btn-action {
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    margin-right: 0.4rem;
     display: inline-flex;
-    align-items: center;
     gap: 0.3rem;
-    cursor: pointer;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+    margin-right: 0.4rem;
+    font-size: 0.85rem;
     text-decoration: none;
+    cursor: pointer;
     border: none;
+    border-radius: 6px;
     transition: transform 0.2s;
 }
 
 .grid-btn-action:hover {
-    transform: translateY(-2px);
     opacity: 0.9;
+    transform: translateY(-2px);
 }
 
 .grid-btn-edit {
-    background: var(--warning);
     color: #fff;
+    background: var(--warning);
 }
 
 .grid-btn-delete {
-    background: var(--danger);
     color: #fff;
+    background: var(--danger);
 }
 
 .grid-btn-view {
-    background: var(--info);
     color: #fff;
+    background: var(--info);
 }
