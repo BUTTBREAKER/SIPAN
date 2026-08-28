@@ -24,7 +24,7 @@
 
 ## 2025-01-24 - [Unused Join and Aggregation Optimization]
 **Learning:** Performing a `LEFT JOIN` and `GROUP BY` to calculate a field that is never displayed in the UI is a common source of database overhead. Removing these redundant operations, especially in many-to-one relationships (like sales to products), drastically reduces query complexity and memory usage as the dataset grows.
-**Action:** Before implementing an aggregation in a listing query, verify that the resulting field is actually used in the associated view or controller.
+**Action:** Before implementing an aggregation in a listing query, verify that the resulting field is actually used in the view or controller.
 
 ## 2025-01-24 - [Pruning Unused Aggregations in High-Volume Queries]
 **Learning:** Performing a many-to-one `JOIN` and `GROUP BY` just to return a count (e.g., `total_productos` in a sales list) is a significant performance drain when that data isn't actually consumed by the frontend. Removing these redundant joins reduces database CPU, memory usage, and execution time, especially as history grows.
@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [SQL Optimization: Derived Tables vs. Correlated Subqueries]
+**Learning:** Using correlated subqueries in the `SELECT` list or `JOIN` conditions (e.g., fetching the latest message or unread count per conversation) causes $O(N \cdot M)$ complexity. Refactoring these into derived tables with `GROUP BY` and `MAX(id)` allows the database to aggregate results in a single pass ($O(N+M)$), which is critical for high-frequency polling endpoints like chat sync.
+**Action:** When fetching aggregated data for a list of records, use derived tables with `GROUP BY` and join them to the main query instead of using subqueries in the `SELECT` clause.
