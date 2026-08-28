@@ -64,11 +64,11 @@ _(Si usas XAMPP y no tienes contraseña en root, omite el `-p`)_.
 2. Ajusta las credenciales de tu base de datos:
 ```php
 return [
-  'db_host' => 'localhost',
-  'db_name' => 'sipan',
-  'db_user' => 'root',
-  'db_pass' => '', // Tu contraseña
-  // ...
+    'db_host' => 'localhost',
+    'db_name' => 'sipan',
+    'db_user' => 'root',
+    'db_pass' => '', // Tu contraseña
+    // ...
 ];
 ```
 
