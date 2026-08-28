@@ -15,6 +15,7 @@ class ChatMensaje
 
     /**
      * Obtener conversaciones del usuario con último mensaje y conteo no leídos
+     * Bolt Optimization: Replaced correlated subqueries with derived table joins to improve performance from O(N*M) to O(N+M).
      */
     public function getConversaciones($userId)
     {
@@ -28,10 +29,7 @@ class ChatMensaje
                     m.created_at AS ultimo_mensaje_fecha,
                     m_user.primer_nombre AS ultimo_mensaje_autor,
                     -- Conteo no leídos
-                    (SELECT COUNT(*) FROM chat_mensajes cm2
-                     WHERE cm2.id_conversacion = c.id
-                       AND cm2.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                       AND cm2.id_usuario != ?) AS no_leidos,
+                    COALESCE(unread.count, 0) AS no_leidos,
                     -- Info del otro participante (para directas)
                     other_user.id AS otro_usuario_id,
                     CONCAT_WS(' ', other_user.primer_nombre, other_user.apellido_paterno) AS otro_usuario_nombre,
@@ -40,13 +38,24 @@ class ChatMensaje
                     s.nombre AS otro_usuario_sucursal
                 FROM chat_participantes cp
                 INNER JOIN chat_conversaciones c ON c.id = cp.id_conversacion
-                -- Último mensaje (subquery para obtener el más reciente)
-                LEFT JOIN chat_mensajes m ON m.id = (
-                    SELECT m2.id FROM chat_mensajes m2
-                    WHERE m2.id_conversacion = c.id
-                    ORDER BY m2.created_at DESC LIMIT 1
-                )
+                -- Bolt: Último mensaje mediante Join con tabla derivada (O(N+M))
+                LEFT JOIN (
+                    SELECT id_conversacion, MAX(id) as max_id
+                    FROM chat_mensajes
+                    GROUP BY id_conversacion
+                ) AS last_msg_ref ON last_msg_ref.id_conversacion = c.id
+                LEFT JOIN chat_mensajes m ON m.id = last_msg_ref.max_id
                 LEFT JOIN usuarios m_user ON m_user.id = m.id_usuario
+                -- Bolt: Conteo de no leídos mediante Join con tabla derivada filtrada por el usuario actual
+                LEFT JOIN (
+                    SELECT cm.id_conversacion, COUNT(*) as count
+                    FROM chat_mensajes cm
+                    INNER JOIN chat_participantes cp_unread ON cm.id_conversacion = cp_unread.id_conversacion
+                    WHERE cp_unread.id_usuario = ?
+                      AND cm.created_at > COALESCE(cp_unread.ultimo_leido, '1970-01-01')
+                      AND cm.id_usuario != cp_unread.id_usuario
+                    GROUP BY cm.id_conversacion
+                ) AS unread ON unread.id_conversacion = c.id
                 -- Otro participante (para conversaciones directas)
                 LEFT JOIN chat_participantes cp2 ON cp2.id_conversacion = c.id 
                     AND cp2.id_usuario != ? AND c.tipo = 'directa'
@@ -165,22 +174,18 @@ class ChatMensaje
 
     /**
      * Contar total de mensajes no leídos del usuario (para sidebar badge)
+     * Bolt Optimization: Simplified nested subqueries into a single INNER JOIN for better performance.
      */
     public function contarNoLeidos($userId)
     {
-        $sql = "SELECT COALESCE(SUM(sub.no_leidos), 0) AS total
-                FROM (
-                    SELECT (
-                        SELECT COUNT(*) FROM chat_mensajes cm
-                        WHERE cm.id_conversacion = cp.id_conversacion
-                          AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                          AND cm.id_usuario != ?
-                    ) AS no_leidos
-                    FROM chat_participantes cp
-                    WHERE cp.id_usuario = ?
-                ) sub";
+        $sql = "SELECT COUNT(*) AS total
+                FROM chat_mensajes cm
+                INNER JOIN chat_participantes cp ON cm.id_conversacion = cp.id_conversacion
+                WHERE cp.id_usuario = ?
+                  AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
+                  AND cm.id_usuario != cp.id_usuario";
 
-        $result = $this->db->fetchOne($sql, [$userId, $userId]);
+        $result = $this->db->fetchOne($sql, [$userId]);
         return (int)($result['total'] ?? 0);
     }
 
