@@ -224,6 +224,34 @@ function testOptimizations()
     } else {
         echo "❌ Pedido optimization verification failed!\n";
     }
+
+    echo "\n--- Testing Pedido::getPagosPorPedidos Optimization (Mocked) ---\n";
+    $mockDb->queries = [];
+
+    $emptyPagos = $pedidoModel->getPagosPorPedidos([]);
+    if (empty($emptyPagos) && empty($mockDb->queries)) {
+        echo "Found early return for empty pedido_ids array\n";
+    } else {
+        echo "❌ Empty array test failed!\n";
+    }
+
+    $pedidoModel->getPagosPorPedidos([10, 20, 30]);
+
+    $batchFetchFound = false;
+    foreach ($mockDb->queries as $q) {
+        if (is_array($q) && strpos($q['sql'], 'FROM pedido_pagos pp') !== false) {
+            if (strpos($q['sql'], 'WHERE pp.id_pedido IN (?,?,?)') !== false && $q['params'] === [10, 20, 30]) {
+                $batchFetchFound = true;
+                echo "Found batch fetch for order payments with correct IN clause\n";
+            }
+        }
+    }
+
+    if ($batchFetchFound) {
+        echo "✅ Pedido::getPagosPorPedidos optimization verified (Mocked)!\n";
+    } else {
+        echo "❌ Pedido::getPagosPorPedidos optimization verification failed!\n";
+    }
 }
 
 try {
