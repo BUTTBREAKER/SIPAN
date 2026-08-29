@@ -9,6 +9,8 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
+use function App\getenv;
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 // SIPAN - Sistema Integral para Panaderías
@@ -26,7 +28,7 @@ $_ENV['session_lifetime'] = filter_var(
 // Configurar errores según entorno
 error_reporting(E_ALL);
 
-$isProduction = $_ENV['app_env'] === 'production';
+$isProduction = getenv('app_env') === 'production';
 $docrefRoot = $isProduction ? null : 'https://www.php.net/manual/es/';
 $docrefExt = $isProduction ? null : '.php';
 
@@ -76,7 +78,7 @@ $isDeliveryPath = str_contains($request->getUri()->getPath(), '/delivery');
 if (session_status() === PHP_SESSION_NONE) {
     // Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
     $sessionParams = [
-        'lifetime' => $_ENV['session_lifetime'],
+        'lifetime' => (int) getenv('session_lifetime'),
         'secure' => $isSecure,
         'httponly' => true,
         'samesite' => 'Strict',
@@ -85,7 +87,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params($sessionParams);
 
     // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
-    $baseSessionName = $_ENV['session_name'];
+    $baseSessionName = getenv('session_name');
 
     $finalSessionName = $isDeliveryPath
         ? "{$baseSessionName}_DELIVERY"
@@ -109,7 +111,7 @@ define('BASE_URL', $request->getUri()->withQuery('')->withPath(''));
 
 // Debug (comentar en producción)
 error_log(
-    $_ENV['app_debug']
+    getenv('app_debug') === 'true'
         ? "Path: {$request->getUri()->getPath()}, Method: {$request->getMethod()}, URI: {$request->getRequestTarget()}"
         : "{$request->getMethod()} {$request->getRequestTarget()}"
 );
