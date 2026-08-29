@@ -25,15 +25,23 @@ $_ENV['session_lifetime'] = filter_var(
 // Configurar errores según entorno
 error_reporting(E_ALL);
 
-if ($_ENV['app_env'] === 'production') {
-    // Producción: No mostrar errores en pantalla, solo registrar en log
-    ini_set('display_errors', 'Off');
-    ini_set('error_log', __DIR__ . '/../storage/logs/php-errors.log');
-} else {
-    // Desarrollo: Mostrar todos los errores
-    ini_set('display_errors', strval($_ENV['app_debug']));
-    ini_set('error_log', __DIR__ . '/../storage/logs/sipan-debug.log');
-}
+$isProduction = $_ENV['app_env'] === 'production';
+$docrefRoot = $isProduction ? null : 'https://www.php.net/manual/es/';
+$docrefExt = $isProduction ? null : '.php';
+
+ini_set('display_errors', $isProduction ? 'Off' : 'On');
+ini_set('display_startup_errors', $isProduction ? 'Off' : 'On');
+ini_set('log_errors', 'On');
+ini_set('log_errors_max_len', 0);
+ini_set('ignore_repeated_errors', 'Off');
+ini_set('ignore_repeated_source', 'Off');
+ini_set('report_memleaks', 'On');
+ini_set('html_errors', 'On');
+ini_set('docref_root', $docrefRoot);
+ini_set('docref_ext', $docrefExt);
+ini_set('error_prepend_string', '<pre style="color: red">');
+ini_set('error_append_string', '</pre>');
+ini_set('error_log', __DIR__ . '/../storage/logs/php_errors.log');
 
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
 $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
