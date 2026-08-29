@@ -27,16 +27,23 @@ class Proveedor extends BaseModel
         $this->db->beginTransaction();
         try {
             $this->db->execute("DELETE FROM proveedor_insumos WHERE id_proveedor = ?", [$proveedor_id]);
-            foreach ($insumos as $insumo) {
-                $sql = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio, tiempo_entrega)
-                        VALUES (?, ?, ?, ?)";
-                $this->db->execute($sql, [
-                    $proveedor_id,
-                    $insumo['id_insumo'],
-                    $insumo['precio'] ?? 0,
-                    $insumo['tiempo_entrega'] ?? null
-                ]);
+
+            if (!empty($insumos)) {
+                $placeholders = [];
+                $params = [];
+                foreach ($insumos as $insumo) {
+                    $placeholders[] = "(?, ?, ?, ?)";
+                    $params[] = $proveedor_id;
+                    $params[] = $insumo['id_insumo'];
+                    $params[] = $insumo['precio'] ?? 0;
+                    $params[] = $insumo['tiempo_entrega'] ?? null;
+                }
+
+                // Bolt: Batch insert all provider supplies in a single query instead of executing N separate queries.
+                $sql = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio, tiempo_entrega) VALUES " . implode(', ', $placeholders);
+                $this->db->execute($sql, $params);
             }
+
             $this->db->commit();
         } catch (\Exception $e) {
             $this->db->rollback();
