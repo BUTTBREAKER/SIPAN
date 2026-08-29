@@ -1,5 +1,7 @@
 <?php
 
+use App\NotFoundHandler;
+use App\QueueRequestHandler;
 use App\Route;
 use flight\Container;
 use GuzzleHttp\Psr7\HttpFactory;
@@ -12,6 +14,10 @@ use Symfony\Component\Dotenv\Dotenv;
 use function App\getenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+
+$queueRequestHandler = new QueueRequestHandler(
+    new NotFoundHandler(new HttpFactory()),
+);
 
 // SIPAN - Sistema Integral para Panaderías
 // Archivo principal de enrutamiento
@@ -170,12 +176,14 @@ foreach ($routes as $route) {
 
 // Si no se encontró ruta, mostrar 404
 if (!$matched) {
-    $response = $response->withStatus(404);
+    $response = $queueRequestHandler->handle(ServerRequest::fromGlobals());
+    http_response_code($response->getStatusCode());
 
-    ob_start();
+    foreach ($response->getHeaders() as $name => $values) {
+        foreach ($values as $value) {
+            header("$name: $value", false);
+        }
+    }
 
-    require __DIR__ . '/../app/Views/404.php';
-
-    $response->getBody()->write(ob_get_clean() ?: '');
     echo $response->getBody();
 }

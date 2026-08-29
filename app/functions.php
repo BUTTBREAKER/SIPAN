@@ -7,7 +7,7 @@ namespace App;
 use OutOfBoundsException;
 use Symfony\Component\Dotenv\Dotenv;
 
-function getenv(string $name): string
+function getenv(string $name): mixed
 {
     if (!key_exists($name, $_ENV)) {
         $dotenv = new Dotenv();
