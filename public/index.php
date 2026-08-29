@@ -6,9 +6,6 @@ use GuzzleHttp\Psr7\ServerRequest;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\Uri;
 use Leaf\Http\Session;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\UriInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -19,6 +16,11 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // Cargar configuración
 (new Dotenv())->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
 $_ENV['app_debug'] = filter_var($_ENV['app_debug'], FILTER_VALIDATE_BOOL);
+
+$_ENV['session_lifetime'] = filter_var(
+    $_ENV['session_lifetime'],
+    FILTER_VALIDATE_INT,
+);
 
 // Configurar errores según entorno
 error_reporting(E_ALL);
