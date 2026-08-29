@@ -1,11 +1,12 @@
 <?php
 
 use App\Route;
-use GuzzleHttp\Psr7\Response;
+use flight\Container;
+use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\ServerRequest;
-use GuzzleHttp\Psr7\Stream;
-use GuzzleHttp\Psr7\Uri;
 use Leaf\Http\Session;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -43,58 +44,56 @@ ini_set('error_prepend_string', '<pre style="color: red">');
 ini_set('error_append_string', '</pre>');
 ini_set('error_log', __DIR__ . '/../storage/logs/php_errors.log');
 
+Container::getInstance()->singleton(
+    ServerRequestInterface::class,
+    [ServerRequest::class, 'fromGlobals'],
+);
+
+Container::getInstance()->singleton(
+    ResponseFactoryInterface::class,
+    HttpFactory::class,
+);
+
+$request = Container::getInstance()->get(ServerRequestInterface::class);
+
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
-$isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
+$isSecure = (
+    $request->getUri()->getScheme() === 'https'
+    || strtolower($request->getHeaderLine('X_FORWARDED_PROTO')) === 'https'
+);
 
 // Detectar protocolo (compatible con proxy/túnel como Cloudflare)
 $scheme = $isSecure ? 'https' : 'http';
+$request = $request->withUri($request->getUri()->withScheme($scheme));
 
-$uri = (new Uri($_SERVER['REQUEST_URI']))
-    ->withHost($_SERVER['SERVER_NAME'])
-    ->withPort($_SERVER['SERVER_PORT'])
-    ->withScheme($scheme);
-
-$request = (new ServerRequest($_SERVER['REQUEST_METHOD'], $uri))
-    ->withBody(new Stream(fopen('php://input', 'r')))
-    ->withCookieParams($_COOKIE)
-    ->withProtocolVersion(ltrim($_SERVER['SERVER_PROTOCOL'], 'HTTP/'))
-    ->withQueryParams($_GET)
-    ->withUploadedFiles($_FILES);
-
-foreach (headers_list() as $header) {
-    [$name, $value] = explode(':', strval($header));
-
-    $request = $request->withHeader($name, $value);
-}
-
-$response = (new Response())
-    ->withBody(new Stream(fopen('php://temp', 'w+')))
-    ->withProtocolVersion($request->getProtocolVersion());
+$response = Container::getInstance()
+    ->get(ResponseFactoryInterface::class)
+    ->createResponse();
 
 // Detectar si la ruta es para el sistema de delivery
-$isDeliveryPath = str_contains($uri->getPath(), '/delivery');
-
-// Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
-$sessionParams = [
-    'lifetime' => filter_var($_ENV['session_lifetime'], FILTER_VALIDATE_INT),
-    'secure' => $isSecure,
-    'httponly' => true,
-    'samesite' => 'Strict',
-] + session_get_cookie_params();
-
-session_set_cookie_params($sessionParams);
+$isDeliveryPath = str_contains($request->getUri()->getPath(), '/delivery');
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
+    $sessionParams = [
+        'lifetime' => $_ENV['session_lifetime'],
+        'secure' => $isSecure,
+        'httponly' => true,
+        'samesite' => 'Strict',
+    ] + session_get_cookie_params();
+
+    session_set_cookie_params($sessionParams);
+
     // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
-    $baseSessionName = strval($_ENV['session_name']);
-    $finalSessionName = $isDeliveryPath ? "{$baseSessionName}_DELIVERY" : $baseSessionName;
+    $baseSessionName = $_ENV['session_name'];
+
+    $finalSessionName = $isDeliveryPath
+        ? "{$baseSessionName}_DELIVERY"
+        : $baseSessionName;
 
     session_name($finalSessionName);
     Session::start();
 }
-
-// Habilitar log de debug
-ini_set('log_errors', 'Off');
 
 // La ruta ya fue detectada arriba
 // ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
@@ -102,16 +101,16 @@ ini_set('log_errors', 'Off');
 if ($isDeliveryPath) {
     require_once __DIR__ . '/../delivery/index.php';
 
-    exit;
+    return;
 }
-// ---------------------------------------------------------------
 
-define('BASE_URL', $uri->withQuery('')->__toString());
+// ---------------------------------------------------------------
+define('BASE_URL', $request->getUri()->withQuery('')->withPath(''));
 
 // Debug (comentar en producción)
 error_log(
     $_ENV['app_debug']
-        ? "Path: {$uri->getPath()}, Method: {$request->getMethod()}, URI: {$request->getRequestTarget()}"
+        ? "Path: {$request->getUri()->getPath()}, Method: {$request->getMethod()}, URI: {$request->getRequestTarget()}"
         : "{$request->getMethod()} {$request->getRequestTarget()}"
 );
 
@@ -133,7 +132,7 @@ foreach ($routes as $route) {
         continue;
     }
 
-    $params = $route->getParamsFromUri($uri);
+    $params = $route->getParamsFromUri($request->getUri());
 
     if ($params === false) {
         continue;
