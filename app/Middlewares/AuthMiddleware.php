@@ -23,6 +23,10 @@ class AuthMiddleware
                 exit;
             }
 
+            if ($_SERVER['REQUEST_URI'] === '/login') {
+                return;
+            }
+
             header('Location: /login');
             exit;
         }
