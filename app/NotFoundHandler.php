@@ -27,6 +27,7 @@ final class NotFoundHandler implements RequestHandlerInterface
     ): ResponseInterface {
         $response = $this->responseFactory->createResponse(404);
         ob_start();
+        require __DIR__ . '/Views/404.php';
         $response->getBody()->write(ob_get_clean());
 
         return $response;
