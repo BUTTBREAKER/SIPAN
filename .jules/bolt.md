@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-08-30 - [View Dependency Removal & NULL Coalescing Aggregation]
+**Learning:** Relying on unmigrated or external database views (e.g., `v_resumen_pedidos_cliente`) in model fallback branches causes fatal query failures when called in contexts where view definition is absent. Additionally, raw SQL `SUM()` functions without `COALESCE(SUM(...), 0)` return `NULL` for records without matches, forcing downstream code or UI layers to handle null checks.
+**Action:** Always replace external view queries with explicit SQL `LEFT JOIN` queries and wrap aggregate numeric columns with `COALESCE` to guarantee non-null values.

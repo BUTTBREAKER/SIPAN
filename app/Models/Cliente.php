@@ -29,26 +29,29 @@ class Cliente extends BaseModel
         return $this->db->fetchOne($sql, [$documento_numero]);
     }
 
+    /**
+     * Obtiene los clientes con su resumen de pedidos (total pedidos, monto comprado, pagado y deuda).
+     * Optimización Bolt: Consulta unificada con COALESCE para evitar nulos y eliminar dependencia de vista inexistente.
+     */
     public function getWithResumen($sucursal_id = null)
     {
-        $sql = "SELECT * FROM v_resumen_pedidos_cliente";
+        $sql = "SELECT c.*,
+                       COUNT(p.id) as total_pedidos,
+                       COALESCE(SUM(p.total), 0) as total_comprado,
+                       COALESCE(SUM(p.monto_pagado), 0) as total_pagado,
+                       COALESCE(SUM(p.monto_deuda), 0) as total_deuda
+                FROM {$this->table} c
+                LEFT JOIN pedidos p ON c.id = p.id_cliente";
 
+        $params = [];
         if ($sucursal_id) {
-            // Filtrar por sucursal si es necesario
-            $sql = "SELECT c.*, 
-                           COUNT(p.id) as total_pedidos,
-                           SUM(p.total) as total_comprado,
-                           SUM(p.monto_pagado) as total_pagado,
-                           SUM(p.monto_deuda) as total_deuda
-                    FROM {$this->table} c
-                    LEFT JOIN pedidos p ON c.id = p.id_cliente
-                    WHERE c.id_sucursal = ?
-                    GROUP BY c.id
-                    ORDER BY c.nombre";
-            return $this->db->fetchAll($sql, [$sucursal_id]);
+            $sql .= " WHERE c.id_sucursal = ?";
+            $params[] = $sucursal_id;
         }
 
-        return $this->db->fetchAll($sql);
+        $sql .= " GROUP BY c.id ORDER BY c.nombre";
+
+        return $this->db->fetchAll($sql, $params);
     }
 
 
