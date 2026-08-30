@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\ConstantsMiddleware;
 use App\LogRequestMiddleware;
 use App\NotFoundHandler;
 use App\QueueRequestHandler;
@@ -107,8 +108,6 @@ if ($isDeliveryPath) {
 }
 
 // ---------------------------------------------------------------
-define('BASE_URL', $request->getUri()->withQuery('')->withPath(''));
-
 $responseFactory = new HttpFactory();
 
 $router = new Router(
@@ -130,6 +129,7 @@ $logRequestMiddleware->setLogger($logger);
 $queueRequestHandler = new QueueRequestHandler(
     new NotFoundHandler($responseFactory),
     $logRequestMiddleware,
+    new ConstantsMiddleware(),
     new RoutingMiddleware($router),
 );
 
