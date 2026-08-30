@@ -16,7 +16,6 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
-use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 use function App\getenv;
@@ -29,17 +28,9 @@ $request = Container::getInstance()->get(ServerRequestInterface::class);
 
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
 $isSecure = (
-    $request->getUri()->getScheme() === 'https'
+    strtolower($request->getUri()->getScheme()) === 'https'
     || strtolower($request->getHeaderLine('X_FORWARDED_PROTO')) === 'https'
 );
-
-// Detectar protocolo (compatible con proxy/túnel como Cloudflare)
-$scheme = $isSecure ? 'https' : 'http';
-$request = $request->withUri($request->getUri()->withScheme($scheme));
-
-$response = Container::getInstance()
-    ->get(ResponseFactoryInterface::class)
-    ->createResponse();
 
 // Detectar si la ruta es para el sistema de delivery
 $isDeliveryPath = str_contains($request->getUri()->getPath(), '/delivery');

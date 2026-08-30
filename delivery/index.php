@@ -1,5 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+use flight\Container;
+use Leaf\Http\Session;
+use Psr\Http\Message\ServerRequestInterface;
+
 require_once __DIR__ . '/../bootstrap/app.php';
 
 // Habilitar buffering de salida
@@ -29,21 +35,31 @@ spl_autoload_register(function ($class) {
     }
 });
 
+$request = Container::getInstance()->get(ServerRequestInterface::class);
+
 // Iniciar sesión
-$isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
+$isSecure = (
+    strtolower($request->getUri()->getScheme()) === 'https'
+    || strtolower($request->getHeaderLine('X_FORWARDED_PROTO')) === 'https'
+);
+
 $sessionParams = session_get_cookie_params();
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_set_cookie_params([
-        'lifetime' => $_ENV['session_lifetime'] ?? 86400,
-        'path' => '/', // Importante: path global para compartir sesión con app principal
-        'domain' => $sessionParams['domain'],
+    $sessionParams = [
+        'lifetime' => (int) getenv('session_lifetime'),
         'secure' => $isSecure,
         'httponly' => true,
-        'samesite' => 'Lax'
-    ]);
-    session_name('SIPAN_SESSION_DELIVERY');
-    session_start();
+        'samesite' => 'Strict',
+    ] + session_get_cookie_params();
+
+    session_set_cookie_params($sessionParams);
+
+    $baseSessionName = getenv('session_name');
+    $finalSessionName = "{$baseSessionName}_DELIVERY";
+
+    session_name($finalSessionName);
+    Session::start();
 }
 
 // Obtener ruta (relativa a /delivery)
@@ -54,9 +70,7 @@ $path = rtrim($path, '/') ?: '/';
 $method = $_SERVER['REQUEST_METHOD'];
 
 // Función simple de enrutamiento
-// Función simple de enrutamiento
-function deliveryMatchRoute($routePath, $requestPath)
-{
+$deliveryMatchRoute = function (string $routePath, string $requestPath) {
     $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $routePath);
     $pattern = "@^" . $pattern . "$@D";
 
@@ -65,7 +79,7 @@ function deliveryMatchRoute($routePath, $requestPath)
         return $matches;
     }
     return false;
-}
+};
 
 // Definir rutas de Delivery
 $routes = [
@@ -93,7 +107,7 @@ foreach ($routes as $route => $handler) {
         continue;
     }
 
-    $params = deliveryMatchRoute($routePath, $path);
+    $params = $deliveryMatchRoute($routePath, $path);
 
     if ($params !== false) {
         $matched = true;
