@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use App\ConstantsMiddleware;
-use App\LogRequestMiddleware;
-use App\NotFoundHandler;
 use App\QueueRequestHandler;
 use App\Router;
 use App\RoutingMiddleware;
@@ -12,10 +9,10 @@ use App\SessionMiddleware;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\ServerRequest;
 use Leaf\Http\Session;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\ErrorLogHandler;
-use Monolog\Logger;
-use Monolog\Processor\PsrLogMessageProcessor;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 require_once __DIR__ . '/../bootstrap/app.php';
 
@@ -26,25 +23,31 @@ $router = new Router(
     ...require __DIR__ . '/../routes/delivery.php',
 );
 
-$format = '[%datetime%] %level_name%: %message%';
+$notFoundHandler = new class(
+    $responseFactory,
+) implements RequestHandlerInterface {
+    public function __construct(
+        private ResponseFactoryInterface $responseFactory,
+    ) {
+        //
+    }
 
-$logger = new Logger(
-    '',
-    [(new ErrorLogHandler())->setFormatter(new LineFormatter($format))],
-    [new PsrLogMessageProcessor()],
-);
+    #[Override]
+    #[NoDiscard]
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $response = $this->responseFactory->createResponse(404);
+        $response->getBody()->write('404 - Not Found (Delivery App)');
 
-$logRequestMiddleware = new LogRequestMiddleware();
-$logRequestMiddleware->setLogger($logger);
+        return $response;
+    }
+};
 
 $queueRequestHandler = new QueueRequestHandler(
-    new NotFoundHandler($responseFactory),
+    $notFoundHandler,
     new SessionMiddleware(new Session()),
-    new ConstantsMiddleware(),
     new RoutingMiddleware($router),
-    $logRequestMiddleware,
 );
-
 
 $request = ServerRequest::fromGlobals();
 $path = $request->getUri()->getPath();

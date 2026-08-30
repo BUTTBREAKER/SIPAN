@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\ConstantsMiddleware;
+use App\DeliveryMiddleware;
 use App\LogRequestMiddleware;
 use App\NotFoundHandler;
 use App\QueueRequestHandler;
@@ -17,27 +18,9 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
-use Psr\Http\Message\ServerRequestInterface;
 
 require_once __DIR__ . '/../bootstrap/app.php';
 
-// SIPAN - Sistema Integral para Panaderías
-// Archivo principal de enrutamiento
-$request = Container::getInstance()->get(ServerRequestInterface::class);
-
-// Detectar si la ruta es para el sistema de delivery
-$isDeliveryPath = str_contains($request->getUri()->getPath(), '/delivery');
-
-// La ruta ya fue detectada arriba
-// ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
-// Si la ruta empieza con /delivery y no es un archivo físico (ya manejado por el servidor)
-if ($isDeliveryPath) {
-    require_once __DIR__ . '/../delivery/index.php';
-
-    return;
-}
-
-// ---------------------------------------------------------------
 $responseFactory = new HttpFactory();
 
 $router = new Router(
@@ -60,6 +43,7 @@ $queueRequestHandler = new QueueRequestHandler(
     new NotFoundHandler($responseFactory),
     new SessionMiddleware(new Session()),
     new ConstantsMiddleware(),
+    new DeliveryMiddleware($responseFactory),
     new RoutingMiddleware($router),
     $logRequestMiddleware,
 );

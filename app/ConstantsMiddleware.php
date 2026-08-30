@@ -20,7 +20,12 @@ final class ConstantsMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler,
     ): ResponseInterface {
-        define('BASE_URL', $request->getUri()->withQuery('')->withPath(''));
+        if (!defined('BASE_URL')) {
+            define(
+                'BASE_URL',
+                $request->getUri()->withQuery('')->withPath(''),
+            );
+        }
 
         return $handler->handle($request);
     }
