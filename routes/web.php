@@ -438,99 +438,99 @@ return [
         [ReportesController::class, 'pedidos'],
     ),
 
-    // Usuarios
-    new Route(
-        'GET',
-        '/usuarios',
-        [AuthMiddleware::class, 'check'],
-        [UsuariosController::class, 'index'],
-    ),
-    new Route(
-        'GET',
-        '/usuarios/perfil',
-        [AuthMiddleware::class, 'check'],
-        [UsuariosController::class, 'perfil'],
-    ),
-    new Route(
-        'GET',
-        '/usuarios/actividad',
-        [AuthMiddleware::class, 'check'],
-        [UsuariosController::class, 'actividad'],
-    ),
-    new Route(
-        'POST',
-        '/usuarios/actualizar-perfil',
-        [AuthMiddleware::class, 'check'],
-        [UsuariosController::class, 'actualizarPerfil'],
-    ),
-    new Route(
-        'POST',
-        '/usuarios/cambiar-estado',
-        [AuthMiddleware::class, 'check'],
-        [UsuariosController::class, 'cambiarEstado'],
-    ),
-    new Route(
-        'GET',
-        '/usuarios/edit',
-        [AuthMiddleware::class, 'check'],
-        [UsuariosController::class, 'edit'],
-    ),
-    new Route(
-        'POST',
-        '/usuarios/update',
-        [AuthMiddleware::class, 'check'],
-        [UsuariosController::class, 'update'],
-    ),
+    // // Usuarios
+    // new Route(
+    //     'GET',
+    //     '/usuarios',
+    //     [AuthMiddleware::class, 'check'],
+    //     [UsuariosController::class, 'index'],
+    // ),
+    // new Route(
+    //     'GET',
+    //     '/usuarios/perfil',
+    //     [AuthMiddleware::class, 'check'],
+    //     [UsuariosController::class, 'perfil'],
+    // ),
+    // new Route(
+    //     'GET',
+    //     '/usuarios/actividad',
+    //     [AuthMiddleware::class, 'check'],
+    //     [UsuariosController::class, 'actividad'],
+    // ),
+    // new Route(
+    //     'POST',
+    //     '/usuarios/actualizar-perfil',
+    //     [AuthMiddleware::class, 'check'],
+    //     [UsuariosController::class, 'actualizarPerfil'],
+    // ),
+    // new Route(
+    //     'POST',
+    //     '/usuarios/cambiar-estado',
+    //     [AuthMiddleware::class, 'check'],
+    //     [UsuariosController::class, 'cambiarEstado'],
+    // ),
+    // new Route(
+    //     'GET',
+    //     '/usuarios/edit',
+    //     [AuthMiddleware::class, 'check'],
+    //     [UsuariosController::class, 'edit'],
+    // ),
+    // new Route(
+    //     'POST',
+    //     '/usuarios/update',
+    //     [AuthMiddleware::class, 'check'],
+    //     [UsuariosController::class, 'update'],
+    // ),
 
-    // Sucursales (Admin only)
-    new Route(
-        'GET',
-        '/sucursales',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'index'],
-    ),
-    new Route(
-        'GET',
-        '/sucursales/create',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'create'],
-    ),
-    new Route(
-        'POST',
-        '/sucursales/store',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'store'],
-    ),
-    new Route(
-        'GET',
-        '/sucursales/show/{id}',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'show'],
-    ),
-    new Route(
-        'GET',
-        '/sucursales/edit/{id}',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'edit'],
-    ),
-    new Route(
-        'POST',
-        '/sucursales/update/{id}',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'update'],
-    ),
-    new Route(
-        'POST',
-        '/sucursales/cambiar-estado',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'cambiarEstado'],
-    ),
-    new Route(
-        'POST',
-        '/sucursales/regenerar-clave/{id}',
-        $checkIfUserIsAdministrator,
-        [SucursalesController::class, 'regenerarClave'],
-    ),
+    // // Sucursales (Admin only)
+    // new Route(
+    //     'GET',
+    //     '/sucursales',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'index'],
+    // ),
+    // new Route(
+    //     'GET',
+    //     '/sucursales/create',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'create'],
+    // ),
+    // new Route(
+    //     'POST',
+    //     '/sucursales/store',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'store'],
+    // ),
+    // new Route(
+    //     'GET',
+    //     '/sucursales/show/{id}',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'show'],
+    // ),
+    // new Route(
+    //     'GET',
+    //     '/sucursales/edit/{id}',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'edit'],
+    // ),
+    // new Route(
+    //     'POST',
+    //     '/sucursales/update/{id}',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'update'],
+    // ),
+    // new Route(
+    //     'POST',
+    //     '/sucursales/cambiar-estado',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'cambiarEstado'],
+    // ),
+    // new Route(
+    //     'POST',
+    //     '/sucursales/regenerar-clave/{id}',
+    //     $checkIfUserIsAdministrator,
+    //     [SucursalesController::class, 'regenerarClave'],
+    // ),
 
     // Cálculo de Insumos
     new Route(

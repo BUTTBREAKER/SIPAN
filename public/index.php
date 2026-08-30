@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use App\NotFoundHandler;
 use App\QueueRequestHandler;
-use App\Route;
+use App\Router;
+use App\RoutingMiddleware;
 use flight\Container;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -14,10 +17,6 @@ use Symfony\Component\Dotenv\Dotenv;
 use function App\getenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-
-$queueRequestHandler = new QueueRequestHandler(
-    new NotFoundHandler(new HttpFactory()),
-);
 
 // SIPAN - Sistema Integral para Panaderías
 // Archivo principal de enrutamiento
@@ -122,68 +121,25 @@ error_log(
         : "{$request->getMethod()} {$request->getRequestTarget()}"
 );
 
-// Enrutador
-$routes = [];
+$responseFactory = new HttpFactory();
 
-foreach (glob(__DIR__ . '/../routes/*.php') ?: [] as $routesFilePath) {
-    $routes += require $routesFilePath;
+$router = new Router(
+    $responseFactory,
+    ...require __DIR__ . '/../routes/web.php',
+);
+
+$queueRequestHandler = new QueueRequestHandler(
+    new NotFoundHandler($responseFactory),
+    new RoutingMiddleware($router),
+);
+
+$response = $queueRequestHandler->handle(ServerRequest::fromGlobals());
+http_response_code($response->getStatusCode());
+
+foreach ($response->getHeaders() as $name => $values) {
+    foreach ($values as $value) {
+        header("$name: $value", false);
+    }
 }
 
-// Buscar ruta coincidente
-$matched = false;
-$params = [];
-$acceptJson = str_contains($_SERVER['HTTP_ACCEPT'], 'application/json');
-
-/** @var Route */
-foreach ($routes as $route) {
-    if (!$route->matchRequestMethod($request)) {
-        continue;
-    }
-
-    $params = $route->getParamsFromUri($request->getUri());
-
-    if ($params === false) {
-        continue;
-    }
-
-    $matched = true;
-
-    try {
-        ob_start();
-        call_user_func($route->getCallable(), $params);
-        $response->getBody()->write(ob_get_clean() ?: '');
-    } catch (Throwable $exception) {
-        $response = $response->withStatus(500);
-        $message = "Error: {$exception->getMessage()}";
-
-        if ($acceptJson) {
-            $response = $response->withHeader('Content-Type', 'application/json');
-
-            $response->getBody()->write(json_encode([
-                'success' => false,
-                'message' => $message,
-            ]) ?: '');
-        } else {
-            $response->getBody()->write($message);
-        }
-    }
-
-    http_response_code($response->getStatusCode());
-    echo $response->getBody();
-
-    break;
-}
-
-// Si no se encontró ruta, mostrar 404
-if (!$matched) {
-    $response = $queueRequestHandler->handle(ServerRequest::fromGlobals());
-    http_response_code($response->getStatusCode());
-
-    foreach ($response->getHeaders() as $name => $values) {
-        foreach ($values as $value) {
-            header("$name: $value", false);
-        }
-    }
-
-    echo $response->getBody();
-}
+echo $response->getBody();
