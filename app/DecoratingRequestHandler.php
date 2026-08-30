@@ -26,6 +26,6 @@ final class DecoratingRequestHandler implements RequestHandlerInterface
     public function handle(
         ServerRequestInterface $request,
     ): ResponseInterface {
-        return $this->middleware?->process($request, $this->nextHandler);
+        return $this->middleware->process($request, $this->nextHandler);
     }
 }
