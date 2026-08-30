@@ -63,21 +63,22 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Obtener ruta (relativa a /delivery)
-$request_uri = $_SERVER['REQUEST_URI'];
-$path = parse_url($request_uri, PHP_URL_PATH);
+$path = $request->getUri()->getPath();
 $path = str_replace('/delivery', '', $path);
 $path = rtrim($path, '/') ?: '/';
-$method = $_SERVER['REQUEST_METHOD'];
+$method = $request->getMethod();
 
 // Función simple de enrutamiento
 $deliveryMatchRoute = function (string $routePath, string $requestPath) {
     $pattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $routePath);
-    $pattern = "@^" . $pattern . "$@D";
+    $pattern = "@^{$pattern}$@D";
 
     if (preg_match($pattern, $requestPath, $matches)) {
         array_shift($matches);
+
         return $matches;
     }
+
     return false;
 };
 
@@ -101,7 +102,7 @@ $matched = false;
 
 // Enrutador
 foreach ($routes as $route => $handler) {
-    list($routeMethod, $routePath) = explode('|', $route);
+    [$routeMethod, $routePath] = explode('|', $route);
 
     if ($routeMethod !== $method) {
         continue;
@@ -109,30 +110,36 @@ foreach ($routes as $route => $handler) {
 
     $params = $deliveryMatchRoute($routePath, $path);
 
-    if ($params !== false) {
-        $matched = true;
-
-        // Incluir manualmente para evitar problemas de namespace si no está en composer
-        $controllerFile = __DIR__ . '/controllers/' . $handler[0] . '.php';
-        if (file_exists($controllerFile)) {
-            require_once $controllerFile;
-            $controllerName = 'Delivery\\Controllers\\' . $handler[0];
-
-            if (class_exists($controllerName)) {
-                $controller = new $controllerName();
-                if (method_exists($controller, $handler[1])) {
-                    call_user_func_array([$controller, $handler[1]], $params);
-                } else {
-                    die("Method not found: " . $handler[1]);
-                }
-            } else {
-                die("Class not found: " . $controllerName);
-            }
-        } else {
-            die("Controller file not found: " . $controllerFile);
-        }
-        break;
+    if ($params === false) {
+        continue;
     }
+
+    $matched = true;
+
+    // Incluir manualmente para evitar problemas de namespace si no está en composer
+    $controllerFile = __DIR__ . "/controllers/$handler[0].php";
+
+    if (!file_exists($controllerFile)) {
+        exit("Controller file not found: $controllerFile");
+    }
+
+    require_once $controllerFile;
+
+    $controllerName = "\\Delivery\\Controllers\\$handler[0]";
+
+    if (!class_exists($controllerName)) {
+        exit("Class not found: $controllerName");
+    }
+
+    $controller = new $controllerName();
+
+    if (!method_exists($controller, $handler[1])) {
+        exit("Method not found: $handler[1]");
+    }
+
+    call_user_func_array([$controller, $handler[1]], $params);
+
+    break;
 }
 
 if (!$matched) {
