@@ -29,10 +29,6 @@ spl_autoload_register(function ($class) {
     }
 });
 
-// Configuración de errores
-error_reporting(E_ALL);
-ini_set('display_errors', filter_var($_ENV['app_debug'], FILTER_VALIDATE_BOOL));
-
 // Iniciar sesión
 $isSecure = @$_SERVER['HTTPS'] === 'on' || @$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https';
 $sessionParams = session_get_cookie_params();
