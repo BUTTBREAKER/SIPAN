@@ -10,12 +10,27 @@ class Caja extends BaseModel
     protected $table = 'cajas';
 
     /**
+     * Cache en memoria a nivel de request (Optimización Bolt)
+     * @var array<int|string, array|false|null>
+     */
+    private static $activeCajaCache = [];
+
+    /**
      * Obtiene la caja activa para una sucursal
+     * Optimización Bolt: Implementado caché a nivel de request para evitar consultas redundantes
+     * en AuthMiddleware y controladores.
      */
     public function getActiva($id_sucursal)
     {
+        if (array_key_exists($id_sucursal, self::$activeCajaCache)) {
+            return self::$activeCajaCache[$id_sucursal];
+        }
+
         $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
-        return $this->db->fetchOne($sql, [$id_sucursal]);
+        $result = $this->db->fetchOne($sql, [$id_sucursal]);
+
+        self::$activeCajaCache[$id_sucursal] = $result;
+        return $result;
     }
 
     /**
@@ -25,7 +40,7 @@ class Caja extends BaseModel
     {
         $total_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->create([
+        $result = $this->create([
             'id_sucursal' => $id_sucursal,
             'id_usuario_apertura' => $id_usuario,
             'monto_apertura' => $total_usd,
@@ -34,6 +49,12 @@ class Caja extends BaseModel
             'estado' => 'abierta',
             'fecha_apertura' => date('Y-m-d H:i:s')
         ]);
+
+        if ($result) {
+            unset(self::$activeCajaCache[$id_sucursal]);
+        }
+
+        return $result;
     }
 
     /**
@@ -69,7 +90,7 @@ class Caja extends BaseModel
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
 
-        return $this->update($id_caja, [
+        $success = $this->update($id_caja, [
             'id_usuario_cierre' => $id_usuario,
             'monto_cierre' => $total_cierre_usd,
             'monto_cierre_usd' => $monto_usd,
@@ -79,6 +100,14 @@ class Caja extends BaseModel
             'fecha_cierre' => date('Y-m-d H:i:s'),
             'observaciones' => $observaciones
         ]);
+
+        if ($success) {
+            // Limpiar todo el caché para evitar una consulta adicional por sucursal_id.
+            // En el contexto de un solo request PHP, esto es seguro y eficiente.
+            self::$activeCajaCache = [];
+        }
+
+        return $success;
     }
 
     /**
