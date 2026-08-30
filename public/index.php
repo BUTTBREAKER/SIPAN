@@ -8,6 +8,7 @@ use App\NotFoundHandler;
 use App\QueueRequestHandler;
 use App\Router;
 use App\RoutingMiddleware;
+use App\SessionMiddleware;
 use flight\Container;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -18,44 +19,14 @@ use Monolog\Logger;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Http\Message\ServerRequestInterface;
 
-use function App\getenv;
-
 require_once __DIR__ . '/../bootstrap/app.php';
 
 // SIPAN - Sistema Integral para Panaderías
 // Archivo principal de enrutamiento
 $request = Container::getInstance()->get(ServerRequestInterface::class);
 
-// Detectar si estamos detrás de un proxy/túnel con HTTPS
-$isSecure = (
-    strtolower($request->getUri()->getScheme()) === 'https'
-    || strtolower($request->getHeaderLine('X_FORWARDED_PROTO')) === 'https'
-);
-
 // Detectar si la ruta es para el sistema de delivery
 $isDeliveryPath = str_contains($request->getUri()->getPath(), '/delivery');
-
-if (session_status() === PHP_SESSION_NONE) {
-    // Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
-    $sessionParams = [
-        'lifetime' => (int) getenv('session_lifetime'),
-        'secure' => $isSecure,
-        'httponly' => true,
-        'samesite' => 'Strict',
-    ] + session_get_cookie_params();
-
-    session_set_cookie_params($sessionParams);
-
-    // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
-    $baseSessionName = getenv('session_name');
-
-    $finalSessionName = $isDeliveryPath
-        ? "{$baseSessionName}_DELIVERY"
-        : $baseSessionName;
-
-    session_name($finalSessionName);
-    Session::start();
-}
 
 // La ruta ya fue detectada arriba
 // ------ INTEGRACIÓN APP DELIVERY (Pivote de enrutamiento) ------
@@ -87,9 +58,10 @@ $logRequestMiddleware->setLogger($logger);
 
 $queueRequestHandler = new QueueRequestHandler(
     new NotFoundHandler($responseFactory),
-    $logRequestMiddleware,
+    new SessionMiddleware(new Session()),
     new ConstantsMiddleware(),
     new RoutingMiddleware($router),
+    $logRequestMiddleware,
 );
 
 $response = $queueRequestHandler->handle(ServerRequest::fromGlobals());
