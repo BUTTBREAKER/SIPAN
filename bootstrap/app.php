@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use flight\Container;
+use GuzzleHttp\Psr7\HttpFactory;
+use GuzzleHttp\Psr7\ServerRequest;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -35,3 +40,13 @@ ini_set('docref_ext', $docrefExt);
 ini_set('error_prepend_string', '<pre style="color: red">');
 ini_set('error_append_string', '</pre>');
 ini_set('error_log', __DIR__ . '/../storage/logs/php_errors.log');
+
+Container::getInstance()->singleton(
+    ServerRequestInterface::class,
+    [ServerRequest::class, 'fromGlobals'],
+);
+
+Container::getInstance()->singleton(
+    ResponseFactoryInterface::class,
+    HttpFactory::class,
+);

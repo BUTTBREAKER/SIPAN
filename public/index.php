@@ -25,16 +25,6 @@ require_once __DIR__ . '/../bootstrap/app.php';
 
 // SIPAN - Sistema Integral para Panaderías
 // Archivo principal de enrutamiento
-Container::getInstance()->singleton(
-    ServerRequestInterface::class,
-    [ServerRequest::class, 'fromGlobals'],
-);
-
-Container::getInstance()->singleton(
-    ResponseFactoryInterface::class,
-    HttpFactory::class,
-);
-
 $request = Container::getInstance()->get(ServerRequestInterface::class);
 
 // Detectar si estamos detrás de un proxy/túnel con HTTPS
