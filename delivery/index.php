@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Route;
 use flight\Container;
 use Leaf\Http\Session;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 require_once __DIR__ . '/../bootstrap/app.php';
-
-// Habilitar buffering de salida
-ob_start();
 
 $request = Container::getInstance()->get(ServerRequestInterface::class);
 
@@ -58,65 +57,43 @@ $deliveryMatchRoute = function (string $routePath, string $requestPath) {
     return false;
 };
 
-// Definir rutas de Delivery
-$routes = [
-    'GET|/' => ['AuthController', 'showLogin'],
-    'GET|/login' => ['AuthController', 'showLogin'],
-    'POST|/login' => ['AuthController', 'login'],
-    'GET|/logout' => ['AuthController', 'logout'],
-
-    'GET|/dashboard' => ['PedidosController', 'dashboard'],
-    'GET|/api/dashboard' => ['PedidosController', 'apiDashboard'],
-    'GET|/pedido/{id}' => ['PedidosController', 'show'],
-    'POST|/pedido/{id}/estado' => ['PedidosController', 'updateEstado'],
-    'POST|/pedido/{id}/cobro' => ['PedidosController', 'registrarCobro'],
-    'GET|/historial' => ['PedidosController', 'historial'],
-    'GET|/estadisticas' => ['PedidosController', 'estadisticas'],
-];
-
-$matched = false;
+/** @var Route[] */
+$routes = require __DIR__ . '/../routes/delivery.php';
 
 // Enrutador
-foreach ($routes as $route => $handler) {
-    [$routeMethod, $routePath] = explode('|', $route);
-
-    if ($routeMethod !== $method) {
+foreach ($routes as $route) {
+    if (!$route->matchRequestMethod($request)) {
         continue;
     }
 
-    $params = $deliveryMatchRoute($routePath, $path);
+    $params = $route->getParamsFromUri($request->getUri()->withPath($path));
 
     if ($params === false) {
         continue;
     }
 
-    $matched = true;
+    $callable = $route->getCallable();
+    ob_start();
+    $callable($params);
 
-    // Incluir manualmente para evitar problemas de namespace si no está en composer
-    $controllerFile = __DIR__ . "/controllers/$handler[0].php";
+    $response = Container::getInstance()
+        ->get(ResponseFactoryInterface::class)
+        ->createResponse();
 
-    if (!file_exists($controllerFile)) {
-        exit("Controller file not found: $controllerFile");
+    $response->getBody()->write(ob_get_clean());
+
+    http_response_code($response->getStatusCode());
+
+    foreach ($response->getHeaders() as $name => $values) {
+        foreach ($values as $value) {
+            header("$name: $value", false);
+        }
     }
 
-    $controllerName = "\\Delivery\\Controllers\\$handler[0]";
+    echo $response->getBody();
 
-    if (!class_exists($controllerName)) {
-        exit("Class not found: $controllerName");
-    }
-
-    $controller = new $controllerName();
-
-    if (!method_exists($controller, $handler[1])) {
-        exit("Method not found: $handler[1]");
-    }
-
-    call_user_func_array([$controller, $handler[1]], $params);
-
-    break;
+    return;
 }
 
-if (!$matched) {
-    http_response_code(404);
-    echo "404 - Not Found (Delivery App)";
-}
+http_response_code(404);
+echo "404 - Not Found (Delivery App)";
