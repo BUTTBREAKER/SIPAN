@@ -478,6 +478,20 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id'], null, null, $fecha_inicio, $fecha_fin);
+        $pedidoIds = array_column($pedidos, 'id');
+
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries al generar detalles o reportes
+        $pagos_agrupados = [];
+        if (!empty($pedidoIds)) {
+            $todos_los_pagos = $this->pedidoModel->getPagosPorPedidos($pedidoIds);
+            foreach ($todos_los_pagos as $p) {
+                $pagos_agrupados[$p['id_pedido']][] = $p;
+            }
+        }
+
+        foreach ($pedidos as &$pedido) {
+            $pedido['pagos'] = $pagos_agrupados[$pedido['id']] ?? [];
+        }
 
         $data = [
             'pedidos' => $pedidos,
