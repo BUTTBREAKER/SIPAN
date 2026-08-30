@@ -56,6 +56,10 @@ class ReportesController
             }
         }
 
+        // Bolt Optimization: Retrieve aggregated payment breakdown directly from DB
+        // to avoid expensive O(N) loops over sales and payments in PHP.
+        $breakdown_data = $this->ventaModel->getPaymentBreakdown($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+
         $desglose_medios = [
             'efectivo_bs' => 0,
             'efectivo_usd' => 0,
@@ -66,6 +70,16 @@ class ReportesController
             'biopago' => 0
         ];
 
+        foreach ($breakdown_data as $b) {
+            $m = $b['metodo_pago'];
+            $v = (float)$b['total'];
+            if (isset($desglose_medios[$m])) {
+                $desglose_medios[$m] += $v;
+            } else {
+                $desglose_medios['otros'] = ($desglose_medios['otros'] ?? 0) + $v;
+            }
+        }
+
         $total_ventas = 0;
 
         foreach ($ventas as &$venta) {
@@ -74,31 +88,17 @@ class ReportesController
             $pagos = $pagos_agrupados[$venta['id']] ?? [];
 
             if (!empty($pagos)) {
-                // Sumar del detalle
+                // Generar string para la vista (ya no sumamos aquí)
                 $lista_pagos = [];
                 foreach ($pagos as $p) {
                     $m = $p['metodo_pago'];
                     $v = $p['monto'];
-                    if (isset($desglose_medios[$m])) {
-                        $desglose_medios[$m] += $v;
-                    } else {
-                        // Fallback por si hay metodo viejo
-                        if (!isset($desglose_medios['otros'])) {
-                            $desglose_medios['otros'] = 0;
-                        }
-                        $desglose_medios['otros'] += $v;
-                    }
                     $lista_pagos[] = ucfirst(str_replace('_', ' ', $m)) . ': ' . number_format($v, 2);
                 }
                 $venta['detalle_pagos_str'] = implode('<br>', $lista_pagos);
             } else {
                 // Usar el metodo principal (compatibilidad anterior)
                 $m = $venta['metodo_pago'];
-                if ($m !== 'mixto') {
-                    if (isset($desglose_medios[$m])) {
-                        $desglose_medios[$m] += $venta['total'];
-                    }
-                }
                 $venta['detalle_pagos_str'] = ucfirst(str_replace('_', ' ', $m));
             }
         }
