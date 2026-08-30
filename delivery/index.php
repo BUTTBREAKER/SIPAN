@@ -11,30 +11,6 @@ require_once __DIR__ . '/../bootstrap/app.php';
 // Habilitar buffering de salida
 ob_start();
 
-// Autocargador simple para el namespace Delivery\
-spl_autoload_register(function ($class) {
-    $prefix = 'Delivery\\';
-    $base_dir = __DIR__ . '/';
-
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-
-    $relative_class = substr($class, $len);
-    // Cambiar barras invertidas por barras normales y asegurarse de que la carpeta esté en minúscula (convención local)
-    // Ejemplo: Middleware\AuthMiddleware -> middleware/AuthMiddleware.php
-    $parts = explode('\\', $relative_class);
-    if (count($parts) > 1) {
-        $parts[0] = strtolower($parts[0]);
-    }
-    $file = $base_dir . implode('/', $parts) . '.php';
-
-    if (file_exists($file)) {
-        require $file;
-    }
-});
-
 $request = Container::getInstance()->get(ServerRequestInterface::class);
 
 // Iniciar sesión
@@ -122,8 +98,6 @@ foreach ($routes as $route => $handler) {
     if (!file_exists($controllerFile)) {
         exit("Controller file not found: $controllerFile");
     }
-
-    require_once $controllerFile;
 
     $controllerName = "\\Delivery\\Controllers\\$handler[0]";
 

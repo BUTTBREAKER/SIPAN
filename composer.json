@@ -4,7 +4,9 @@
             "app/functions.php"
         ],
         "psr-4": {
-            "App\\": "app"
+            "App\\": "app",
+            "Delivery\\Controllers\\": "delivery/controllers",
+            "Delivery\\Middleware\\": "delivery/middleware"
         }
     },
     "config": {
