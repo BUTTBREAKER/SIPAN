@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\LogRequestMiddleware;
 use App\NotFoundHandler;
 use App\QueueRequestHandler;
 use App\Router;
@@ -10,6 +11,10 @@ use flight\Container;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\ServerRequest;
 use Leaf\Http\Session;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Logger;
+use Monolog\Processor\PsrLogMessageProcessor;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\Dotenv\Dotenv;
@@ -40,7 +45,7 @@ $docrefExt = $isProduction ? null : '.php';
 ini_set('display_errors', $isProduction ? 'Off' : 'On');
 ini_set('display_startup_errors', $isProduction ? 'Off' : 'On');
 ini_set('log_errors', 'On');
-ini_set('log_errors_max_len', 0);
+ini_set('log_errors_max_len', '0');
 ini_set('ignore_repeated_errors', 'Off');
 ini_set('ignore_repeated_source', 'Off');
 ini_set('report_memleaks', 'On');
@@ -114,13 +119,6 @@ if ($isDeliveryPath) {
 // ---------------------------------------------------------------
 define('BASE_URL', $request->getUri()->withQuery('')->withPath(''));
 
-// Debug (comentar en producción)
-error_log(
-    getenv('app_debug') === 'true'
-        ? "Path: {$request->getUri()->getPath()}, Method: {$request->getMethod()}, URI: {$request->getRequestTarget()}"
-        : "{$request->getMethod()} {$request->getRequestTarget()}"
-);
-
 $responseFactory = new HttpFactory();
 
 $router = new Router(
@@ -128,8 +126,20 @@ $router = new Router(
     ...require __DIR__ . '/../routes/web.php',
 );
 
+$format = '[%datetime%] %level_name%: %message%';
+
+$logger = new Logger(
+    '',
+    [(new ErrorLogHandler())->setFormatter(new LineFormatter($format))],
+    [new PsrLogMessageProcessor()],
+);
+
+$logRequestMiddleware = new LogRequestMiddleware();
+$logRequestMiddleware->setLogger($logger);
+
 $queueRequestHandler = new QueueRequestHandler(
     new NotFoundHandler($responseFactory),
+    $logRequestMiddleware,
     new RoutingMiddleware($router),
 );
 
