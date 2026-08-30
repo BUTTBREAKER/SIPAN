@@ -11,50 +11,34 @@ use App\Router;
 use App\RoutingMiddleware;
 use App\SessionMiddleware;
 use flight\Container;
-use GuzzleHttp\Psr7\HttpFactory;
-use GuzzleHttp\Psr7\ServerRequest;
-use Leaf\Http\Session;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\ErrorLogHandler;
-use Monolog\Logger;
-use Monolog\Processor\PsrLogMessageProcessor;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
+
+use function App\sendResponse;
 
 require_once __DIR__ . '/../bootstrap/app.php';
 
-$responseFactory = new HttpFactory();
+$container = Container::getInstance();
+$responseFactory = $container->get(ResponseFactoryInterface::class);
+$request = $container->get(ServerRequestInterface::class);
 
 $router = new Router(
     $responseFactory,
     ...require __DIR__ . '/../routes/web.php',
 );
 
-$format = '[%datetime%] %level_name%: %message%';
-
-$logger = new Logger(
-    '',
-    [(new ErrorLogHandler())->setFormatter(new LineFormatter($format))],
-    [new PsrLogMessageProcessor()],
-);
-
-$logRequestMiddleware = new LogRequestMiddleware();
+$logger = $container->get(LoggerInterface::class);
+$logRequestMiddleware = $container->get(LogRequestMiddleware::class);
 $logRequestMiddleware->setLogger($logger);
 
 $queueRequestHandler = new QueueRequestHandler(
-    new NotFoundHandler($responseFactory),
-    new SessionMiddleware(new Session()),
-    new ConstantsMiddleware(),
-    new DeliveryMiddleware($responseFactory),
-    new RoutingMiddleware($router),
+    $container->get(NotFoundHandler::class),
+    $container->get(SessionMiddleware::class),
+    $container->get(ConstantsMiddleware::class),
     $logRequestMiddleware,
+    $container->get(DeliveryMiddleware::class),
+    new RoutingMiddleware($router),
 );
 
-$response = $queueRequestHandler->handle(ServerRequest::fromGlobals());
-http_response_code($response->getStatusCode());
-
-foreach ($response->getHeaders() as $name => $values) {
-    foreach ($values as $value) {
-        header("$name: $value", false);
-    }
-}
-
-echo $response->getBody();
+sendResponse($queueRequestHandler->handle($request));

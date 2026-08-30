@@ -5,8 +5,14 @@ declare(strict_types=1);
 use flight\Container;
 use GuzzleHttp\Psr7\HttpFactory;
 use GuzzleHttp\Psr7\ServerRequest;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Logger;
+use Monolog\Processor\PsrLogMessageProcessor;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -41,12 +47,26 @@ ini_set('error_prepend_string', '<pre style="color: red">');
 ini_set('error_append_string', '</pre>');
 ini_set('error_log', __DIR__ . '/../storage/logs/php_errors.log');
 
-Container::getInstance()->singleton(
+$container = Container::getInstance();
+
+$container->singleton(ContainerInterface::class, $container);
+
+$container->singleton(
     ServerRequestInterface::class,
     [ServerRequest::class, 'fromGlobals'],
 );
 
-Container::getInstance()->singleton(
-    ResponseFactoryInterface::class,
-    HttpFactory::class,
+$container->singleton(ResponseFactoryInterface::class, HttpFactory::class);
+
+$container->singleton(
+    LoggerInterface::class,
+    static function (): LoggerInterface {
+        $formatter = new LineFormatter('[%datetime%] %level_name%: %message%');
+
+        return new Logger(
+            '',
+            [(new ErrorLogHandler())->setFormatter($formatter)],
+            [new PsrLogMessageProcessor()],
+        );
+    },
 );

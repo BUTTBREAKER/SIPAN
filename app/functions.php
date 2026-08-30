@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use OutOfBoundsException;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 function getenv(string $name): mixed
@@ -17,4 +18,17 @@ function getenv(string $name): mixed
     $message = "La variable de entorno '{$name}' no está definida.";
 
     return $_ENV[$name] ?? throw new OutOfBoundsException($message);
+}
+
+function sendResponse(ResponseInterface $response): void
+{
+    http_response_code($response->getStatusCode());
+
+    foreach ($response->getHeaders() as $name => $values) {
+        foreach ($values as $value) {
+            header("$name: $value", false);
+        }
+    }
+
+    echo $response->getBody();
 }

@@ -6,17 +6,19 @@ use App\QueueRequestHandler;
 use App\Router;
 use App\RoutingMiddleware;
 use App\SessionMiddleware;
-use GuzzleHttp\Psr7\HttpFactory;
-use GuzzleHttp\Psr7\ServerRequest;
-use Leaf\Http\Session;
+use flight\Container;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function App\sendResponse;
+
 require_once __DIR__ . '/../bootstrap/app.php';
 
-$responseFactory = new HttpFactory();
+$container = Container::getInstance();
+$responseFactory = $container->get(ResponseFactoryInterface::class);
+$request = $container->get(ServerRequestInterface::class);
 
 $router = new Router(
     $responseFactory,
@@ -45,24 +47,12 @@ $notFoundHandler = new class(
 
 $queueRequestHandler = new QueueRequestHandler(
     $notFoundHandler,
-    new SessionMiddleware(new Session()),
+    $container->get(SessionMiddleware::class),
     new RoutingMiddleware($router),
 );
 
-$request = ServerRequest::fromGlobals();
 $path = $request->getUri()->getPath();
 $path = str_replace('/delivery', '', $path);
 $path = rtrim($path, '/') ?: '/';
-
-$response = $queueRequestHandler
-    ->handle($request->withUri($request->getUri()->withPath($path)));
-
-http_response_code($response->getStatusCode());
-
-foreach ($response->getHeaders() as $name => $values) {
-    foreach ($values as $value) {
-        header("$name: $value", false);
-    }
-}
-
-echo $response->getBody();
+$request = $request->withUri($request->getUri()->withPath($path));
+sendResponse($queueRequestHandler->handle($request));
