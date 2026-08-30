@@ -1,8 +1,6 @@
 <?php
 
-use Symfony\Component\Dotenv\Dotenv;
-
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../bootstrap/app.php';
 
 // Habilitar buffering de salida
 ob_start();
@@ -30,9 +28,6 @@ spl_autoload_register(function ($class) {
         require $file;
     }
 });
-
-// Cargar configuración
-(new Dotenv())->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
 
 // Configuración de errores
 error_reporting(E_ALL);
