@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Batch Insertion for Provider Insumos]
+**Learning:** Performing single-row `INSERT` statements inside a loop when linking multiple items (e.g., supplies to a provider) causes unnecessary database round-trips. Replacing loop executions with a multi-row batched `INSERT INTO ... VALUES (?, ?), (?, ?)...` statement consolidates DB operations into a single round-trip O(1) execution.
+**Action:** Look for loop-based `INSERT` logic in relational mapping methods and convert them to batched multi-row inserts.
