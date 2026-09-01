@@ -11,7 +11,6 @@ use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/** @readonly */
 final class RoutingMiddleware implements MiddlewareInterface
 {
     public function __construct(private Router $router)
@@ -25,12 +24,9 @@ final class RoutingMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler,
     ): ResponseInterface {
-        $result = $this->router->match($request);
-
-        if ($result->isSuccess()) {
-            return $result->getHandler()->handle($request);
-        }
-
-        return $handler->handle($request);
+        return (
+            $this->router->match($request)->getHandler()?->handle($request)
+            ?? $handler->handle($request)
+        );
     }
 }

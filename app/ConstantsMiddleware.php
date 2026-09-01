@@ -11,7 +11,6 @@ use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/** @readonly */
 final class ConstantsMiddleware implements MiddlewareInterface
 {
     #[Override]

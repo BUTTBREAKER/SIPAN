@@ -11,7 +11,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/** @readonly */
 final class NotFoundHandler implements RequestHandlerInterface
 {
     public function __construct(
@@ -22,12 +21,11 @@ final class NotFoundHandler implements RequestHandlerInterface
 
     #[Override]
     #[NoDiscard]
-    public function handle(
-        ServerRequestInterface $request,
-    ): ResponseInterface {
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
         $response = $this->responseFactory->createResponse(404);
         ob_start();
-        require __DIR__ . '/Views/404.php';
+        require_once __DIR__ . '/Views/404.php';
         $response->getBody()->write(ob_get_clean());
 
         return $response;

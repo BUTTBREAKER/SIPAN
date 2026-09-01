@@ -5,77 +5,70 @@ declare(strict_types=1);
 namespace App;
 
 use Closure;
-use Exception;
-use flight\Container;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\UriInterface;
+use Throwable;
 
 final class Route
 {
-    private string $method;
-    private string $path;
     private Closure $callable;
 
     /**
-     * @param array{0: class-string, 1: string}|callable ...$callables
-     * @throws Exception
+     * @param array{class-string<object>, string}|callable ...$callables
+     * @throws Throwable
      */
-    function __construct(
-        string $method,
-        string $path,
-        ...$callables
+    public function __construct(
+        private string $method,
+        private string $pattern,
+        array|callable ...$callables,
     ) {
-        foreach ($callables as &$callable) {
-            if (is_array($callable)) {
-                if (!class_exists($callable[0])) {
-                    throw new Exception("Controlador no encontrado: {$callable[0]}");
-                }
+        $this->pattern = str_replace('/', '\\/', $this->pattern);
 
-                if (!Container::getInstance()->has($callable[0])) {
-                    Container::getInstance()->singleton($callable[0]);
-                }
+        $this->pattern = preg_replace(
+            '/\{([a-zA-Z0-9_]+)\}/',
+            '(?<$1>.+)',
+            $this->pattern,
+        );
 
-                $callable[0] = Container::getInstance()->get($callable[0]);
+        $this->pattern = "/^{$this->pattern}$/";
 
-                if (!method_exists($callable[0], $callable[1])) {
-                    throw new Exception("Método no encontrado: {$callable[1]}");
-                }
-            }
-        }
-
-        $this->method = $method;
-        $this->path = $path;
-
-        $this->callable = static function (array $parameters) use ($callables): void {
+        $this->callable = static function (string ...$attributes) use ($callables): void {
             foreach ($callables as $callable) {
-                call_user_func_array($callable, $parameters);
+                if (is_callable($callable)) {
+                    $callable(...$attributes);
+
+                    continue;
+                }
+
+                if (
+                    is_array($callable)
+                    && count($callable) === 2
+                    && method_exists($callable[0], $callable[1])
+                ) {
+                    if (class_exists($callable[0])) {
+                        [new $callable[0](), $callable[1]](...$attributes);
+
+                        continue;
+                    }
+                }
             }
         };
     }
 
-    function getCallable(): callable
+    public function getCallable(): callable
     {
         return $this->callable;
     }
 
-    function getParamsFromUri(UriInterface $uri)
+    public function getParamsFromPath(string $path): ?array
     {
-        $pattern = $this->path;
-
-        $pattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9_-]+)', $pattern);
-        $pattern = "#^$pattern$#";
-
-        if (preg_match($pattern, $uri->getPath(), $matches)) {
-            array_shift($matches);
-
-            return $matches;
+        if (preg_match($this->pattern, $path, $matches)) {
+            return array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
         }
 
-        return false;
+        return null;
     }
 
-    function matchRequestMethod(RequestInterface $request): bool
+    public function hasMethod(string $method): bool
     {
-        return $this->method === $request->getMethod();
+        return $this->method === $method;
     }
 }

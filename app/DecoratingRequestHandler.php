@@ -11,7 +11,6 @@ use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/** @readonly */
 final class DecoratingRequestHandler implements RequestHandlerInterface
 {
     public function __construct(
@@ -23,9 +22,8 @@ final class DecoratingRequestHandler implements RequestHandlerInterface
 
     #[Override]
     #[NoDiscard]
-    public function handle(
-        ServerRequestInterface $request,
-    ): ResponseInterface {
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
         return $this->middleware->process($request, $this->nextHandler);
     }
 }

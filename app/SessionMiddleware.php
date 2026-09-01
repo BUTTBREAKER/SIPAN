@@ -12,7 +12,6 @@ use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/** @readonly */
 final class SessionMiddleware implements MiddlewareInterface
 {
     public function __construct(private Session $session)
@@ -28,8 +27,8 @@ final class SessionMiddleware implements MiddlewareInterface
     ): ResponseInterface {
         // Detectar si estamos detrás de un proxy/túnel con HTTPS
         $isSecure = (
-            strtolower($request->getUri()->getScheme()) === 'https'
-            || strtolower($request->getHeaderLine('X_FORWARDED_PROTO')) === 'https'
+            $request->getUri()->getScheme() === 'https'
+            || $request->getHeaderLine('X_FORWARDED_PROTO') === 'https'
         );
 
         // Detectar si la ruta es para el sistema de delivery

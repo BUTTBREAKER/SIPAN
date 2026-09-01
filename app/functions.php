@@ -15,7 +15,7 @@ function getenv(string $name): mixed
         $dotenv->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
     }
 
-    $message = "La variable de entorno '{$name}' no está definida.";
+    $message = "La variable de entorno '$name' no está definida.";
 
     return $_ENV[$name] ?? throw new OutOfBoundsException($message);
 }

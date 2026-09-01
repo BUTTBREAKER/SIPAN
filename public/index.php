@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\ConstantsMiddleware;
-use App\DeliveryMiddleware;
 use App\LogRequestMiddleware;
 use App\NotFoundHandler;
 use App\QueueRequestHandler;
@@ -20,8 +19,15 @@ use function App\sendResponse;
 require_once __DIR__ . '/../bootstrap/app.php';
 
 $container = Container::getInstance();
-$responseFactory = $container->get(ResponseFactoryInterface::class);
 $request = $container->get(ServerRequestInterface::class);
+
+if (str_starts_with($request->getUri()->getPath(), '/delivery')) {
+    require_once __DIR__ . '/../delivery/index.php';
+
+    return;
+}
+
+$responseFactory = $container->get(ResponseFactoryInterface::class);
 
 $router = new Router(
     $responseFactory,
@@ -37,7 +43,6 @@ $queueRequestHandler = new QueueRequestHandler(
     $container->get(SessionMiddleware::class),
     $container->get(ConstantsMiddleware::class),
     $logRequestMiddleware,
-    $container->get(DeliveryMiddleware::class),
     new RoutingMiddleware($router),
 );
 

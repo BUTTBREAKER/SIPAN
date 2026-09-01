@@ -11,7 +11,6 @@ use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-/** @readonly */
 final class QueueRequestHandler implements RequestHandlerInterface
 {
     /** @var MiddlewareInterface[] */
@@ -26,9 +25,8 @@ final class QueueRequestHandler implements RequestHandlerInterface
 
     #[Override]
     #[NoDiscard]
-    public function handle(
-        ServerRequestInterface $request,
-    ): ResponseInterface {
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
         return (
             array_shift($this->middlewares)?->process($request, $this)
             ?? $this->fallbackHandler->handle($request)

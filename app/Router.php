@@ -12,7 +12,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 
-/** @readonly */
 final class Router
 {
     /** @var Route[] $routes */
@@ -27,19 +26,21 @@ final class Router
 
     public function match(ServerRequestInterface $request): Result
     {
+        $responseFactory = $this->responseFactory;
+
         foreach ($this->routes as $route) {
-            if (!$route->matchRequestMethod($request)) {
+            if (!$route->hasMethod($request->getMethod())) {
                 continue;
             }
 
-            $params = $route->getParamsFromUri($request->getUri());
+            $params = $route->getParamsFromPath($request->getUri()->getPath());
 
-            if ($params === false) {
+            if ($params === null) {
                 continue;
             }
 
             $handler = new class(
-                $this->responseFactory,
+                $responseFactory,
                 $route,
                 ...$params,
             ) implements RequestHandlerInterface {
@@ -59,8 +60,6 @@ final class Router
                 public function handle(
                     ServerRequestInterface $request,
                 ): ResponseInterface {
-                    $callable = $this->route->getCallable();
-
                     $acceptJson = in_array(
                         'application/json',
                         $request->getHeader('accept'),
@@ -68,14 +67,11 @@ final class Router
 
                     try {
                         ob_start();
-                        $callable($this->params);
+                        $this->route->getCallable()(...$this->params);
                         $response = $this->responseFactory->createResponse();
                         $response->getBody()->write(ob_get_clean());
                     } catch (Throwable $throwable) {
-                        $response = $this
-                            ->responseFactory
-                            ->createResponse(500);
-
+                        $response = $this->responseFactory->createResponse(500);
                         $message = "Error: {$throwable->getMessage()}";
 
                         if ($acceptJson) {

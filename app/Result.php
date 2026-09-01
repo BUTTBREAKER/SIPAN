@@ -6,7 +6,6 @@ namespace App;
 
 use Psr\Http\Server\RequestHandlerInterface;
 
-/** @readonly */
 final class Result
 {
     private function __construct(
@@ -27,7 +26,7 @@ final class Result
 
     public function isSuccess(): bool
     {
-        return $this->handler !== null;
+        return (bool) $this->handler;
     }
 
     public function getHandler(): ?RequestHandlerInterface

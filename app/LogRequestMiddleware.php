@@ -12,7 +12,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 
-/** @readonly */
 final class LogRequestMiddleware implements
     MiddlewareInterface,
     LoggerAwareInterface
