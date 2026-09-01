@@ -44,7 +44,7 @@ final class Route
                     && method_exists($callable[0], $callable[1])
                 ) {
                     if (class_exists($callable[0])) {
-                        [new $callable[0](), $callable[1]](...$attributes);
+                        (new $callable[0]())->{$callable[1]}(...$attributes);
 
                         continue;
                     }
