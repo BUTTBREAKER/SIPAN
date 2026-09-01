@@ -1,6 +1,8 @@
 <?php
+
 require_once __DIR__ . '/../layouts/header.php';
 require_once __DIR__ . '/../layouts/sidebar.php';
+
 ?>
 
 <div class="main-content" x-data="editRecetaApp(<?= htmlspecialchars(json_encode($receta)) ?>, <?= htmlspecialchars(json_encode($insumos_disponibles)) ?>, <?= htmlspecialchars(json_encode($receta_insumos)) ?>)">
@@ -176,5 +178,4 @@ function editRecetaApp(receta, insumosDisponibles, recetaInsumos) {
 }
 </script>
 
-<?php require_once __DIR__ . '/../layouts/footer.php'; ?>
-
+<?php require_once __DIR__ . '/../layouts/footer.php';

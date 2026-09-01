@@ -1,6 +1,8 @@
 <?php
+
 require_once __DIR__ . '/../layouts/header.php';
 require_once __DIR__ . '/../layouts/sidebar.php';
+
 ?>
 
 <div class="main-content" x-data="editSucursalApp(<?= htmlspecialchars(json_encode($sucursal)) ?>)">
@@ -137,5 +139,4 @@ function editSucursalApp(sucursal) {
 }
 </script>
 
-<?php require_once __DIR__ . '/../layouts/footer.php'; ?>
-
+<?php require_once __DIR__ . '/../layouts/footer.php';
