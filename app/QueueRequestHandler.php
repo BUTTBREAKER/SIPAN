@@ -10,26 +10,31 @@ use Psr\Http\Message\ResponseInterface;
 use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use SplQueue;
 
 final class QueueRequestHandler implements RequestHandlerInterface
 {
-    /** @var MiddlewareInterface[] */
-    private array $middlewares;
+    /** @var SplQueue<MiddlewareInterface> */
+    private SplQueue $middlewares;
 
     public function __construct(
         private RequestHandlerInterface $fallbackHandler,
         MiddlewareInterface ...$middlewares,
     ) {
-        $this->middlewares = $middlewares;
+        $this->middlewares = new SplQueue();
+        $this->middlewares->setIteratorMode(SplQueue::IT_MODE_DELETE);
+
+        foreach ($middlewares as $middleware) {
+            $this->middlewares->enqueue($middleware);
+        }
     }
 
     #[Override]
     #[NoDiscard]
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return (
-            array_shift($this->middlewares)?->process($request, $this)
-            ?? $this->fallbackHandler->handle($request)
-        );
+        return $this->middlewares->isEmpty()
+            ? $this->fallbackHandler->handle($request)
+            : $this->middlewares->dequeue()->process($request, $this);
     }
 }
