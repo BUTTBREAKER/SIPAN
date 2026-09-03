@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Middlewares\RoutingMiddleware;
 use App\Middlewares\SessionMiddleware;
-use App\RequestHandlers\Delivery\NotFoundHandler;
+use App\RequestHandlers\NotFoundHandler;
 use App\RequestHandlers\QueueRequestHandler;
 use App\Router;
 use flight\Container;

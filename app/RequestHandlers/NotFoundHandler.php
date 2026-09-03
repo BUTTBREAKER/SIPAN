@@ -24,9 +24,14 @@ final class NotFoundHandler implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $response = $this->responseFactory->createResponse(404);
-        ob_start();
-        require_once __DIR__ . '/Views/404.php';
-        $response->getBody()->write(ob_get_clean());
+
+        if (str_contains($request->getUri()->getPath(), '/delivery')) {
+            $response->getBody()->write('404 - Not Found (Delivery App)');
+        } else {
+            ob_start();
+            require_once __DIR__ . '/../Views/404.php';
+            $response->getBody()->write(ob_get_clean());
+        }
 
         return $response;
     }
