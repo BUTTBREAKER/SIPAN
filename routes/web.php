@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Controllers\AuditoriasController;
 use App\Controllers\AuthController;
 use App\Controllers\CajaController;
