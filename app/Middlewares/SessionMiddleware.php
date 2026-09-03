@@ -12,6 +12,8 @@ use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use function App\getenv;
+
 final class SessionMiddleware implements MiddlewareInterface
 {
     public function __construct(private Session $session)
