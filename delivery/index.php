@@ -17,8 +17,8 @@ use function App\sendResponse;
 require_once __DIR__ . '/../bootstrap/app.php';
 
 $container = Container::getInstance();
-$responseFactory = $container->get(ResponseFactoryInterface::class);
 $request = $container->get(ServerRequestInterface::class);
+$responseFactory = $container->get(ResponseFactoryInterface::class);
 
 $router = new Router(
     $responseFactory,
