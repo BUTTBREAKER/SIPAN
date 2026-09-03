@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\RequestHandlers;
 
 use NoDiscard;
 use Override;

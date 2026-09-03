@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\RequestHandlers;
 
 use NoDiscard;
 use Psr\Http\Message\ServerRequestInterface;
@@ -10,22 +10,21 @@ use Psr\Http\Message\ResponseInterface;
 use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use SplQueue;
+use SplStack;
 
-final class QueueRequestHandler implements RequestHandlerInterface
+final class StackRequestHandler implements RequestHandlerInterface
 {
-    /** @var SplQueue<MiddlewareInterface> */
-    private SplQueue $middlewares;
+    /** @var SplStack<MiddlewareInterface> */
+    private SplStack $middlewares;
 
     public function __construct(
         private RequestHandlerInterface $fallbackHandler,
         MiddlewareInterface ...$middlewares,
     ) {
-        $this->middlewares = new SplQueue();
-        $this->middlewares->setIteratorMode(SplQueue::IT_MODE_DELETE);
+        $this->middlewares = new SplStack();
 
         foreach ($middlewares as $middleware) {
-            $this->middlewares->enqueue($middleware);
+            $this->middlewares->push($middleware);
         }
     }
 
@@ -35,6 +34,6 @@ final class QueueRequestHandler implements RequestHandlerInterface
     {
         return $this->middlewares->isEmpty()
             ? $this->fallbackHandler->handle($request)
-            : $this->middlewares->dequeue()->process($request, $this);
+            : $this->middlewares->pop()->process($request, $this);
     }
 }

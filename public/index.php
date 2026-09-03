@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\ConstantsMiddleware;
 use App\LogRequestMiddleware;
-use App\NotFoundHandler;
-use App\QueueRequestHandler;
+use App\RequestHandlers\NotFoundHandler;
+use App\RequestHandlers\QueueRequestHandler;
 use App\Router;
 use App\RoutingMiddleware;
 use App\SessionMiddleware;

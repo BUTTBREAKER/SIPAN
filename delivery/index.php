@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-use App\QueueRequestHandler;
+use App\RequestHandlers\Delivery\NotFoundHandler;
+use App\RequestHandlers\QueueRequestHandler;
 use App\Router;
 use App\RoutingMiddleware;
 use App\SessionMiddleware;
 use flight\Container;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 use function App\sendResponse;
 
@@ -25,28 +24,8 @@ $router = new Router(
     ...require __DIR__ . '/../routes/delivery.php',
 );
 
-$notFoundHandler = new class(
-    $responseFactory,
-) implements RequestHandlerInterface {
-    public function __construct(
-        private ResponseFactoryInterface $responseFactory,
-    ) {
-        //
-    }
-
-    #[Override]
-    #[NoDiscard]
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        $response = $this->responseFactory->createResponse(404);
-        $response->getBody()->write('404 - Not Found (Delivery App)');
-
-        return $response;
-    }
-};
-
 $queueRequestHandler = new QueueRequestHandler(
-    $notFoundHandler,
+    $container->get(NotFoundHandler::class),
     $container->get(SessionMiddleware::class),
     new RoutingMiddleware($router),
 );
