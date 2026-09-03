@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Middlewares;
 
 use NoDiscard;
 use Psr\Http\Message\ServerRequestInterface;
@@ -11,22 +11,21 @@ use Override;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-final class RoutingMiddleware implements MiddlewareInterface
+final class ConstantsMiddleware implements MiddlewareInterface
 {
-    public function __construct(private Router $router)
-    {
-        //
-    }
-
     #[Override]
     #[NoDiscard]
     public function process(
         ServerRequestInterface $request,
         RequestHandlerInterface $handler,
     ): ResponseInterface {
-        return (
-            $this->router->match($request)->getHandler()?->handle($request)
-            ?? $handler->handle($request)
-        );
+        if (!defined('BASE_URL')) {
+            define(
+                'BASE_URL',
+                $request->getUri()->withQuery('')->withPath(''),
+            );
+        }
+
+        return $handler->handle($request);
     }
 }

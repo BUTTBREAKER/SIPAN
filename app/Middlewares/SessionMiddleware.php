@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Middlewares;
 
 use Leaf\Http\Session;
 use NoDiscard;
