@@ -22,7 +22,7 @@ final class ConstantsMiddleware implements MiddlewareInterface
         if (!defined('BASE_URL')) {
             define(
                 'BASE_URL',
-                $request->getUri()->withQuery('')->withPath(''),
+                $request->getUri()->withQuery('')->withPath('') . '/',
             );
         }
 
