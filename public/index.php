@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Middlewares\ConstantsMiddleware;
 use App\Middlewares\LogRequestMiddleware;
 use App\Middlewares\RoutingMiddleware;
 use App\Middlewares\SessionMiddleware;
@@ -41,7 +40,6 @@ $logRequestMiddleware->setLogger($logger);
 $queueRequestHandler = new QueueRequestHandler(
     $container->get(NotFoundHandler::class),
     $container->get(SessionMiddleware::class),
-    $container->get(ConstantsMiddleware::class),
     $logRequestMiddleware,
     new RoutingMiddleware($router),
 );

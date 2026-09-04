@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro - SIPAN</title>
+    <base href="<?= str_replace('index.php', '', $_SERVER['SCRIPT_NAME']) ?>">
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -21,10 +22,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <!-- Driver.js para el Tour -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/driver.css">
-    <script src="<?= BASE_URL ?>assets/js/driver.js.iife.js"></script>
+    <link rel="stylesheet" href="./assets/css/driver.css">
+    <script src="./assets/js/driver.js.iife.js"></script>
     <!-- SIPAN Helpers -->
-    <script src="<?= BASE_URL ?>assets/js/app.js"></script>
+    <script src="./assets/js/app.js"></script>
 
     <style>
         :root {
