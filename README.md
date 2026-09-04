@@ -60,7 +60,6 @@ _(Si usas XAMPP y no tienes contraseña en root, omite el `-p`)_.
 
 ## Paso 3: Configuración del Sistema
 
-<!-- 1. Renombra o asegúrate de tener el archivo `config/config.php` (usando `config.php.example` como base si es necesario). -->
 1. Duplica el archivo `.env.example` y renómbralo a `.env` en la raíz del proyecto.
 2. Ajusta las credenciales de tu base de datos:
 ```
@@ -84,7 +83,7 @@ db_pass=
 ## Solución de Problemas
 
 - **Error 404 en rutas**: Verifica que el módulo `mod_rewrite` de Apache esté activado y que el archivo `.htaccess` exista en la carpeta `public`.
-- **Error de Conexión**: Revisa que los datos en `config/config.php` coincidan con tu servidor MySQL local.
+- **Error de Conexión**: Revisa que los datos en `.env` coincidan con tu servidor MySQL local y que el servicio de MySQL esté activo.
 - **Caracteres extraños**: El sistema está configurado para `utf8mb4`. Asegúrate de que tu base de datos y conexión usen este charset.
 
 ---
