@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Middlewares;
 
+use Exception;
 use Leaf\Http\Session;
 use NoDiscard;
 use Psr\Http\Message\ServerRequestInterface;
@@ -39,7 +40,10 @@ final class SessionMiddleware implements MiddlewareInterface
         if (session_status() === PHP_SESSION_NONE) {
             // Configurar parámetros de la cookie de sesión ANTES de iniciar la sesión
             $sessionParams = [
-                'lifetime' => (int) getenv('session_lifetime'),
+                'lifetime' => filter_var(
+                    getenv('session_lifetime'),
+                    FILTER_VALIDATE_INT,
+                ) ?: throw new Exception("Invalid session_lifetime value"),
                 'secure' => $isSecure,
                 'httponly' => true,
                 'samesite' => 'Strict',
@@ -49,6 +53,10 @@ final class SessionMiddleware implements MiddlewareInterface
 
             // Nombre de sesión dinámico para permitir múltiples sesiones independientes en la misma red/dominio
             $baseSessionName = getenv('session_name');
+
+            if (!is_string($baseSessionName)) {
+                throw new Exception("Invalid session_name value");
+            }
 
             $finalSessionName = $isDeliveryPath
                 ? "{$baseSessionName}_DELIVERY"

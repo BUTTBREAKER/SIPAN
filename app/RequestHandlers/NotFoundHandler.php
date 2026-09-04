@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\RequestHandlers;
 
+use Exception;
 use NoDiscard;
 use Override;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -23,10 +24,10 @@ final class NotFoundHandler implements RequestHandlerInterface
     #[NoDiscard]
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        $response = $this->responseFactory->createResponse(404);
         ob_start();
         require_once __DIR__ . '/../Views/404.php';
-        $response = $this->responseFactory->createResponse(404);
-        $response->getBody()->write(ob_get_clean());
+        $response->getBody()->write(ob_get_clean() ?: throw new Exception("Failed to capture output for 404 page"));
 
         return $response;
     }

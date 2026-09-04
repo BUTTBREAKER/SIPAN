@@ -1,8 +1,6 @@
 {
     "autoload": {
-        "files": [
-            "app/functions.php"
-        ],
+        "files": ["app/functions.php"],
         "psr-4": {
             "App\\": "app",
             "Delivery\\Controllers\\": "delivery/controllers",

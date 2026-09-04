@@ -2,20 +2,22 @@
 
 namespace App;
 
+use InvalidArgumentException;
+
 class SIPAN
 {
-    public static function formatMoney($amount)
+    public static function formatMoney(float $amount): string
     {
         return '$ ' . number_format($amount, 2);
     }
 
-    public static function formatDateTime($datetime)
+    public static function formatDateTime(string $datetime): string
     {
         if (!$datetime) {
             return '---';
         }
 
-        $date = strtotime($datetime);
+        $date = strtotime($datetime) ?: throw new InvalidArgumentException("Invalid datetime format: $datetime");
         $days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         $months = [
             '',
@@ -42,13 +44,13 @@ class SIPAN
             . date('H:i', $date);
     }
 
-    public static function formatDate($datetime)
+    public static function formatDate(string $datetime): string
     {
         if (!$datetime) {
             return '---';
         }
 
-        $date = strtotime($datetime);
+        $date = strtotime($datetime) ?: throw new InvalidArgumentException("Invalid datetime format: $datetime");
         $months = [
             '',
             'Enero',

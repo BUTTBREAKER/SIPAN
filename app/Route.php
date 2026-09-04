@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use Closure;
+use Exception;
 use Throwable;
 
 final class Route
@@ -26,7 +27,7 @@ final class Route
             '/\{([a-zA-Z0-9_]+)\}/',
             '(?<$1>.+)',
             $this->pattern,
-        );
+        ) ?: throw new Exception("Invalid pattern: {$this->pattern}");
 
         $this->pattern = "/^{$this->pattern}$/";
 
@@ -37,7 +38,7 @@ final class Route
                     && count($callable) === 2
                     && method_exists($callable[0], $callable[1])
                 ) {
-                    if (class_exists($callable[0])) {
+                    if (is_string($callable[0]) && class_exists($callable[0])) {
                         (new $callable[0]())->{$callable[1]}(...$attributes);
 
                         continue;
@@ -58,6 +59,7 @@ final class Route
         return $this->callable;
     }
 
+    /** @return ?array<string, string> */
     public function getParamsFromUriPath(string $path): ?array
     {
         if (preg_match($this->pattern, $path, $matches)) {

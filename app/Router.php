@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use Exception;
+use InvalidArgumentException;
 use NoDiscard;
 use Psr\Http\Message\ResponseInterface;
 use Override;
@@ -44,7 +46,7 @@ final class Router
                 $route,
                 ...$params,
             ) implements RequestHandlerInterface {
-                /** @param string[] $params */
+                /** @var array<string, string> $params */
                 private array $params;
 
                 public function __construct(
@@ -52,7 +54,7 @@ final class Router
                     private Route $route,
                     string ...$params,
                 ) {
-                    $this->params = $params;
+                    $this->params = array_filter($params, 'is_string', ARRAY_FILTER_USE_KEY);
                 }
 
                 #[Override]
@@ -69,7 +71,7 @@ final class Router
                         ob_start();
                         $this->route->getCallable()(...$this->params);
                         $response = $this->responseFactory->createResponse();
-                        $response->getBody()->write(ob_get_clean());
+                        $response->getBody()->write(ob_get_clean() ?: throw new Exception("Failed to capture output for route"));
                     } catch (Throwable $throwable) {
                         $response = $this->responseFactory->createResponse(500);
                         $message = "Error: {$throwable->getMessage()}";
@@ -83,7 +85,7 @@ final class Router
                             $response->getBody()->write(json_encode([
                                 'success' => false,
                                 'message' => $message,
-                            ]));
+                            ]) ?: throw new InvalidArgumentException("Failed to encode JSON response for error"));
                         } else {
                             $response->getBody()->write($message);
                         }
