@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Middlewares\LogRequestMiddleware;
 use App\Middlewares\RoutingMiddleware;
 use App\Middlewares\SessionMiddleware;
 use App\RequestHandlers\NotFoundHandler;
@@ -11,7 +10,6 @@ use App\Router;
 use flight\Container;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Log\LoggerInterface;
 
 use function App\sendResponse;
 
@@ -33,14 +31,9 @@ $router = new Router(
     ...require __DIR__ . '/../routes/web.php',
 );
 
-$logger = $container->get(LoggerInterface::class);
-$logRequestMiddleware = $container->get(LogRequestMiddleware::class);
-$logRequestMiddleware->setLogger($logger);
-
 $queueRequestHandler = new QueueRequestHandler(
     $container->get(NotFoundHandler::class),
     $container->get(SessionMiddleware::class),
-    $logRequestMiddleware,
     new RoutingMiddleware($router),
 );
 
