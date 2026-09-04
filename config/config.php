@@ -7,9 +7,6 @@ use App\Helpers\Environment;
 Environment::load();
 
 return [
-    // JWT
-    'jwt_expiration' => (int) Environment::get('JWT_EXPIRATION', 86400), // 24 horas
-
     // Aplicación
     'app_name' => Environment::get('APP_NAME', 'SIPAN'),
     'app_url' => Environment::get('APP_URL', 'http://localhost:8000'),
