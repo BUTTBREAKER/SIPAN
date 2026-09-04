@@ -96,7 +96,7 @@ $pedido ??= null;
                                         <td><?= date('d/m/Y H:i', strtotime($pago['fecha_pago'])) ?></td>
                                         <td><strong>$ <?= number_format($pago['monto'], 2) ?></strong></td>
                                         <td><?= ucfirst($pago['metodo_pago']) ?></td>
-                                        <td><?= htmlspecialchars(($pago['primer_nombre'] ?? '') . ' ' . ($pago['apellido_paterno'] ?? '') ?: '-') ?></td>
+                                        <td><?= htmlspecialchars(($pago['primer_nombre']) . ' ' . ($pago['apellido_paterno'])) ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
