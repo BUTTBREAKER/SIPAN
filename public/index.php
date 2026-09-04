@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Middlewares\ErrorMiddleware;
 use App\Middlewares\RoutingMiddleware;
 use App\Middlewares\SessionMiddleware;
 use App\RequestHandlers\NotFoundHandler;
@@ -33,6 +34,7 @@ $router = new Router(
 
 $queueRequestHandler = new QueueRequestHandler(
     $container->get(NotFoundHandler::class),
+    $container->get(ErrorMiddleware::class),
     $container->get(SessionMiddleware::class),
     new RoutingMiddleware($router),
 );
