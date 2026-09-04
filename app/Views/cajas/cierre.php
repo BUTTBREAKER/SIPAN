@@ -4,6 +4,9 @@ use App\SIPAN;
 
 require_once __DIR__ . '/../layouts/header.php';
 
+$resumen ??= null;
+$caja ??= null;
+
 ?>
 
 <div class="container py-5">

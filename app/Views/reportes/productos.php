@@ -1,7 +1,12 @@
 <?php
+
 $pageTitle = 'Reporte de Productos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
+
+$productos ??= null;
+$valor_total ??= null;
+
 ?>
 
 <div class="page-header">

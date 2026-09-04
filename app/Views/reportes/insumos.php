@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Reporte de Insumos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
+
+$insumos ??= null;
+
 ?>
 
 <div class="page-header">

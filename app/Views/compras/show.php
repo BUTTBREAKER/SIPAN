@@ -1,7 +1,13 @@
 <?php
+
+$compra ??= null;
+
 $pageTitle = 'Detalle de Compra #' . $compra['id'];
 $currentPage = 'compras';
 require_once __DIR__ . '/../layouts/header.php';
+
+$detalles ??= null;
+
 ?>
 
 <div class="page-header d-flex justify-content-between align-items-center">

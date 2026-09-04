@@ -3,6 +3,9 @@
 require_once __DIR__ . '/../layouts/header.php';
 require_once __DIR__ . '/../layouts/sidebar.php';
 
+$sucursal ??= null;
+$empleados ??= null;
+
 ?>
 
 <div class="main-content">

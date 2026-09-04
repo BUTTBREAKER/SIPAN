@@ -3,6 +3,8 @@
 require_once __DIR__ . '/../layouts/header.php';
 require_once __DIR__ . '/../layouts/sidebar.php';
 
+$sucursal ??= null;
+
 ?>
 
 <div class="main-content" x-data="editSucursalApp(<?= htmlspecialchars(json_encode($sucursal)) ?>)">

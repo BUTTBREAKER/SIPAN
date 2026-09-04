@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Mi Perfil';
 $currentPage = 'usuarios';
 require_once __DIR__ . '/../layouts/header.php';
+
+$usuario ??= null;
+
 ?>
 
 <div class="page-header">

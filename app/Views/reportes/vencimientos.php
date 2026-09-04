@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Reporte de Vencimientos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
+
+$dias ??= null;
+
 ?>
 
 <div class="page-header">

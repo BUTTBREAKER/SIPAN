@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Detalle del Cliente';
 $currentPage = 'clientes';
 require_once __DIR__ . '/../layouts/header.php';
+
+$cliente ??= null;
+
 ?>
 
 <div class="page-header d-flex justify-between align-center">
@@ -24,7 +28,7 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-<?php if (isset($cliente) && !empty($cliente)) : ?>
+<?php if (!empty($cliente)) : ?>
 <div class="row">
     <!-- Información Personal -->
     <div class="col-md-6">

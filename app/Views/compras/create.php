@@ -1,7 +1,12 @@
 <?php
+
 $pageTitle = 'Registrar Compra';
 $currentPage = 'compras';
 require_once __DIR__ . '/../layouts/header.php';
+
+$proveedores ??= null;
+$insumos ??= null;
+
 ?>
 
 <div class="page-header">

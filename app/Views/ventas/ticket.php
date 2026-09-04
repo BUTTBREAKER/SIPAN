@@ -1,3 +1,10 @@
+<?php
+
+$venta ??= null;
+$detalles ??= null;
+
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>

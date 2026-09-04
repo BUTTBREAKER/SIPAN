@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Nuevo Insumo';
 $currentPage = 'insumos';
 require_once __DIR__ . '/../layouts/header.php';
+
+$proveedores ??= null;
+
 ?>
 
 <div class="page-header">

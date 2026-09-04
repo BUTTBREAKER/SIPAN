@@ -1,7 +1,17 @@
 <?php
+
 $pageTitle = 'Detalle de Receta';
 $currentPage = 'recetas';
 require_once __DIR__ . '/../layouts/header.php';
+
+$receta ??= null;
+$costo_total_receta ??= null;
+$costo_unitario_produccion ??= null;
+$precio_venta ??= null;
+$margen_unitario ??= null;
+$margen_porcentaje ??= null;
+$detalles_insumos ??= null;
+
 ?>
 
 <div class="page-header">

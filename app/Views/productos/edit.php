@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Editar Producto';
 $currentPage = 'productos';
 require_once __DIR__ . '/../layouts/header.php';
+
+$producto ??= null;
+
 ?>
 
 <div class="page-header">

@@ -1,7 +1,13 @@
 <?php
+
 $pageTitle = 'Detalle de Proveedor';
 $currentPage = 'proveedores';
 require_once __DIR__ . '/../layouts/header.php';
+
+$proveedor ??= null;
+$deuda_total ??= null;
+$compras ??= null;
+
 ?>
 
 <div class="page-header d-flex justify-between align-center">

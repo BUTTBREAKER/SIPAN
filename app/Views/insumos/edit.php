@@ -1,7 +1,12 @@
 <?php
+
 $pageTitle = 'Editar Insumo';
 $currentPage = 'insumos';
 require_once __DIR__ . '/../layouts/header.php';
+
+$insumo ??= null;
+$proveedores ??= null;
+
 ?>
 
 <div class="page-header">

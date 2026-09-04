@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Detalle de Pedido';
 $currentPage = 'pedidos';
 require_once __DIR__ . '/../layouts/header.php';
+
+$pedido ??= null;
+
 ?>
 
 

@@ -1,8 +1,12 @@
 <?php
+
 $page_title = 'Mis Estadísticas - SIPAN Delivery';
 $moneda = htmlspecialchars($_ENV['moneda_principal'] ?? 'S/');
 
 ob_start();
+
+$stats ??= null;
+
 ?>
 
 <div class="page-header animate-fade-in">

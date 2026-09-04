@@ -3,6 +3,10 @@
 require_once __DIR__ . '/../layouts/header.php';
 require_once __DIR__ . '/../layouts/sidebar.php';
 
+$receta ??= null;
+$insumos_disponibles ??= null;
+$receta_insumos ??= null;
+
 ?>
 
 <div class="main-content" x-data="editRecetaApp(<?= htmlspecialchars(json_encode($receta)) ?>, <?= htmlspecialchars(json_encode($insumos_disponibles)) ?>, <?= htmlspecialchars(json_encode($receta_insumos)) ?>)">

@@ -1,7 +1,12 @@
 <?php
+
 $pageTitle = 'Nueva Receta';
 $currentPage = 'recetas';
 require_once __DIR__ . '/../layouts/header.php';
+
+$productos ??= null;
+$insumos ??= null;
+
 ?>
 
 <div class="page-header">

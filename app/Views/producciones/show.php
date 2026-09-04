@@ -3,6 +3,9 @@
 require_once __DIR__ . '/../layouts/header.php';
 require_once __DIR__ . '/../layouts/sidebar.php';
 
+$produccion ??= null;
+$insumos ??= null;
+
 ?>
 
 <div class="main-content">

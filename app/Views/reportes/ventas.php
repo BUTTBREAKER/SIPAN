@@ -1,7 +1,16 @@
 <?php
+
 $pageTitle = 'Reporte de Ventas';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
+
+$fecha_inicio ??= null;
+$fecha_fin ??= null;
+$cantidad_ventas ??= null;
+$total_ventas ??= null;
+$promedio ??= null;
+$desglose_medios ??= null;
+
 ?>
 
 <div class="page-header">

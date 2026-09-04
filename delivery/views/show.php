@@ -1,4 +1,7 @@
 <?php
+
+$pedido ??= null;
+
 $page_title = 'Detalle de Pedido - SIPAN Delivery';
 $moneda     = htmlspecialchars($_ENV['moneda_principal'] ?? 'S/');
 $estado     = $pedido['estado_pedido'];
@@ -25,6 +28,10 @@ $custom_header_html = '<header class="detail-header">
 </header>';
 
 ob_start();
+
+$cliente ??= null;
+$productos ??= null;
+
 ?>
 
 <!-- Status Banner -->

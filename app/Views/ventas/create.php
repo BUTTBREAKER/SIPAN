@@ -1,7 +1,12 @@
 <?php
+
 $pageTitle = 'Nueva Venta';
 $currentPage = 'ventas';
 require_once __DIR__ . '/../layouts/header.php';
+
+$tasa_bcv ??= 50;
+$clientes ??= null;
+
 ?>
 
 <div class="page-header d-flex justify-content-between align-items-center">
@@ -281,7 +286,7 @@ function ventaApp() {
         items: [],
         total: 0,
         pagos: [],
-        tasa: <?= $tasa_bcv ?? 50 ?>,
+        tasa: <?= $tasa_bcv ?>,
         
         nuevoPago: {
             metodo: 'efectivo_usd',

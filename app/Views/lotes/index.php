@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Gestión de Lotes';
 $currentPage = 'inventario';
 require_once __DIR__ . '/../layouts/header.php';
+
+$lotes ??= null;
+
 ?>
 
 <div class="page-header">

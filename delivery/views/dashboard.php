@@ -1,6 +1,12 @@
 <?php
+
 $page_title = 'Pedidos - SIPAN Delivery';
 ob_start();
+
+$total_pedidos ??= null;
+$total_pendientes ??= null;
+$total_en_camino ??= null;
+
 ?>
 
 <!-- Filtros/Tabs Scrollable -->

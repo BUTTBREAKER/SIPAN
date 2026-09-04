@@ -1,7 +1,13 @@
 <?php
+
 $pageTitle = 'Reporte de Producciones';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
+
+$fecha_inicio ??= null;
+$fecha_fin ??= null;
+$producciones ??= null;
+
 ?>
 
 <div class="page-header">

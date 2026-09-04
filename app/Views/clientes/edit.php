@@ -1,7 +1,11 @@
 <?php
+
 $pageTitle = 'Editar Cliente';
 $currentPage = 'clientes';
 require_once __DIR__ . '/../layouts/header.php';
+
+$cliente ??= null;
+
 ?>
 
 <div class="page-header">
