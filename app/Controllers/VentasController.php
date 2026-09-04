@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\Venta;
-use App\Models\Producto;
 use App\Models\Negocio;
 use App\Models\Cliente;
 use App\Middlewares\AuthMiddleware;
@@ -11,14 +10,12 @@ use App\Middlewares\AuthMiddleware;
 class VentasController
 {
     private $ventaModel;
-    private $productoModel;
     private $negocioModel;
     private $clienteModel;
 
     public function __construct()
     {
         $this->ventaModel = new Venta();
-        $this->productoModel = new Producto();
         $this->negocioModel = new Negocio();
         $this->clienteModel = new Cliente();
     }

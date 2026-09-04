@@ -3,17 +3,14 @@
 namespace App\Controllers;
 
 use App\Models\Caja;
-use App\Models\Sucursal;
 
 class CajaController
 {
     private $cajaModel;
-    private $sucursalModel;
 
     public function __construct()
     {
         $this->cajaModel = new Caja();
-        $this->sucursalModel = new Sucursal();
     }
 
     public function index()

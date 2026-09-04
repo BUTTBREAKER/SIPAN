@@ -3,17 +3,14 @@
 namespace App\Controllers;
 
 use App\Models\Receta;
-use App\Models\Insumo;
 
 class CalculoInsumosController
 {
     private $recetaModel;
-    private $insumoModel;
 
     public function __construct()
     {
         $this->recetaModel = new Receta();
-        $this->insumoModel = new Insumo();
     }
 
     public function calcularInsumos()
