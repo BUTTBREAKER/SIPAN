@@ -8,7 +8,6 @@ Environment::load();
 
 return [
     // Aplicación
-    'app_name' => Environment::get('APP_NAME', 'SIPAN'),
     'app_url' => Environment::get('APP_URL', 'http://localhost:8000'),
 
     // Rate Limiting
