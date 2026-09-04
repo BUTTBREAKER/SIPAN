@@ -155,7 +155,7 @@ class Auditoria extends BaseModel
             );
 
             $this->db->commit();
-            return ['success' => true, 'message' => $mensaje];
+            return ['success' => true, 'message' => $mensaje ?? null];
         } catch (\Exception $e) {
             $this->db->rollback();
             return ['success' => false, 'message' => $e->getMessage()];

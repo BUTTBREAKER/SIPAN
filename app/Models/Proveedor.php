@@ -8,7 +8,7 @@ class Proveedor extends BaseModel
 
     public function getAllBySucursal($sucursal_id)
     {
-        $sql = "SELECT * FROM {$this->table} WHERE sucursal_id = ? ORDER BY nombre ASC";
+        $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? ORDER BY nombre ASC";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 

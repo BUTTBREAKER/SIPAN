@@ -485,6 +485,13 @@ CREATE TABLE IF NOT EXISTS respaldos (
     INDEX idx_fecha (fecha_creacion)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS proveedor_insumos (
+    id_insumo INT NOT NULL REFERENCES insumos(id) ON DELETE CASCADE,
+    id_proveedor INT NOT NULL REFERENCES proveedores(id) ON DELETE CASCADE,
+    precio DECIMAL(10, 2) NOT NULL,
+    tiempo_entrega DATETIME
+);
+
 -- ============================================
 -- DATOS INICIALES
 -- ============================================
