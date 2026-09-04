@@ -32,12 +32,6 @@ final class Route
 
         $this->callable = static function (string ...$attributes) use ($callables): void {
             foreach ($callables as $callable) {
-                if (is_callable($callable)) {
-                    $callable(...$attributes);
-
-                    continue;
-                }
-
                 if (
                     is_array($callable)
                     && count($callable) === 2
@@ -48,6 +42,12 @@ final class Route
 
                         continue;
                     }
+                }
+
+                if (is_callable($callable)) {
+                    $callable(...$attributes);
+
+                    continue;
                 }
             }
         };

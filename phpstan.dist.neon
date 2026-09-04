@@ -12,3 +12,4 @@ parameters:
         - delivery
         - public
         - routes
+    treatPhpDocTypesAsCertain: false
