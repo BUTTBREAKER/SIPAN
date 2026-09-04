@@ -15,7 +15,7 @@
         },
         "policy": {
             "advisories": {
-                "ignore": ["twig/twig"]
+                "ignore": ["twig/twig", "firebase/php-jwt"]
             }
         },
         "process-timeout": 0,
