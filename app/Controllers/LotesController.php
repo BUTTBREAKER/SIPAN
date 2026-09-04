@@ -40,7 +40,7 @@ class LotesController
             exit;
         }
 
-        try {
+        // try {
             // Lógica de ajuste podría ir aquí o en modelo
             // Por simplicidad en MVP asumimos actualización directa
             // Idealmente crear historial de ajustes
@@ -48,8 +48,8 @@ class LotesController
             // $this->loteModel->ajustar($input['id'], $input['cantidad_real']);
 
             echo json_encode(['success' => true, 'message' => 'Lote ajustado correctamente']);
-        } catch (\Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
-        }
+        // } catch (\Exception $e) {
+            // echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        // }
     }
 }
