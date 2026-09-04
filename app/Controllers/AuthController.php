@@ -6,6 +6,8 @@ use App\Models\Usuario;
 use App\Models\Sucursal;
 use App\Middlewares\AuthMiddleware;
 
+use function App\getenv;
+
 class AuthController
 {
     private $usuarioModel;
@@ -61,8 +63,8 @@ class AuthController
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $rateLimitKey = 'login:' . $ip;
 
-        $maxAttempts = $config['rate_limit_login_max_attempts'];
-        $window = $config['rate_limit_login_window'];
+        $maxAttempts = getenv('rate_limit_login_max_attempts');
+        $window = getenv('rate_limit_login_window');
 
         if (!\App\Helpers\RateLimiter::attempt($rateLimitKey, $maxAttempts, $window)) {
             $availableIn = \App\Helpers\RateLimiter::availableIn($rateLimitKey, $window);
