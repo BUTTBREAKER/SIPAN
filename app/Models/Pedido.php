@@ -183,7 +183,7 @@ class Pedido extends BaseModel
         $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE fecha_pedido >= CURDATE()";
         $result = $this->db->fetchOne($sql);
         $numero = ($result['total'] ?? 0) + 1;
-        return "PED-{$fecha}-" . str_pad($numero, 4, '0', STR_PAD_LEFT);
+        return "PED-{$fecha}-" . str_pad((string) $numero, 4, '0', STR_PAD_LEFT);
     }
 
     // ==========================================
