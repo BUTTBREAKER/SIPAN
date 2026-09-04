@@ -157,30 +157,6 @@ class Compra extends BaseModel
         }
     }
 
-    /**
-     * Actualizar stock de insumo con cálculo de costo promedio ponderado
-     */
-    private function updateStockWithWeightedAverage($id_insumo, $cantidad_nueva, $costo_nuevo)
-    {
-        // Obtener stock y costo actual
-        $sql = "SELECT stock_actual, precio_unitario FROM insumos WHERE id = ?";
-        $insumo = $this->db->fetch($sql, [$id_insumo]);
-
-        $stock_actual = floatval($insumo['stock_actual']);
-        $costo_actual = floatval($insumo['precio_unitario']);
-
-        // Calcular costo promedio ponderado
-        $valor_actual = $stock_actual * $costo_actual;
-        $valor_nuevo = floatval($cantidad_nueva) * floatval($costo_nuevo);
-        $stock_total = $stock_actual + floatval($cantidad_nueva);
-
-        $costo_promedio = $stock_total > 0 ? ($valor_actual + $valor_nuevo) / $stock_total : $costo_nuevo;
-
-        // Actualizar stock y costo promedio
-        $sqlUpdate = "UPDATE insumos SET stock_actual = stock_actual + ?, precio_unitario = ? WHERE id = ?";
-        $this->db->execute($sqlUpdate, [floatval($cantidad_nueva), $costo_promedio, $id_insumo]);
-    }
-
     public function getWithProveedor($sucursal_id)
     {
          $sql = "SELECT c.*, p.nombre as proveedor_nombre, CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre

@@ -280,17 +280,6 @@ class AuthController
         exit;
     }
 
-    private function generarClaveSucursal()
-    {
-        // Generar clave alfanumérica de 8 caracteres
-        $caracteres = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        $clave = '';
-        for ($i = 0; $i < 8; $i++) {
-            $clave .= $caracteres[rand(0, strlen($caracteres) - 1)];
-        }
-        return $clave;
-    }
-
     public function verificarClaveSucursal()
     {
         if (ob_get_length()) {
