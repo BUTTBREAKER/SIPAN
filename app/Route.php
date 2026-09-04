@@ -7,6 +7,8 @@ namespace App;
 use Closure;
 use flight\Container;
 use InvalidArgumentException;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 final class Route
@@ -40,7 +42,16 @@ final class Route
                     && method_exists($callable[0], $callable[1])
                 ) {
                     if (is_string($callable[0]) && class_exists($callable[0])) {
-                        Container::getInstance()->get($callable[0])->{$callable[1]}(...$attributes);
+                        $object = Container::getInstance()->get($callable[0]);
+
+                        if (
+                            $object instanceof LoggerAwareInterface
+                            && Container::getInstance()->has(LoggerInterface::class)
+                        ) {
+                            $object->setLogger(Container::getInstance()->get(LoggerInterface::class));
+                        }
+
+                        $object->{$callable[1]}(...$attributes);
 
                         continue;
                     }
