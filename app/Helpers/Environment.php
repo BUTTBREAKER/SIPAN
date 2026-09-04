@@ -82,28 +82,4 @@ class Environment
 
         return self::$vars[$key] ?? getenv($key) ?: $default;
     }
-
-    /**
-     * Verificar si es entorno de producción
-     */
-    public static function isProduction()
-    {
-        return strtolower(self::get('APP_ENV', 'production')) === 'production';
-    }
-
-    /**
-     * Verificar si es entorno de desarrollo
-     */
-    public static function isDevelopment()
-    {
-        return strtolower(self::get('APP_ENV', 'development')) === 'development';
-    }
-
-    /**
-     * Verificar si debug está activado
-     */
-    public static function isDebug()
-    {
-        return self::get('APP_DEBUG', false) === true || self::get('APP_DEBUG', false) === 'true';
-    }
 }

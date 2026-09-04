@@ -20,7 +20,6 @@ return [
     // Aplicación
     'app_name' => Environment::get('APP_NAME', 'SIPAN'),
     'app_url' => Environment::get('APP_URL', 'http://localhost:8000'),
-    'app_env' => Environment::get('APP_ENV', 'production'),
     'app_debug' => Environment::get('APP_DEBUG', false),
     'timezone' => Environment::get('TIMEZONE', 'America/Lima'),
 
