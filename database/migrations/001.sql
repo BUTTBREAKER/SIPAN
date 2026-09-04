@@ -11,6 +11,7 @@ USE sipan;
 -- ============================================
 CREATE TABLE IF NOT EXISTS sucursales (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    clave_sucursal VARCHAR(255) NOT NULL UNIQUE,
     nombre VARCHAR(100) NOT NULL,
     direccion TEXT,
     telefono VARCHAR(20),
@@ -488,7 +489,9 @@ CREATE TABLE IF NOT EXISTS respaldos (
 -- DATOS INICIALES
 -- ============================================
 INSERT INTO configuracion (clave, valor) VALUES ('tasa_bcv', '50.00'), ('moneda_principal', 'USD');
+INSERT INTO sucursales (id, clave_sucursal, nombre) VALUES (1, 'ABC12345', 'Sucursal Principal');
 INSERT INTO proveedores (id, id_sucursal, nombre, ruc, telefono, direccion) VALUES (1, 1, 'Proveedor General', '20000000001', '999999999', 'Direccion General');
+INSERT INTO usuarios (id, primer_nombre, apellido_paterno, correo, clave, rol) VALUES (1, '', '', 'admin@sipan.com', '$2y$10$ux0rmvQQ658ij/YthbI7xORnVrIxidDqYGS4YF9LflCNiT2a/DAPq', 'administrador');
 
 -- ============================================
 -- VISTAS
