@@ -60,16 +60,15 @@ _(Si usas XAMPP y no tienes contraseña en root, omite el `-p`)_.
 
 ## Paso 3: Configuración del Sistema
 
-1. Renombra o asegúrate de tener el archivo `config/config.php` (usando `config.php.example` como base si es necesario).
+<!-- 1. Renombra o asegúrate de tener el archivo `config/config.php` (usando `config.php.example` como base si es necesario). -->
+1. Duplica el archivo `.env.example` y renómbralo a `.env` en la raíz del proyecto.
 2. Ajusta las credenciales de tu base de datos:
-```php
-return [
-    'db_host' => 'localhost',
-    'db_name' => 'sipan',
-    'db_user' => 'root',
-    'db_pass' => '', // Tu contraseña
-    // ...
-];
+```
+db_driver=mysql
+db_host=localhost
+db_name=sipan
+db_user=root
+db_pass=
 ```
 
 ## Paso 4: Acceso Inicial

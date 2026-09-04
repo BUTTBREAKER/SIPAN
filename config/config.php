@@ -7,12 +7,6 @@ use App\Helpers\Environment;
 Environment::load();
 
 return [
-    // Base de datos
-    'db_host' => Environment::get('DB_HOST'),
-    'db_name' => Environment::get('DB_NAME'),
-    'db_user' => Environment::get('DB_USER'),
-    'db_pass' => Environment::get('DB_PASS'),
-
     // JWT
     'jwt_secret' => Environment::get('JWT_SECRET'),
     'jwt_expiration' => (int) Environment::get('JWT_EXPIRATION', 86400), // 24 horas

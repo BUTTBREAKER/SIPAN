@@ -49,10 +49,10 @@ class Respaldo extends BaseModel
         $comando = sprintf(
             '"%s" --host=%s --user=%s --password=%s --no-tablespaces %s > "%s" 2>&1',
             $mysqldump_path,
-            getenv('db_host') ?? 'localhost',
-            getenv('db_user') ?? 'root',
-            getenv('db_pass') ?? '',
-            getenv('db_name') ?? 'sipan',
+            getenv('db_host'),
+            getenv('db_user'),
+            getenv('db_pass'),
+            getenv('db_name'),
             $ruta_completa
         );
 

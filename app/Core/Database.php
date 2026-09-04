@@ -5,6 +5,8 @@ namespace App\Core;
 use PDO;
 use PDOException;
 
+use function App\getenv;
+
 class Database
 {
     private static $instance = null;
@@ -13,11 +15,11 @@ class Database
     private function __construct()
     {
         // Use Environment helper to get config
-        $driver = \App\Helpers\Environment::get('DB_DRIVER', 'mysql');
-        $host = \App\Helpers\Environment::get('DB_HOST', 'localhost');
-        $name = \App\Helpers\Environment::get('DB_NAME', 'sipan');
-        $user = \App\Helpers\Environment::get('DB_USER', 'root');
-        $pass = \App\Helpers\Environment::get('DB_PASS', '');
+        $driver = getenv('db_driver');
+        $host = getenv('db_host');
+        $name = getenv('db_name');
+        $user = getenv('db_user');
+        $pass = getenv('db_pass');
 
         try {
             $dsn = $driver === 'mysql'
