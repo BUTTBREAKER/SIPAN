@@ -24,7 +24,6 @@ return [
 
     // Sesión
     'session_name' => Environment::get('SESSION_NAME', 'SIPAN_SESSION'),
-    'session_lifetime' => (int) Environment::get('SESSION_LIFETIME', 86400),
 
     // Rate Limiting
     'rate_limit_login_max_attempts' => (int) Environment::get('RATE_LIMIT_LOGIN_MAX_ATTEMPTS', 5),
