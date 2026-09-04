@@ -13,8 +13,10 @@
         "allow-plugins": {
             "phpstan/extension-installer": true
         },
-        "audit": {
-            "ignore": ["firebase/php-jwt"]
+        "policy": {
+            "advisories": {
+                "ignore": ["twig/twig"]
+            }
         },
         "process-timeout": 0,
         "sort-packages": true
@@ -37,7 +39,8 @@
         "symfony/polyfill-php82": "^1.38",
         "symfony/polyfill-php83": "^1.41",
         "symfony/polyfill-php84": "^1.38",
-        "symfony/polyfill-php85": "^1.41"
+        "symfony/polyfill-php85": "^1.41",
+        "twig/twig": "3.19.0"
     },
     "require-dev": {
         "phpstan/extension-installer": "^1.4",
