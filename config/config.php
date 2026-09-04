@@ -7,9 +7,6 @@ use App\Helpers\Environment;
 Environment::load();
 
 return [
-    // Aplicación
-    'app_url' => Environment::get('APP_URL', 'http://localhost:8000'),
-
     // Rate Limiting
     'rate_limit_login_max_attempts' => (int) Environment::get('RATE_LIMIT_LOGIN_MAX_ATTEMPTS', 5),
     'rate_limit_login_window' => (int) Environment::get('RATE_LIMIT_LOGIN_WINDOW', 300), // 5 minutos
