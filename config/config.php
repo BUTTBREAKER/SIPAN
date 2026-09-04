@@ -13,7 +13,6 @@ return [
     // Aplicación
     'app_name' => Environment::get('APP_NAME', 'SIPAN'),
     'app_url' => Environment::get('APP_URL', 'http://localhost:8000'),
-    'timezone' => Environment::get('TIMEZONE', 'America/Lima'),
 
     // Rate Limiting
     'rate_limit_login_max_attempts' => (int) Environment::get('RATE_LIMIT_LOGIN_MAX_ATTEMPTS', 5),
