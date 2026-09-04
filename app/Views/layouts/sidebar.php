@@ -83,7 +83,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/cajas" class="nav-link <?= ($currentPage ?? '') === 'cajas' ? 'active' : '' ?>">
+                    <a href="/cajas" class="nav-link <?= $currentPage === 'cajas' ? 'active' : '' ?>">
                         <i class="fas fa-cash-register"></i>
                         <span>Caja Chica</span>
                     </a>
@@ -105,19 +105,19 @@
                     </a>
                 </li>
                 <li>
-                    <a href="/proveedores" class="nav-link <?= ($currentPage ?? '') === 'proveedores' ? 'active' : '' ?>">
+                    <a href="/proveedores" class="nav-link <?= $currentPage === 'proveedores' ? 'active' : '' ?>">
                         <i class="fas fa-truck"></i>
                         <span>Proveedores</span>
                     </a>
                 </li>
                 <li>
-                    <a href="/compras" class="nav-link <?= ($currentPage ?? '') === 'compras' ? 'active' : '' ?>">
+                    <a href="/compras" class="nav-link <?= $currentPage === 'compras' ? 'active' : '' ?>">
                         <i class="fas fa-file-invoice"></i>
                         <span>Compras</span>
                     </a>
                 </li>
                 <li>
-                    <a href="/chat" class="nav-link <?= ($currentPage ?? '') === 'chat' ? 'active' : '' ?>" style="position:relative;">
+                    <a href="/chat" class="nav-link <?= $currentPage === 'chat' ? 'active' : '' ?>" style="position:relative;">
                         <i class="fas fa-comments"></i>
                         <span>Chat</span>
                         <span id="chat-badge" class="position-absolute badge rounded-pill bg-danger" 
@@ -135,19 +135,19 @@
             </div>
             <ul class="nav-links">
                 <li>
-                    <a href="/reportes" class="nav-link <?= ($currentPage ?? '') === 'reportes' ? 'active' : '' ?>">
+                    <a href="/reportes" class="nav-link <?= $currentPage === 'reportes' ? 'active' : '' ?>">
                         <i class="fas fa-chart-pie"></i>
                         <span>Reportes</span>
                     </a>
                 </li>
                 <li>
-                    <a href="/predicciones" class="nav-link <?= ($currentPage ?? '') === 'predicciones' ? 'active' : '' ?>">
+                    <a href="/predicciones" class="nav-link <?= $currentPage === 'predicciones' ? 'active' : '' ?>">
                         <i class="fas fa-magic"></i>
                         <span>Predicciones</span>
                     </a>
                 </li>
                 <li>
-                    <a href="/sugerencias" class="nav-link <?= ($currentPage ?? '') === 'sugerencias' ? 'active' : '' ?>">
+                    <a href="/sugerencias" class="nav-link <?= $currentPage === 'sugerencias' ? 'active' : '' ?>">
                         <i class="fas fa-lightbulb"></i>
                         <span>Sugerencias</span>
                     </a>
