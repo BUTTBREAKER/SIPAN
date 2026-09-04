@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use Closure;
+use flight\Container;
 use InvalidArgumentException;
 use Throwable;
 
@@ -39,7 +40,7 @@ final class Route
                     && method_exists($callable[0], $callable[1])
                 ) {
                     if (is_string($callable[0]) && class_exists($callable[0])) {
-                        (new $callable[0]())->{$callable[1]}(...$attributes);
+                        Container::getInstance()->get($callable[0])->{$callable[1]}(...$attributes);
 
                         continue;
                     }
