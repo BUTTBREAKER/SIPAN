@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App;
 
-use Exception;
-use InvalidArgumentException;
 use NoDiscard;
 use Psr\Http\Message\ResponseInterface;
 use Override;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 use Throwable;
 
 final class Router
@@ -68,10 +67,13 @@ final class Router
                     );
 
                     try {
+                        $response = $this->responseFactory->createResponse();
+                        $message = 'Failed to capture output for route';
                         ob_start();
                         $this->route->getCallable()(...$this->params);
-                        $response = $this->responseFactory->createResponse();
-                        $response->getBody()->write(ob_get_clean() ?: throw new Exception("Failed to capture output for route"));
+                        $response
+                            ->getBody()
+                            ->write(ob_get_clean() ?: throw new RuntimeException($message));
                     } catch (Throwable $throwable) {
                         $response = $this->responseFactory->createResponse(500);
                         $message = "Error: {$throwable->getMessage()}";
@@ -85,7 +87,7 @@ final class Router
                             $response->getBody()->write(json_encode([
                                 'success' => false,
                                 'message' => $message,
-                            ]) ?: throw new InvalidArgumentException("Failed to encode JSON response for error"));
+                            ]) ?: throw new RuntimeException('Failed to encode JSON response for error'));
                         } else {
                             $response->getBody()->write($message);
                         }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use Closure;
-use Exception;
+use InvalidArgumentException;
 use Throwable;
 
 final class Route
@@ -27,7 +27,7 @@ final class Route
             '/\{([a-zA-Z0-9_]+)\}/',
             '(?<$1>.+)',
             $this->pattern,
-        ) ?: throw new Exception("Invalid pattern: {$this->pattern}");
+        ) ?: throw new InvalidArgumentException("Invalid pattern: $this->pattern");
 
         $this->pattern = "/^{$this->pattern}$/";
 
