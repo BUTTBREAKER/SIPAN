@@ -8,7 +8,7 @@ use OutOfBoundsException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
-function getenv(string $name): mixed
+function getenv(string $name): int|float|bool|string
 {
     if (!key_exists($name, $_ENV)) {
         $dotenv = new Dotenv();
@@ -17,7 +17,23 @@ function getenv(string $name): mixed
 
     $message = "La variable de entorno '$name' no está definida.";
 
-    return $_ENV[$name] ?? throw new OutOfBoundsException($message);
+    $env = $_ENV[$name] ?? throw new OutOfBoundsException($message);
+
+    if ($filteredVar = filter_var($env, FILTER_VALIDATE_BOOL)) {
+        return $filteredVar;
+    }
+
+    if ($filteredVar = filter_var($env, FILTER_VALIDATE_INT)) {
+        return $filteredVar;
+    }
+
+    if ($filteredVar = filter_var($env, FILTER_VALIDATE_FLOAT)) {
+        return $filteredVar;
+    }
+
+    assert(is_string($env), 'La variable de entorno debe ser una cadena de texto.');
+
+    return $env;
 }
 
 function sendResponse(ResponseInterface $response): void

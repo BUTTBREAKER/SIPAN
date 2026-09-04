@@ -30,8 +30,8 @@ $_ENV['session_lifetime'] = filter_var(
 error_reporting(E_ALL);
 
 $isProduction = getenv('app_env') === 'production';
-$docrefRoot = $isProduction ? null : 'https://www.php.net/manual/es/';
-$docrefExt = $isProduction ? null : '.php';
+$docrefRoot = $isProduction ? '' : 'https://www.php.net/manual/es/';
+$docrefExt = $isProduction ? '' : '.php';
 
 ini_set('display_errors', $isProduction ? 'Off' : 'On');
 ini_set('display_startup_errors', $isProduction ? 'Off' : 'On');
@@ -46,6 +46,11 @@ ini_set('docref_ext', $docrefExt);
 ini_set('error_prepend_string', '<pre style="color: red">');
 ini_set('error_append_string', '</pre>');
 ini_set('error_log', __DIR__ . '/../storage/logs/php_errors.log');
+ini_set('assert.active', 'On');
+ini_set('assert.exception', 'On');
+ini_set('assert.warning', 'On');
+ini_set('assert.bail', 'Off');
+ini_set('assert.callback', '0');
 
 $container = Container::getInstance();
 
