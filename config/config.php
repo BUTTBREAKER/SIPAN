@@ -8,7 +8,6 @@ Environment::load();
 
 return [
     // JWT
-    'jwt_secret' => Environment::get('JWT_SECRET'),
     'jwt_expiration' => (int) Environment::get('JWT_EXPIRATION', 86400), // 24 horas
 
     // Aplicación
