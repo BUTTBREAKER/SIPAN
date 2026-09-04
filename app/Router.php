@@ -33,7 +33,7 @@ final class Router
                 continue;
             }
 
-            $params = $route->getParamsFromPath($request->getUri()->getPath());
+            $params = $route->getParamsFromUriPath($request->getUri()->getPath());
 
             if ($params === null) {
                 continue;

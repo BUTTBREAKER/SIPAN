@@ -58,7 +58,7 @@ final class Route
         return $this->callable;
     }
 
-    public function getParamsFromPath(string $path): ?array
+    public function getParamsFromUriPath(string $path): ?array
     {
         if (preg_match($this->pattern, $path, $matches)) {
             return array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
