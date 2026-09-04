@@ -1,5 +1,7 @@
 <?php
 
+use function App\getenv;
+
 $page_title = 'Pedidos - SIPAN Delivery';
 ob_start();
 
@@ -103,7 +105,7 @@ $total_en_camino ??= null;
                     <?= date('h:i A', strtotime($p['fecha_pedido'])) ?>
                 </div>
                 <div class="pedido-total">
-                    <?= htmlspecialchars($_ENV['moneda_principal'] ?? 'S/') ?><?= number_format($p['total'], 2) ?>
+                    <?= htmlspecialchars(getenv('moneda_principal') ?? 'S/') ?><?= number_format($p['total'], 2) ?>
                 </div>
             </div>
 

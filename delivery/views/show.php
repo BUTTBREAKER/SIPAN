@@ -1,9 +1,11 @@
 <?php
 
+use function App\getenv;
+
 $pedido ??= null;
 
 $page_title = 'Detalle de Pedido - SIPAN Delivery';
-$moneda     = htmlspecialchars($_ENV['moneda_principal'] ?? 'S/');
+$moneda     = htmlspecialchars(getenv('moneda_principal') ?? 'S/');
 $estado     = $pedido['estado_pedido'];
 
 // Configuración de estado

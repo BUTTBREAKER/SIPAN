@@ -2,14 +2,15 @@
 
 namespace App\Helpers;
 
+use function App\getenv;
+
 class JwtHelper
 {
     private static $secret;
 
     public static function init()
     {
-        $config = $_ENV;
-        self::$secret = $config['jwt_secret'];
+        self::$secret = getenv('jwt_secret');
     }
 
     public static function encode($payload)

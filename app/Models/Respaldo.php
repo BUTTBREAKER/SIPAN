@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use function App\getenv;
+
 class Respaldo extends BaseModel
 {
     protected $table = 'respaldos';
@@ -25,8 +27,7 @@ class Respaldo extends BaseModel
 
     public function generarRespaldo($usuario_id)
     {
-        $config = $_ENV;
-        $base_path = $config['base_path'] ?? dirname(__DIR__, 2);
+        $base_path = getenv('base_path') ?? dirname(__DIR__, 2);
         $fecha = date('Y-m-d_H-i-s');
         $nombre_archivo = "sipan_backup_{$fecha}.sql";
         $ruta_completa = $base_path . "/backups/{$nombre_archivo}";
@@ -48,10 +49,10 @@ class Respaldo extends BaseModel
         $comando = sprintf(
             '"%s" --host=%s --user=%s --password=%s --no-tablespaces %s > "%s" 2>&1',
             $mysqldump_path,
-            $config['DB_HOST'] ?? 'localhost',
-            $config['DB_USER'] ?? 'root',
-            $config['DB_PASS'] ?? '',
-            $config['DB_NAME'] ?? 'sipan',
+            getenv('db_host') ?? 'localhost',
+            getenv('db_user') ?? 'root',
+            getenv('db_pass') ?? '',
+            getenv('db_name') ?? 'sipan',
             $ruta_completa
         );
 
@@ -80,8 +81,6 @@ class Respaldo extends BaseModel
             return ['success' => false, 'error' => 'Archivo de respaldo no encontrado'];
         }
 
-        $config = $_ENV;
-
         // Detectar la ruta de mysql
         $mysql_path = $this->findMysql();
 
@@ -93,10 +92,10 @@ class Respaldo extends BaseModel
         $comando = sprintf(
             '"%s" --host=%s --user=%s --password=%s %s < "%s" 2>&1',
             $mysql_path,
-            $config['db_host'],
-            $config['db_user'],
-            $config['db_pass'],
-            $config['db_name'],
+            getenv('db_host'),
+            getenv('db_user'),
+            getenv('db_pass'),
+            getenv('db_name'),
             $respaldo['ruta_archivo']
         );
 

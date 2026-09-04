@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace App;
 
-use OutOfBoundsException;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
-function getenv(string $name): int|float|bool|string
+function getenv(string $name): null|int|float|bool|string
 {
     if (!key_exists($name, $_ENV)) {
         $dotenv = new Dotenv();
         $dotenv->load(__DIR__ . '/../.env.example', __DIR__ . '/../.env');
     }
 
-    $message = "La variable de entorno '$name' no está definida.";
-
-    $env = $_ENV[$name] ?? throw new OutOfBoundsException($message);
+    $env = $_ENV[$name] ?? null;
 
     if ($filteredVar = filter_var($env, FILTER_VALIDATE_BOOL)) {
         return $filteredVar;
@@ -31,9 +28,11 @@ function getenv(string $name): int|float|bool|string
         return $filteredVar;
     }
 
-    assert(is_string($env), 'La variable de entorno debe ser una cadena de texto.');
+    if (is_string($env)) {
+        return $env;
+    }
 
-    return $env;
+    return null;
 }
 
 function sendResponse(ResponseInterface $response): void

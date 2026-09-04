@@ -1,6 +1,9 @@
 <?php
+
+use function App\getenv;
+
 $page_title = 'Historial de Entregas - SIPAN Delivery';
-$moneda     = htmlspecialchars($_ENV['moneda_principal'] ?? 'S/');
+$moneda     = htmlspecialchars(getenv('moneda_principal') ?? 'S/');
 
 // Variables para el filtro preseleccionadas o valores por defecto
 $f_desde    = $_GET['desde'] ?? date('Y-m-01');

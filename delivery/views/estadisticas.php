@@ -1,7 +1,9 @@
 <?php
 
+use function App\getenv;
+
 $page_title = 'Mis Estadísticas - SIPAN Delivery';
-$moneda = htmlspecialchars($_ENV['moneda_principal'] ?? 'S/');
+$moneda = htmlspecialchars(getenv('moneda_principal') ?? 'S/');
 
 ob_start();
 

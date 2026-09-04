@@ -5,6 +5,8 @@ namespace Delivery\Controllers;
 use App\Models\Pedido;
 use Delivery\Middleware\AuthMiddleware;
 
+use function App\getenv;
+
 class PedidosController
 {
     private $pedidoModel;
@@ -231,7 +233,7 @@ class PedidosController
 
             $db->commit();
 
-            $moneda = htmlspecialchars($_ENV['moneda_principal'] ?? 'S/');
+            $moneda = htmlspecialchars(getenv('moneda_principal') ?? 'S/');
             echo json_encode([
                 'success' => true,
                 'message' => 'Cobro de ' . $moneda . number_format($monto, 2) . ' registrado exitosamente',
