@@ -86,9 +86,16 @@ function formatearCampo($campo)
 }
 ?>
 
-<div class="page-header">
-    <h2 class="page-title"><i class="fas fa-shield-alt"></i> Auditorías del Sistema</h2>
-    <p class="page-subtitle">Registro completo de cambios con capacidad de deshacer acciones</p>
+<div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="page-title"><i class="fas fa-shield-alt"></i> Auditorías del Sistema</h2>
+        <p class="page-subtitle">Registro completo de cambios con capacidad de deshacer acciones</p>
+    </div>
+    <div>
+        <a href="/auditorias/estadisticas" class="btn btn-outline-primary">
+            <i class="fas fa-chart-pie me-1"></i> Estadísticas
+        </a>
+    </div>
 </div>
 
 <!-- Filtros mejorados -->
