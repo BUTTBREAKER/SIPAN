@@ -19,8 +19,9 @@ class SIPAN
             return '---';
         }
 
-        $date = strtotime($datetime) ?: throw new InvalidArgumentException("Invalid datetime format: $datetime");
+        $time = strtotime($datetime) ?: throw new InvalidArgumentException("Invalid datetime format: $datetime");
         $days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
         $months = [
             '',
             'Enero',
@@ -37,13 +38,13 @@ class SIPAN
             'Diciembre'
         ];
 
-        return $days[date('w', $date)]
+        return $days[date('w', $time)]
             . ', '
-            . date('d', $date)
+            . date('d', $time)
             . ' de '
-            . $months[date('n', $date)]
+            . $months[date('n', $time)]
             . ' - '
-            . date('H:i', $date);
+            . date('H:i', $time);
     }
 
     public static function formatDate(string $datetime): string
@@ -52,7 +53,8 @@ class SIPAN
             return '---';
         }
 
-        $date = strtotime($datetime) ?: throw new InvalidArgumentException("Invalid datetime format: $datetime");
+        $time = strtotime($datetime) ?: throw new InvalidArgumentException("Invalid datetime format: $datetime");
+
         $months = [
             '',
             'Enero',
@@ -69,6 +71,6 @@ class SIPAN
             'Diciembre'
         ];
 
-        return date('d', $date) . ' de ' . $months[date('n', $date)] . ' de ' . date('Y', $date);
+        return date('d', $time) . ' de ' . $months[date('n', $time)] . ' de ' . date('Y', $time);
     }
 }
