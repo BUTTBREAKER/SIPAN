@@ -1,19 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Helpers;
 
-class Predictor
+use InvalidArgumentException;
+
+final class Predictor
 {
     /**
      * Calcula la regresión lineal simple (y = mx + b)
      * Optimización Bolt: Refactorizado a algoritmo O(N) de una sola pasada y uso de fórmulas de series aritméticas
      * para evitar creación de arrays intermedios con range() y reducir consumo de memoria.
      *
-     * @param array $datos Array de valores historicos [fecha => cantidad]
+     * @param array<string, int|float> $datos Array de valores historicos [fecha => cantidad]
      * @param int $dias_a_proyectar Número de días futuros a predecir
-     * @return array Array con las proyecciones futuras
+     * @return array{}|array{
+     *   pendiente: int|float,
+     *   interseccion: int|float,
+     *   proyecciones: list<array{fecha: string, valor: float, tipo: 'prediccion'}>,
+     *   tendencia: 'creciente'|'decreciente'|'estable',
+     * } Array con las proyecciones futuras
      */
-    public static function regresionLineal($datos, $dias_a_proyectar = 7)
+    public static function regresionLineal(array $datos, int $dias_a_proyectar = 7): array
     {
         $n = count($datos);
 
@@ -60,8 +69,13 @@ class Predictor
 
             // No permitir valores negativos
             $prediccion = max(0, $prediccion);
+            $message = "Error al calcular fecha futura";
 
-            $fecha_futura = date('Y-m-d', strtotime("$ultima_fecha + $i days"));
+            $fecha_futura = date(
+                'Y-m-d',
+                strtotime("$ultima_fecha + $i days") ?: throw new InvalidArgumentException($message),
+            );
+
             $proyecciones[] = [
                 'fecha' => $fecha_futura,
                 'valor' => round($prediccion, 2),
@@ -81,11 +95,11 @@ class Predictor
      * Calcula la Media Móvil Simple (SMA)
      * Optimización Bolt: Implementado algoritmo de ventana deslizante para reducir complejidad de O(N*P) a O(N).
      *
-     * @param array $datos Array de valores historicos [fecha => cantidad]
+     * @param array<string, int> $datos Array de valores historicos [fecha => cantidad]
      * @param int $periodo Ventana de tiempo para el promedio
-     * @return array
+     * @return list<null|float>
      */
-    public static function mediaMovil($datos, $periodo = 3)
+    public static function mediaMovil(array $datos, int $periodo = 3): array
     {
         $resultado = [];
         $valores = array_values($datos);
