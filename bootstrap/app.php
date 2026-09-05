@@ -8,7 +8,9 @@ use GuzzleHttp\Psr7\ServerRequest;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
+use Monolog\Processor\IntrospectionProcessor;
 use Monolog\Processor\PsrLogMessageProcessor;
+use Monolog\Processor\WebProcessor;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -33,7 +35,7 @@ ini_set('report_memleaks', 'On');
 ini_set('html_errors', 'On');
 ini_set('docref_root', $docrefRoot);
 ini_set('docref_ext', $docrefExt);
-ini_set('error_prepend_string', '<pre style="color: red">');
+ini_set('error_prepend_string', '<pre>');
 ini_set('error_append_string', '</pre>');
 ini_set('error_log', __DIR__ . '/../storage/logs/php_errors.log');
 ini_set('assert.active', 'On');
@@ -41,6 +43,8 @@ ini_set('assert.exception', 'On');
 ini_set('assert.warning', 'On');
 ini_set('assert.bail', 'Off');
 ini_set('assert.callback', '0');
+
+date_default_timezone_set('america/caracas');
 
 $container = Container::getInstance();
 
@@ -56,12 +60,17 @@ $container->singleton(ResponseFactoryInterface::class, HttpFactory::class);
 $container->singleton(
     LoggerInterface::class,
     static function (): LoggerInterface {
-        $formatter = new LineFormatter('[%datetime%] %level_name%: %message%');
+        $formatter = new LineFormatter('%level_name%: %message% %context% %extra%');
 
         return new Logger(
             '',
             [(new ErrorLogHandler())->setFormatter($formatter)],
-            [new PsrLogMessageProcessor()],
+            // @phpstan-ignore argument.type
+            [
+                new IntrospectionProcessor(),
+                new WebProcessor(),
+                new PsrLogMessageProcessor()
+            ],
         );
     },
 );

@@ -12,6 +12,7 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerInterface;
 
 use function App\sendResponse;
 
@@ -45,6 +46,10 @@ $notFoundHandler = new class(
         return $response;
     }
 };
+
+$logger = $container->get(LoggerInterface::class);
+$errorMiddleware = $container->get(ErrorMiddleware::class);
+$errorMiddleware->setLogger($logger);
 
 $queueRequestHandler = new QueueRequestHandler(
     $notFoundHandler,

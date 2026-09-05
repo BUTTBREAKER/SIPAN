@@ -11,10 +11,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use Throwable;
 
-final class ErrorMiddleware implements MiddlewareInterface
+use function App\getenv;
+
+final class ErrorMiddleware implements MiddlewareInterface, LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     public function __construct(private ResponseFactoryInterface $responseFactory)
     {
         //
@@ -27,8 +33,14 @@ final class ErrorMiddleware implements MiddlewareInterface
         try {
             return $handler->handle($request);
         } catch (Throwable $throwable) {
+            $this->logger?->debug('', ['exception' => $throwable]);
             $response = $this->responseFactory->createResponse(500);
-            $response->getBody()->write((string) $throwable);
+
+            if (getenv('app_env') === 'production') {
+                $response->getBody()->write($response->getReasonPhrase());
+            } else {
+                $response->getBody()->write("<pre>$throwable</pre>");
+            }
 
             return $response;
         }

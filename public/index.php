@@ -11,6 +11,7 @@ use App\Router;
 use flight\Container;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
 
 use function App\sendResponse;
 
@@ -32,9 +33,13 @@ $router = new Router(
     ...require __DIR__ . '/../routes/web.php',
 );
 
+$logger = $container->get(LoggerInterface::class);
+$errorMiddleware = $container->get(ErrorMiddleware::class);
+$errorMiddleware->setLogger($logger);
+
 $queueRequestHandler = new QueueRequestHandler(
     $container->get(NotFoundHandler::class),
-    $container->get(ErrorMiddleware::class),
+    $errorMiddleware,
     $container->get(SessionMiddleware::class),
     new RoutingMiddleware($router),
 );
