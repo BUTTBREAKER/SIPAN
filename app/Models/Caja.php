@@ -1,28 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Models\BaseModel;
-use PDO;
+use PDOException;
 
-class Caja extends BaseModel
+final class Caja extends BaseModel
 {
-    protected $table = 'cajas';
+    protected string $table = 'cajas';
 
     /**
      * Obtiene la caja activa para una sucursal
+     * @return false|array{
+     *   id: int,
+     *   id_sucursal: int,
+     *   id_usuario_apertura: int,
+     *   id_usuario_cierre: ?int,
+     *   monto_apertura: float,
+     *   monto_apertura_usd: float,
+     *   monto_apertura_bs: float,
+     *   monto_cierre: ?float,
+     *   monto_cierre_usd: ?float,
+     *   monto_cierre_bs: ?float,
+     *   monto_esperado: ?float,
+     *   monto_esperado_usd: ?float,
+     *   monto_esperado_bs: ?float,
+     *   estado: 'abierta'|'cerrada',
+     *   fecha_apertura: string,
+     *   fecha_cierre: ?string,
+     *   observaciones: ?string,
+     *   created_at: string,
+     *   updated_at: string,
+     * }
+     * @throws PDOException
      */
-    public function getActiva($id_sucursal)
+    public function getActiva(int $id_sucursal): false|array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
+        $sql = "SELECT * FROM $this->table WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
+
         return $this->db->fetchOne($sql, [$id_sucursal]);
     }
 
     /**
      * Abre una nueva caja con soporte multimoneda
+     * @throws PDOException
      */
-    public function abrir($id_sucursal, $id_usuario, $monto_usd, $monto_bs, $tasa)
-    {
+    public function abrir(
+        int $id_sucursal,
+        int $id_usuario,
+        float $monto_usd,
+        float $monto_bs,
+        float $tasa,
+    ): string|false {
         $total_usd = $monto_usd + ($monto_bs / $tasa);
 
         return $this->create([
@@ -38,16 +69,25 @@ class Caja extends BaseModel
 
     /**
      * Obtiene el resumen de una caja (totales de ingresos y egresos)
+     * @return array{
+     *   apertura: float,
+     *   ingresos: float,
+     *   egresos: float,
+     *   esperado: float,
+     * }
+     * @throws PDOException
      */
-    public function getResumen($id_caja)
+    public function getResumen(int $id_caja): array
     {
-        $sql = "SELECT 
-                    SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) as ingresos,
-                    SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) as egresos
-                FROM caja_movimientos 
-                WHERE id_caja = ?";
-        $res = $this->db->fetchOne($sql, [$id_caja]);
+        $sql = "
+            SELECT
+            SUM(CASE WHEN tipo = 'ingreso' THEN monto ELSE 0 END) ingresos,
+            SUM(CASE WHEN tipo = 'egreso' THEN monto ELSE 0 END) egresos
+            FROM caja_movimientos
+            WHERE id_caja = ?
+        ";
 
+        $res = $this->db->fetchOne($sql, [$id_caja]);
         $caja = $this->find($id_caja);
         $monto_apertura = $caja['monto_apertura'] ?? 0;
 
@@ -63,9 +103,16 @@ class Caja extends BaseModel
 
     /**
      * Cierra una caja con soporte multimoneda
+     * @throws PDOException
      */
-    public function cerrar($id_caja, $id_usuario, $monto_usd, $monto_bs, $tasa, $observaciones = '')
-    {
+    public function cerrar(
+        int $id_caja,
+        int $id_usuario,
+        float $monto_usd,
+        float $monto_bs,
+        float $tasa,
+        string $observaciones = '',
+    ): int {
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
 
@@ -77,45 +124,101 @@ class Caja extends BaseModel
             'monto_esperado' => $resumen['esperado'],
             'estado' => 'cerrada',
             'fecha_cierre' => date('Y-m-d H:i:s'),
-            'observaciones' => $observaciones
+            'observaciones' => $observaciones,
         ]);
     }
 
     /**
      * Registra un movimiento en la caja
+     * @param 'ingreso'|'egreso' $tipo
+     * @throws PDOException
      */
-    public function addMovimiento($id_caja, $tipo, $monto, $descripcion, $metodo_pago = 'efectivo', $id_venta = null)
-    {
-        $sql = "INSERT INTO caja_movimientos (id_caja, tipo, monto, descripcion, metodo_pago, id_venta, fecha) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+    public function addMovimiento(
+        int $id_caja,
+        string $tipo,
+        float $monto,
+        string $descripcion,
+        string $metodo_pago = 'efectivo',
+        ?int $id_venta = null,
+    ): int {
+        $sql = '
+            INSERT INTO caja_movimientos (id_caja, tipo, monto, descripcion, metodo_pago, id_venta, fecha)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ';
+
         return $this->db->execute($sql, [
-            $id_caja, $tipo, $monto, $descripcion, $metodo_pago, $id_venta, date('Y-m-d H:i:s')
+            $id_caja,
+            $tipo,
+            $monto,
+            $descripcion,
+            $metodo_pago,
+            $id_venta,
+            date('Y-m-d H:i:s'),
         ]);
     }
 
     /**
      * Obtiene todos los movimientos de una caja
+     * @return list<array{
+     *   id: int,
+     *   id_caja: int,
+     *   tipo: 'ingreso'|'egreso',
+     *   monto: float,
+     *   descripcion: string,
+     *   metodo_pago: ?string,
+     *   id_venta: ?int,
+     *   fecha: string,
+     * }>
+     * @throws PDOException
      */
-    public function getMovimientos($id_caja)
+    public function getMovimientos(int $id_caja): array
     {
-        $sql = "SELECT * FROM caja_movimientos WHERE id_caja = ? ORDER BY fecha DESC";
+        $sql = 'SELECT * FROM caja_movimientos WHERE id_caja = ? ORDER BY fecha DESC';
+
         return $this->db->fetchAll($sql, [$id_caja]);
     }
 
     /**
      * Obtiene el historial de cajas de una sucursal
+     * @return list<array{
+     *   id: int,
+     *   id_sucursal: int,
+     *   id_usuario_apertura: int,
+     *   id_usuario_cierre: ?int,
+     *   monto_apertura: float,
+     *   monto_apertura_usd: float,
+     *   monto_apertura_bs: float,
+     *   monto_cierre: ?float,
+     *   monto_cierre_usd: ?float,
+     *   monto_cierre_bs: ?float,
+     *   monto_esperado: ?float,
+     *   monto_esperado_usd: ?float,
+     *   monto_esperado_bs: ?float,
+     *   estado: 'abierta'|'cerrada',
+     *   fecha_apertura: string,
+     *   fecha_cierre: ?string,
+     *   observaciones: ?string,
+     *   created_at: string,
+     *   updated_at: string,
+     *   usuario_apertura: string,
+     *   usuario_cierre: string,
+     * }>
+     * @throws PDOException
      */
-    public function getHistorial($id_sucursal, $limit = 10)
+    public function getHistorial(int $id_sucursal, int $limit = 10): array
     {
-        $sql = "SELECT c.*, 
-                u1.primer_nombre as usuario_apertura, 
-                u2.primer_nombre as usuario_cierre 
-                FROM {$this->table} c
-                JOIN usuarios u1 ON c.id_usuario_apertura = u1.id
-                LEFT JOIN usuarios u2 ON c.id_usuario_cierre = u2.id
-                WHERE c.id_sucursal = ? 
-                ORDER BY c.fecha_apertura DESC 
-                LIMIT ?";
+        $sql = "
+            SELECT c.*,
+            u1.primer_nombre usuario_apertura,
+            u2.primer_nombre usuario_cierre
+            FROM $this->table c
+            JOIN usuarios u1 ON c.id_usuario_apertura = u1.id
+            LEFT JOIN usuarios u2 ON c.id_usuario_cierre = u2.id
+            WHERE c.id_sucursal = ?
+            ORDER BY c.fecha_apertura DESC
+            LIMIT ?
+        ";
+
         return $this->db->fetchAll($sql, [$id_sucursal, $limit]);
     }
 }
