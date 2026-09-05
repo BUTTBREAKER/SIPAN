@@ -10,13 +10,13 @@ use PDOStatement;
 
 use function App\getenv;
 
-class Database
+final class Database
 {
     private static ?self $instance = null;
     private PDO $connection;
 
     /** @throws PDOException */
-    private function __construct()
+    public function __construct()
     {
         // Use Environment helper to get config
         $driver = getenv('db_driver');

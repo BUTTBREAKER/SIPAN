@@ -6,7 +6,7 @@ namespace App;
 
 use InvalidArgumentException;
 
-class SIPAN
+final class SIPAN
 {
     public static function formatMoney(float $amount): string
     {

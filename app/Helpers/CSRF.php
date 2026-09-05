@@ -1,93 +1,101 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Helpers;
 
-/**
- * Helper para generar y validar tokens CSRF
- */
-class CSRF
-{
-    /**
-     * Generar un token CSRF
-     */
-    public static function generateToken()
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+use AssertionError;
+use Leaf\Http\Session;
 
+/** Helper para generar y validar tokens CSRF */
+final class CSRF
+{
+    /** Generar un token CSRF */
+    private static function generateToken(): string
+    {
         $token = bin2hex(random_bytes(32));
-        $_SESSION['csrf_token'] = $token;
-        $_SESSION['csrf_token_time'] = time();
+        Session::set('csrf_token', $token);
+        Session::set('csrf_token_time', time());
 
         return $token;
     }
 
     /**
      * Obtener el token CSRF actual
+     * @throws AssertionError
      */
-    public static function getToken()
+    public static function getToken(): string
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['csrf_token'])) {
+        if (!Session::has('csrf_token')) {
             return self::generateToken();
         }
 
         // Regenerar token si tiene más de 1 hora
-        if (isset($_SESSION['csrf_token_time']) && (time() - $_SESSION['csrf_token_time']) > 3600) {
+        if (self::tokenHasExpired()) {
             return self::generateToken();
         }
 
-        return $_SESSION['csrf_token'];
+        $token = Session::get('csrf_token');
+        assert(is_string($token), 'csrf_token debe ser una cadena');
+
+        return $token;
+    }
+
+    /** @throws AssertionError */
+    private static function tokenHasExpired(): bool
+    {
+        $tokenTime = Session::get('csrf_token_time');
+        assert(is_int($tokenTime), 'csrf_token_time debe ser un entero');
+
+        return Session::has('csrf_token_time') && (time() - $tokenTime > 3600);
     }
 
     /**
      * Validar token CSRF
+     * @throws AssertionError
      */
-    public static function validateToken($token)
+    public static function validateToken(string $token): bool
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['csrf_token'])) {
+        if (!Session::has('csrf_token')) {
             return false;
         }
 
         // Verificar si el token ha expirado (1 hora)
-        if (isset($_SESSION['csrf_token_time']) && (time() - $_SESSION['csrf_token_time']) > 3600) {
+        if (self::tokenHasExpired()) {
             return false;
         }
 
-        return hash_equals($_SESSION['csrf_token'], $token);
+        return hash_equals(self::getToken(), $token);
     }
 
     /**
      * Generar campo hidden HTML con token CSRF
+     * @throws AssertionError
      */
-    public static function field()
+    public static function field(): string
     {
         $token = self::getToken();
-        return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
+
+        return "<input type='hidden' name='csrf_token' value='$token'>";
     }
 
-    /**
-     * Obtener token desde request (POST o header)
-     */
-    public static function getTokenFromRequest()
+    /** Obtener token desde request (POST o header) */
+    private static function getTokenFromRequest(): ?string
     {
         // Intentar obtener desde POST
         if (isset($_POST['csrf_token'])) {
-            return $_POST['csrf_token'];
+            $token = $_POST['csrf_token'];
+
+            return is_string($token) ? $token : null;
         }
 
         // Intentar obtener desde header
         $headers = getallheaders();
-        if (isset($headers['X-CSRF-Token'])) {
-            return $headers['X-CSRF-Token'];
+
+        if (is_array($headers) && isset($headers['X-CSRF-Token'])) {
+            $token = $headers['X-CSRF-Token'];
+
+            return is_string($token) ? $token : null;
         }
 
         return null;
@@ -95,15 +103,12 @@ class CSRF
 
     /**
      * Validar request actual
+     * @throws AssertionError
      */
-    public static function validateRequest()
+    public static function validateRequest(): bool
     {
         $token = self::getTokenFromRequest();
 
-        if (!$token) {
-            return false;
-        }
-
-        return self::validateToken($token);
+        return $token ? self::validateToken($token) : false;
     }
 }
