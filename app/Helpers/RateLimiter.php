@@ -2,9 +2,7 @@
 
 namespace App\Helpers;
 
-/**
- * Helper para implementar rate limiting
- */
+/** Helper para implementar rate limiting */
 class RateLimiter
 {
     /**
@@ -15,20 +13,23 @@ class RateLimiter
      * @param int $windowSeconds Ventana de tiempo en segundos
      * @return bool True si se puede proceder, False si se excedió el límite
      */
-    public static function attempt($key, $maxAttempts = 5, $windowSeconds = 300)
+    public static function attempt(string $key, int $maxAttempts = 5, int $windowSeconds = 300): bool
     {
         $file = self::getFilePath($key);
         $attempts = self::getAttempts($file);
 
         // Limpiar intentos antiguos
         $now = time();
-        $attempts = array_filter($attempts, function ($timestamp) use ($now, $windowSeconds) {
-            return ($now - $timestamp) < $windowSeconds;
-        });
+
+        $attempts = array_filter(
+            $attempts,
+            static fn(int $timestamp): bool => ($now - $timestamp) < $windowSeconds,
+        );
 
         // Verificar si se excedió el límite
         if (count($attempts) >= $maxAttempts) {
             self::saveAttempts($file, $attempts);
+
             return false;
         }
 
@@ -39,38 +40,25 @@ class RateLimiter
         return true;
     }
 
-    /**
-     * Registrar un intento
-     */
-    public static function hit($key)
-    {
-        $file = self::getFilePath($key);
-        $attempts = self::getAttempts($file);
-        $attempts[] = time();
-        self::saveAttempts($file, $attempts);
-    }
-
-    /**
-     * Obtener número de intentos restantes
-     */
-    public static function remaining($key, $maxAttempts = 5, $windowSeconds = 300)
+    /** Obtener número de intentos restantes */
+    public static function remaining(string $key, int $maxAttempts = 5, int $windowSeconds = 300): int
     {
         $file = self::getFilePath($key);
         $attempts = self::getAttempts($file);
 
         // Limpiar intentos antiguos
         $now = time();
-        $attempts = array_filter($attempts, function ($timestamp) use ($now, $windowSeconds) {
-            return ($now - $timestamp) < $windowSeconds;
-        });
+
+        $attempts = array_filter(
+            $attempts,
+            static fn(int $timestamp): bool => ($now - $timestamp) < $windowSeconds,
+        );
 
         return max(0, $maxAttempts - count($attempts));
     }
 
-    /**
-     * Obtener tiempo en segundos hasta que se resetee el límite
-     */
-    public static function availableIn($key, $windowSeconds = 300)
+    /** Obtener tiempo en segundos hasta que se resetee el límite */
+    public static function availableIn(string $key, int $windowSeconds = 300): int
     {
         $file = self::getFilePath($key);
         $attempts = self::getAttempts($file);
@@ -81,28 +69,24 @@ class RateLimiter
 
         $now = time();
         $oldestAttempt = min($attempts);
-
         $timeElapsed = $now - $oldestAttempt;
         $timeRemaining = max(0, $windowSeconds - $timeElapsed);
 
         return $timeRemaining;
     }
 
-    /**
-     * Limpiar todos los intentos de una clave
-     */
-    public static function clear($key)
+    /** Limpiar todos los intentos de una clave */
+    public static function clear(string $key): void
     {
         $file = self::getFilePath($key);
+
         if (file_exists($file)) {
             unlink($file);
         }
     }
 
-    /**
-     * Obtener ruta del archivo de rate limit
-     */
-    private static function getFilePath($key)
+    /** Obtener ruta del archivo de rate limit */
+    private static function getFilePath(string $key): string
     {
         $dir = dirname(__DIR__, 2) . '/storage/logs/rate-limits';
 
@@ -111,28 +95,31 @@ class RateLimiter
         }
 
         $hash = md5($key);
-        return $dir . '/' . $hash . '.json';
+
+        return "$dir/$hash.json";
     }
 
     /**
      * Obtener intentos desde archivo
+     * @return list<int>
      */
-    private static function getAttempts($file)
+    private static function getAttempts(string $file): array
     {
         if (!file_exists($file)) {
             return [];
         }
 
         $content = file_get_contents($file);
-        $data = json_decode($content, true);
+        $data = json_decode($content ?: '', true);
 
         return is_array($data) ? $data : [];
     }
 
     /**
      * Guardar intentos en archivo
+     * @param list<int> $attempts
      */
-    private static function saveAttempts($file, $attempts)
+    private static function saveAttempts(string $file, array $attempts): void
     {
         file_put_contents($file, json_encode(array_values($attempts)));
     }
