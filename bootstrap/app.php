@@ -8,7 +8,6 @@ use GuzzleHttp\Psr7\ServerRequest;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
-use Monolog\Processor\IntrospectionProcessor;
 use Monolog\Processor\PsrLogMessageProcessor;
 use Monolog\Processor\WebProcessor;
 use Psr\Container\ContainerInterface;
@@ -60,14 +59,13 @@ $container->singleton(ResponseFactoryInterface::class, HttpFactory::class);
 $container->singleton(
     LoggerInterface::class,
     static function (): LoggerInterface {
-        $formatter = new LineFormatter('%level_name%: %message% %context% %extra%');
+        $formatter = new LineFormatter("%level_name%: %message%\n\t%context%\n\t%extra%");
 
         return new Logger(
             '',
             [(new ErrorLogHandler())->setFormatter($formatter)],
             // @phpstan-ignore argument.type
             [
-                new IntrospectionProcessor(),
                 new WebProcessor(),
                 new PsrLogMessageProcessor()
             ],
