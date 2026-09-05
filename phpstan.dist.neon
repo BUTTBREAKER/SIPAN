@@ -8,7 +8,6 @@ parameters:
     level: max
     paths:
         - app
-        - config
         - delivery
         - public
         - routes
