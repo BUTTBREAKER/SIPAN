@@ -1,112 +1,148 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Core\Database;
+use PDOException;
 
-class BaseModel
+abstract class BaseModel
 {
-    protected $db;
-    protected $table;
-    protected static $columnCache = [];
+    protected Database $db;
+    protected string $table;
+
+    /** @var array<string, list<string>> */
+    protected static array $columnCache = [];
 
     public function __construct()
     {
         $this->db = Database::getInstance();
     }
 
-    public function all($sucursal_id = null)
+    /**
+     * @return list<array<string, null|scalar|resource>>
+     * @throws PDOException
+     */
+    public function all(?int $sucursal_id = null): array
     {
-        $sql = "SELECT * FROM {$this->table}";
+        $sql = "SELECT * FROM $this->table";
         $params = [];
 
         if ($sucursal_id !== null && $this->hasColumn('id_sucursal')) {
-            $sql .= " WHERE id_sucursal = ?";
+            $sql .= ' WHERE id_sucursal = ?';
             $params[] = $sucursal_id;
         }
 
-        $sql .= " ORDER BY id DESC";
+        $sql .= ' ORDER BY id DESC';
 
         return $this->db->fetchAll($sql, $params);
     }
 
-    public function find($id)
+    /**
+     * @return false|array<string, null|scalar|resource>
+     * @throws PDOException
+     */
+    public function find(int $id): false|array
     {
-        $sql = "SELECT * FROM {$this->table} WHERE id = ?";
+        $sql = "SELECT * FROM $this->table WHERE id = ?";
+
         return $this->db->fetchOne($sql, [$id]);
     }
 
-    public function create($data)
+    /**
+     * @param array<string, null|scalar> $data
+     * @throws PDOException
+     */
+    public function create(array $data): string|false
     {
         $columns = array_keys($data);
         $placeholders = array_fill(0, count($columns), '?');
 
-        $sql = "INSERT INTO {$this->table} (" . implode(', ', $columns) . ") 
-                VALUES (" . implode(', ', $placeholders) . ")";
+        $sql = "
+            INSERT INTO $this->table (" . implode(', ', $columns) . ")
+            VALUES (" . implode(', ', $placeholders) . ")
+        ";
 
         $this->db->execute($sql, array_values($data));
+
         return $this->db->lastInsertId();
     }
 
-    public function update($id, $data)
+    /**
+     * @param array<string, null|scalar> $data
+     * @throws PDOException
+     */
+    public function update(int $id, array $data): int
     {
         $columns = array_keys($data);
         $set = implode(' = ?, ', $columns) . ' = ?';
-
-        $sql = "UPDATE {$this->table} SET {$set} WHERE id = ?";
-
+        $sql = "UPDATE $this->table SET $set WHERE id = ?";
         $params = array_values($data);
         $params[] = $id;
 
         return $this->db->execute($sql, $params);
     }
 
-    public function delete($id)
+    /** @throws PDOException */
+    public function delete(int $id): int
     {
-        $sql = "DELETE FROM {$this->table} WHERE id = ?";
+        $sql = "DELETE FROM $this->table WHERE id = ?";
+
         return $this->db->execute($sql, [$id]);
     }
 
-    public function paginate($page = 1, $perPage = 20, $sucursal_id = null)
+    /**
+     * @return list<array<string, null|scalar|resource>>
+     * @throws PDOException
+     */
+    public function paginate(int $page = 1, int $perPage = 20, ?string $sucursal_id = null): array
     {
         $offset = ($page - 1) * $perPage;
-
-        $sql = "SELECT * FROM {$this->table}";
+        $sql = "SELECT * FROM $this->table";
         $params = [];
 
         if ($sucursal_id !== null && $this->hasColumn('id_sucursal')) {
-            $sql .= " WHERE id_sucursal = ?";
+            $sql .= ' WHERE id_sucursal = ?';
             $params[] = $sucursal_id;
         }
 
-        $sql .= " ORDER BY id DESC LIMIT " . (int)$perPage . " OFFSET " . (int)$offset;
+        $sql .= " ORDER BY id DESC LIMIT $perPage OFFSET $offset";
 
         return $this->db->fetchAll($sql, $params);
     }
 
-    public function count($sucursal_id = null)
+    /** @throws PDOException */
+    public function count(?int $sucursal_id = null): int
     {
-        $sql = "SELECT COUNT(*) as total FROM {$this->table}";
+        $sql = "SELECT COUNT(*) as total FROM $this->table";
         $params = [];
 
         if ($sucursal_id !== null && $this->hasColumn('id_sucursal')) {
-            $sql .= " WHERE id_sucursal = ?";
+            $sql .= ' WHERE id_sucursal = ?';
             $params[] = $sucursal_id;
         }
 
         $result = $this->db->fetchOne($sql, $params);
-        return $result['total'] ?? 0;
+
+        if (!$result) {
+            return 0;
+        }
+
+        return isset($result['total']) && is_int($result['total']) ? $result['total'] : 0;
     }
 
     /**
      * Verifica si una columna existe en la tabla del modelo.
      * Optimización Bolt: Cachea las columnas de la tabla para evitar consultas redundantes.
+     * @throws PDOException
      */
-    protected function hasColumn($column)
+    protected function hasColumn(string $column): bool
     {
         if (!isset(self::$columnCache[$this->table])) {
-            $sql = "SHOW COLUMNS FROM {$this->table}";
+            $sql = "SHOW COLUMNS FROM $this->table";
             $result = $this->db->fetchAll($sql);
+
             // Normalizar a minúsculas para coincidencia insensible a mayúsculas/minúsculas
             self::$columnCache[$this->table] = array_map('strtolower', array_column($result, 'Field'));
         }
