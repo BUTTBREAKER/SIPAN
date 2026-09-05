@@ -6,9 +6,13 @@ use App\Models\Produccion;
 use App\Models\Producto;
 use App\Models\Negocio;
 use App\Middlewares\AuthMiddleware;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-class ProduccionesController
+class ProduccionesController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private $produccionModel;
     private $productoModel;
     private $negocioModel;
@@ -74,9 +78,9 @@ class ProduccionesController
         $insumos = json_decode($_POST['insumos'] ?? '[]', true);
 
     // LOG PARA DEBUG
-        error_log('=== DEBUG PRODUCCIÓN ===');
-        error_log('Datos producción: ' . print_r($produccion_data, true));
-        error_log('Insumos recibidos: ' . print_r($insumos, true));
+        $this->logger?->debug('=== DEBUG PRODUCCIÓN ===');
+        $this->logger?->debug('Datos producción: {data}', ['data' => print_r($produccion_data, true)]);
+        $this->logger?->debug('Insumos recibidos: {insumos}', ['insumos' => print_r($insumos, true)]);
 
         try {
             if (empty($insumos)) {
@@ -89,8 +93,8 @@ class ProduccionesController
 
             echo json_encode(['success' => true, 'message' => 'Producción registrada correctamente', 'id' => $produccion_id]);
         } catch (\Exception $e) {
-            error_log('Error en producción: ' . $e->getMessage());
-            error_log('Stack trace: ' . $e->getTraceAsString());
+            $this->logger?->error('Producción: {message}', ['message' => $e->getMessage()]);
+            $this->logger?->error('Stack trace: {trace}', ['trace' => $e->getTraceAsString()]);
             echo json_encode(['success' => false, 'message' => 'Error al registrar producción: ' . $e->getMessage()]);
         }
         exit;

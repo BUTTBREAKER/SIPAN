@@ -2,8 +2,13 @@
 
 namespace App\Models;
 
-class Configuracion extends BaseModel
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
+
+class Configuracion extends BaseModel implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     protected $table = 'configuracion';
 
     /**
@@ -159,10 +164,13 @@ class Configuracion extends BaseModel
                     }
                 }
             } else {
-                error_log("BCV API Error: HTTP $httpCode - $error");
+                $this->logger?->error('BCV API Error: HTTP {code} - {error}', [
+                    'code' => $httpCode,
+                    'error' => $error,
+                ]);
             }
         } catch (\Exception $e) {
-            error_log("BCV API Exception: " . $e->getMessage());
+            $this->logger?->error('BCV API Exception: {message}', ['message' => $e->getMessage()]);
         }
         return null;
     }

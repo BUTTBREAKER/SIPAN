@@ -6,9 +6,13 @@ use App\Models\Venta;
 use App\Models\Negocio;
 use App\Models\Cliente;
 use App\Middlewares\AuthMiddleware;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-class VentasController
+class VentasController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private $ventaModel;
     private $negocioModel;
     private $clienteModel;
@@ -89,19 +93,19 @@ class VentasController
             }
 
             // Log para debug
-            error_log("=== INICIO PROCESO VENTA ===");
-            error_log("POST count: " . count($_POST));
-            error_log("POST raw: " . print_r($_POST, true));
+            $this->logger?->debug('=== INICIO PROCESO VENTA ===');
+            $this->logger?->debug('POST count: {count}', ['count' => count($_POST)]);
+            $this->logger?->debug('POST raw: {post}', ['post' => print_r($_POST, true)]);
 
             // Validaciones
             if (empty($productos)) {
-                error_log("Error: Sin productos");
+                $this->logger?->error('Sin productos');
                 echo json_encode(['success' => false, 'message' => 'Debe agregar al menos un producto']);
                 exit;
             }
 
             $pagos = json_decode($_POST['pagos'] ?? '[]', true);
-            error_log("Pagos decoding: " . print_r($pagos, true));
+            $this->logger?->debug('Pagos decoding: {payments}', ['payments' => print_r($pagos, true)]);
 
             // Si vienen pagos, validar que sumen el total
             $totalPagado = 0;
@@ -109,19 +113,26 @@ class VentasController
                 foreach ($pagos as $p) {
                     $totalPagado += (float)$p['monto'];
                 }
-                error_log("Total pagado calc: $totalPagado vs Total req: $total");
+                $this->logger?->debug("Total pagado calc: {paid_total} vs Total req: {required_total}", [
+                    'paid_total' => $totalPagado,
+                    'required_total' => $total,
+                ]);
 
                 // Permitir pequeña diferencia por redondeo
                 if (abs($total - $totalPagado) > 0.05) {
-                    error_log("Error: Diferencia montos. Total: $total, Pagado: $totalPagado");
+                    $this->logger?->error('Diferencia montos. Total: {total}, Pagado: {paid}', [
+                        'total' => $total,
+                        'paid' => $totalPagado,
+                    ]);
+
                     echo json_encode(['success' => false, 'message' => 'El total de los pagos no coincide con el total de la venta']);
                     exit;
                 }
                 $metodo_pago = 'mixto';
-                error_log("Metodo set to 'mixto'");
+                $this->logger?->debug('Metodo set to "mixto"');
             } else {
                 if (empty($metodo_pago)) {
-                    error_log("Error: Metodo pago vacio");
+                    $this->logger?->error('Metodo pago vacio');
                     echo json_encode(['success' => false, 'message' => 'Debe seleccionar un método de pago']);
                     exit;
                 }
@@ -162,7 +173,7 @@ class VentasController
                 'venta_id' => $venta_id
             ]);
         } catch (\Exception $e) {
-            error_log("Error en venta: " . $e->getMessage());
+            $this->logger?->error('Venta: {message}', ['message' => $e->getMessage()]);
             echo json_encode([
                 'success' => false,
                 'message' => 'Error al registrar venta: ' . $e->getMessage()

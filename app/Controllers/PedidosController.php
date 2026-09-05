@@ -6,9 +6,13 @@ use App\Models\Pedido;
 use App\Models\Cliente;
 use App\Models\Producto;
 use App\Middlewares\AuthMiddleware;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
-class PedidosController
+class PedidosController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private $pedidoModel;
     private $clienteModel;
     private $productoModel;
@@ -165,10 +169,14 @@ class PedidosController
         }
 
         // Log inicial
-        error_log("=== REGISTRAR PAGO INICIADO ===");
-        error_log("Método HTTP: " . $_SERVER['REQUEST_METHOD']);
-        error_log("Content-Type recibido: " . ($_SERVER['CONTENT_TYPE'] ?? 'no definido'));
-        error_log("POST data: " . print_r($_POST, true));
+        $this->logger?->debug('=== REGISTRAR PAGO INICIADO ===');
+        $this->logger?->debug('Método HTTP: {method}', ['method' => $_SERVER['REQUEST_METHOD']]);
+
+        $this->logger?->debug('Content-Type recibido: {content_type}', [
+            'content_type' => $_SERVER['CONTENT_TYPE'] ?? 'no definido'
+        ]);
+
+        $this->logger?->debug('POST data: {data}', ['data' => print_r($_POST, true)]);
 
         try {
             AuthMiddleware::checkRole(['administrador', 'cajero', 'empleado']);
@@ -176,12 +184,12 @@ class PedidosController
             $user = AuthMiddleware::getUser();
 
             if (!$user) {
-                error_log("ERROR: Usuario no autenticado");
+                $this->logger?->error('Usuario no autenticado');
                 echo json_encode(['success' => false, 'message' => 'Usuario no autenticado']);
                 exit;
             }
 
-            error_log("Usuario autenticado: ID=" . $user['id']);
+            $this->logger?->info('Usuario autenticado: ID={id}', ['id' => $user['id']]);
 
             $pedido_id = $_POST['pedido_id'] ?? 0;
             $monto = (float) ($_POST['monto'] ?? 0);
@@ -189,13 +197,13 @@ class PedidosController
             $referencia = $_POST['referencia'] ?? null;
             $observaciones = $_POST['observaciones'] ?? null;
 
-            error_log("Parámetros procesados:");
-            error_log("- pedido_id: $pedido_id");
-            error_log("- monto: $monto");
-            error_log("- metodo_pago: $metodo_pago");
+            $this->logger?->debug('Parámetros procesados:');
+            $this->logger?->debug('- pedido_id: {id}', ['id' => $pedido_id]);
+            $this->logger?->debug('- monto: {amount}', ['amount' => $monto]);
+            $this->logger?->debug('- metodo_pago: {method}', ['method' => $metodo_pago]);
 
             if (!$pedido_id || $monto <= 0) {
-                error_log("ERROR: Validación fallida - pedido_id o monto inválidos");
+                $this->logger?->error('Validación fallida - pedido_id o monto inválidos');
                 echo json_encode([
                     'success' => false,
                     'message' => 'Datos incompletos o inválidos',
@@ -208,29 +216,32 @@ class PedidosController
             }
 
             // Registrar el pago
-            error_log("Llamando a registrarPago del modelo...");
+            $this->logger?->debug('Llamando a registrarPago del modelo...');
             $this->pedidoModel->registrarPago($pedido_id, $monto, $metodo_pago, $user['id'], $referencia, $observaciones);
-            error_log("✓ Pago registrado en BD");
+            $this->logger?->debug('✓ Pago registrado en BD');
 
             // Actualizar el pedido
-            error_log("Buscando pedido...");
+            $this->logger?->debug('Buscando pedido...');
             $pedido = $this->pedidoModel->find($pedido_id);
 
             if (!$pedido) {
-                error_log("ERROR: Pedido no encontrado después de registrar pago");
+                $this->logger?->error('Pedido no encontrado después de registrar pago');
                 throw new \Exception('Pedido no encontrado');
             }
 
-            error_log("Pedido encontrado. Total: {$pedido['total']}, Pagado: {$pedido['monto_pagado']}");
+            $this->logger?->debug('Pedido encontrado. Total: {total}, Pagado: {paid}', [
+                'total' => $pedido['total'],
+                'paid' => $pedido['monto_pagado'],
+            ]);
 
             $new_monto_pagado = $pedido['monto_pagado'] + $monto;
             $new_monto_deuda = $pedido['total'] - $new_monto_pagado;
             $new_estado_pago = ($new_monto_deuda <= 0) ? 'pagado' : ($new_monto_pagado > 0 ? 'abonado' : 'pendiente');
 
-            error_log("Nuevos valores calculados:");
-            error_log("- new_monto_pagado: $new_monto_pagado");
-            error_log("- new_monto_deuda: $new_monto_deuda");
-            error_log("- new_estado_pago: $new_estado_pago");
+            $this->logger?->debug('Nuevos valores calculados:');
+            $this->logger?->debug('- new_monto_pagado: {new_paid_amount}', ['new_paid_amount' => $new_monto_pagado]);
+            $this->logger?->debug('- new_monto_deuda: {new_due_amount}', ['new_due_amount' => $new_monto_deuda]);
+            $this->logger?->debug('- new_estado_pago: {new_paid_status}', ['new_paid_status' => $new_estado_pago]);
 
             $update_data = [
                 'monto_pagado' => $new_monto_pagado,
@@ -238,11 +249,10 @@ class PedidosController
                 'estado_pago' => $new_estado_pago
             ];
 
-            error_log("Actualizando pedido...");
+            $this->logger?->debug('Actualizando pedido...');
             $this->pedidoModel->update($pedido_id, $update_data);
-            error_log("✓ Pedido actualizado");
-
-            error_log("=== PAGO REGISTRADO EXITOSAMENTE ===");
+            $this->logger?->debug('✓ Pedido actualizado');
+            $this->logger?->debug('=== PAGO REGISTRADO EXITOSAMENTE ===');
 
             echo json_encode([
                 'success' => true,
@@ -254,11 +264,11 @@ class PedidosController
                 ]
             ]);
         } catch (\Exception $e) {
-            error_log("=== ERROR EXCEPTION ===");
-            error_log("Mensaje: " . $e->getMessage());
-            error_log("Archivo: " . $e->getFile());
-            error_log("Línea: " . $e->getLine());
-            error_log("Trace: " . $e->getTraceAsString());
+            $this->logger?->error('=== ERROR EXCEPTION ===');
+            $this->logger?->error('Mensaje: {message}', ['message' => $e->getMessage()]);
+            $this->logger?->error('Archivo: {file}', ['file' => $e->getFile()]);
+            $this->logger?->error('Línea: {line}', ['line' => $e->getLine()]);
+            $this->logger?->error('Trace: {trace}', ['trace' => $e->getTraceAsString()]);
 
             echo json_encode([
                 'success' => false,

@@ -5,11 +5,15 @@ namespace App\Controllers;
 use App\Models\Usuario;
 use App\Models\Sucursal;
 use App\Middlewares\AuthMiddleware;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 
 use function App\getenv;
 
-class AuthController
+class AuthController implements LoggerAwareInterface
 {
+    use LoggerAwareTrait;
+
     private $usuarioModel;
     private $sucursalModel;
 
@@ -232,7 +236,7 @@ class AuthController
                 'usuario_id' => $usuario_id
             ]);
         } catch (\Exception $e) {
-            error_log("REGISTER ERROR: " . $e->getMessage());
+            $this->logger?->error('REGISTER', ['exception' => $e]);
 
             echo json_encode([
                 'success' => false,
