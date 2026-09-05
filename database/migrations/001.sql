@@ -446,7 +446,7 @@ CREATE TABLE IF NOT EXISTS auditoria (
     id_usuario INT NOT NULL,
     id_sucursal INT DEFAULT NULL,
     tabla VARCHAR(50) NOT NULL,
-    accion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    accion ENUM('INSERT', 'UPDATE', 'DELETE', 'UNDO') NOT NULL,
     registro_id INT NOT NULL,
     datos_anteriores JSON DEFAULT NULL,
     datos_nuevos JSON DEFAULT NULL,

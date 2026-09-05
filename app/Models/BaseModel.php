@@ -15,7 +15,7 @@ abstract class BaseModel
     /** @var array<string, list<string>> */
     protected static array $columnCache = [];
 
-    public function __construct()
+    final public function __construct()
     {
         $this->db = Database::getInstance();
     }
@@ -24,7 +24,7 @@ abstract class BaseModel
      * @return list<array<string, null|scalar|resource>>
      * @throws PDOException
      */
-    public function all(?int $sucursal_id = null): array
+    final public function all(?int $sucursal_id = null): array
     {
         $sql = "SELECT * FROM $this->table";
         $params = [];
@@ -43,7 +43,7 @@ abstract class BaseModel
      * @return false|array<string, null|scalar|resource>
      * @throws PDOException
      */
-    public function find(int $id): false|array
+    final public function find(int $id): false|array
     {
         $sql = "SELECT * FROM $this->table WHERE id = ?";
 
@@ -54,7 +54,7 @@ abstract class BaseModel
      * @param array<string, null|scalar> $data
      * @throws PDOException
      */
-    public function create(array $data): string|false
+    final public function create(array $data): string|false
     {
         $columns = array_keys($data);
         $placeholders = array_fill(0, count($columns), '?');
@@ -73,7 +73,7 @@ abstract class BaseModel
      * @param array<string, null|scalar> $data
      * @throws PDOException
      */
-    public function update(int $id, array $data): int
+    final public function update(int $id, array $data): int
     {
         $columns = array_keys($data);
         $set = implode(' = ?, ', $columns) . ' = ?';
@@ -85,7 +85,7 @@ abstract class BaseModel
     }
 
     /** @throws PDOException */
-    public function delete(int $id): int
+    final public function delete(int $id): int
     {
         $sql = "DELETE FROM $this->table WHERE id = ?";
 
@@ -93,51 +93,11 @@ abstract class BaseModel
     }
 
     /**
-     * @return list<array<string, null|scalar|resource>>
-     * @throws PDOException
-     */
-    public function paginate(int $page = 1, int $perPage = 20, ?string $sucursal_id = null): array
-    {
-        $offset = ($page - 1) * $perPage;
-        $sql = "SELECT * FROM $this->table";
-        $params = [];
-
-        if ($sucursal_id !== null && $this->hasColumn('id_sucursal')) {
-            $sql .= ' WHERE id_sucursal = ?';
-            $params[] = $sucursal_id;
-        }
-
-        $sql .= " ORDER BY id DESC LIMIT $perPage OFFSET $offset";
-
-        return $this->db->fetchAll($sql, $params);
-    }
-
-    /** @throws PDOException */
-    public function count(?int $sucursal_id = null): int
-    {
-        $sql = "SELECT COUNT(*) as total FROM $this->table";
-        $params = [];
-
-        if ($sucursal_id !== null && $this->hasColumn('id_sucursal')) {
-            $sql .= ' WHERE id_sucursal = ?';
-            $params[] = $sucursal_id;
-        }
-
-        $result = $this->db->fetchOne($sql, $params);
-
-        if (!$result) {
-            return 0;
-        }
-
-        return isset($result['total']) && is_int($result['total']) ? $result['total'] : 0;
-    }
-
-    /**
      * Verifica si una columna existe en la tabla del modelo.
      * Optimización Bolt: Cachea las columnas de la tabla para evitar consultas redundantes.
      * @throws PDOException
      */
-    protected function hasColumn(string $column): bool
+    private function hasColumn(string $column): bool
     {
         if (!isset(self::$columnCache[$this->table])) {
             $sql = "SHOW COLUMNS FROM $this->table";
