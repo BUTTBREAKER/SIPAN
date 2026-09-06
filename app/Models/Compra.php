@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Compra extends BaseModel
 {
-    protected $table = 'compras';
+    protected string $table = 'compras';
 
     public function createWithDetails($compraData, $detalles)
     {

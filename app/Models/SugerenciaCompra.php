@@ -4,7 +4,7 @@ namespace App\Models;
 
 class SugerenciaCompra extends BaseModel
 {
-    protected $table = 'sugerencias_compra';
+    protected string $table = 'sugerencias_compra';
 
     public function generar($sucursal_id)
     {

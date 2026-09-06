@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Receta extends BaseModel
 {
-    protected $table = 'recetas';
+    protected string $table = 'recetas';
 
     /**
      * Crea una receta y sus insumos en una transacción.

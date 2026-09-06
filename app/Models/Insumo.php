@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Insumo extends BaseModel
 {
-    protected $table = 'insumos';
+    protected string $table = 'insumos';
 
     // ✅ Nuevo método compatible con el controlador
     public function getAllBySucursal($sucursal_id)

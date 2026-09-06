@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Producto extends BaseModel
 {
-    protected $table = 'productos';
+    protected string $table = 'productos';
 
     public function getAllBySucursal($sucursal_id)
     {

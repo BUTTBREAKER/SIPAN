@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Pedido extends BaseModel
 {
-    protected $table = 'pedidos';
+    protected string $table = 'pedidos';
 
     public function createWithProducts($pedido_data, $productos)
     {

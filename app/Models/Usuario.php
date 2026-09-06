@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Override;
+
 class Usuario extends BaseModel
 {
-    protected $table = 'usuarios';
+    protected string $table = 'usuarios';
 
     public function findByEmail($correo)
     {
@@ -99,7 +101,8 @@ class Usuario extends BaseModel
         return $this->update($id, $data);
     }
 
-    public function find($id)
+    #[Override]
+    public function find(int $id): false|array
     {
         $sql = "SELECT *,
             CONCAT_WS(' ', primer_nombre, segundo_nombre, apellido_paterno, apellido_materno) as nombre

@@ -43,7 +43,7 @@ abstract class BaseModel
      * @return false|array<string, null|scalar|resource>
      * @throws PDOException
      */
-    final public function find(int $id): false|array
+    public function find(int $id): false|array
     {
         $sql = "SELECT * FROM $this->table WHERE id = ?";
 

@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Lote extends BaseModel
 {
-    protected $table = 'lotes';
+    protected string $table = 'lotes';
 
     /**
      * Registrar un nuevo lote

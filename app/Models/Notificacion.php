@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Notificacion extends BaseModel
 {
-    protected $table = 'notificaciones';
+    protected string $table = 'notificaciones';
 
     public function crear($sucursal_id, $tipo, $titulo, $mensaje, $referencia_tipo = null, $referencia_id = null, $usuario_id = null)
     {

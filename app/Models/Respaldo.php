@@ -6,7 +6,7 @@ use function App\getenv;
 
 class Respaldo extends BaseModel
 {
-    protected $table = 'respaldos';
+    protected string $table = 'respaldos';
 
     public function crear($usuario_id, $nombre_archivo, $ruta_archivo, $tamano)
     {

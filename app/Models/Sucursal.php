@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Sucursal extends BaseModel
 {
-    protected $table = 'sucursales';
+    protected string $table = 'sucursales';
 
     /**
      * Obtener todas las sucursales de un negocio

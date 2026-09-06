@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Venta extends BaseModel
 {
-    protected $table = 'ventas';
+    protected string $table = 'ventas';
 
     public function createWithProducts($venta_data, $productos, $pagos = [])
     {

@@ -9,7 +9,7 @@ class Configuracion extends BaseModel implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    protected $table = 'configuracion';
+    protected string $table = 'configuracion';
 
     /**
      * Request-level in-memory cache to avoid redundant DB queries.

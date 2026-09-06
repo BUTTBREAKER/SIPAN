@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Produccion extends BaseModel
 {
-    protected $table = 'producciones';
+    protected string $table = 'producciones';
 
     public function createWithInsumos($produccion_data, $insumos)
     {

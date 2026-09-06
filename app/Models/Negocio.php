@@ -4,7 +4,7 @@ namespace App\Models;
 
 class Negocio extends BaseModel
 {
-    protected $table = 'negocios';
+    protected string $table = 'negocios';
 
     public function getBySucursal($sucursal_id)
     {
