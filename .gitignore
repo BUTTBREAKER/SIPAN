@@ -12,3 +12,6 @@
 
 # IDEs
 *.sublime-*
+
+# PHPUnit
+.phpunit.result.cache

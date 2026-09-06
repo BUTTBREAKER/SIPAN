@@ -7,7 +7,7 @@ namespace App;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
-function getenv(string $name): null|int|float|bool|string
+function getenv(string $name): null|int|float|string|bool
 {
     if (!key_exists($name, $_ENV)) {
         $dotenv = new Dotenv();

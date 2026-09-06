@@ -16,4 +16,8 @@
     <rule ref="PSR12">
         <exclude name="PSR12.Classes.AnonClassDeclaration.SpaceAfterKeyword" />
     </rule>
+
+    <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+        <exclude-pattern>tests</exclude-pattern>
+    </rule>
 </ruleset>
