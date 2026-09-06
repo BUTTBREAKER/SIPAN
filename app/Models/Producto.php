@@ -18,7 +18,7 @@ class Producto extends BaseModel
      * y se implementó el filtrado por sucursal a nivel de base de datos.
      * Esto evita cargar el catálogo global de productos en cada sucursal (O(N) -> O(N/S)).
      */
-    public function all($sucursal_id = null)
+    public function all(?int $sucursal_id = null): array
     {
         $sql = "SELECT * FROM {$this->table}";
         $params = [];

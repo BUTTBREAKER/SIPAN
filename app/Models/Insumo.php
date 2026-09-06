@@ -27,7 +27,7 @@ class Insumo extends BaseModel
     }
 
     // ✅ Método general (sin sucursal)
-    public function all($sucursal_id = null)
+    public function all(?int $sucursal_id = null): array
     {
         if ($sucursal_id) {
             return $this->getAllBySucursal($sucursal_id);

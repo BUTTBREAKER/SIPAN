@@ -215,8 +215,9 @@ final class ChatMensaje extends BaseModel
         ";
 
         $result = $this->db->fetchOne($sql, [$userId, $userId]);
+        $total = $result['total'] ?? 0;
 
-        return $result['total'] ?? 0;
+        return intval($total);
     }
 
     /**

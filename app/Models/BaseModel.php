@@ -24,7 +24,7 @@ abstract class BaseModel
      * @return list<array<string, null|scalar|resource>>
      * @throws PDOException
      */
-    final public function all(?int $sucursal_id = null): array
+    public function all(?int $sucursal_id = null): array
     {
         $sql = "SELECT * FROM $this->table";
         $params = [];
