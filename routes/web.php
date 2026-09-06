@@ -423,18 +423,6 @@ return [
     ),
     new Route(
         'GET',
-        '/reportes/vencimientos',
-        $redirectToLoginIfUserIsNotLogged,
-        [ReportesController::class, 'vencimientos'],
-    ),
-    new Route(
-        'GET',
-        '/reportes/compras',
-        $redirectToLoginIfUserIsNotLogged,
-        [ReportesController::class, 'compras'],
-    ),
-    new Route(
-        'GET',
         '/reportes/insumos',
         $redirectToLoginIfUserIsNotLogged,
         [ReportesController::class, 'insumos'],
