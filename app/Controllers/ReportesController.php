@@ -924,7 +924,7 @@ class ReportesController
                             $dias_restantes = ceil(($fecha_venc - $hoy) / 86400);
                             $clase = $dias_restantes <= 0 ? 'text-danger' : ($dias_restantes <= 15 ? 'text-warning' : 'text-success');
                             $estado = $dias_restantes <= 0 ? 'Vencido' : ($dias_restantes <= 15 ? 'Crítico' : 'Ok');
-                        ?>
+                            ?>
                             <tr>
                                 <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
                                 <td><?= htmlspecialchars($l['nombre_item'] ?? '-') ?></td>
