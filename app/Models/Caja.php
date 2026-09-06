@@ -36,7 +36,7 @@ final class Caja extends BaseModel
      * }
      * @throws PDOException
      */
-    public function getActiva(int $id_sucursal): false|array
+    public function getActiva(?int $id_sucursal): false|array
     {
         $sql = "SELECT * FROM $this->table WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
 
@@ -205,7 +205,7 @@ final class Caja extends BaseModel
      * }>
      * @throws PDOException
      */
-    public function getHistorial(int $id_sucursal, int $limit = 10): array
+    public function getHistorial(?int $id_sucursal, int $limit = 10): array
     {
         $sql = "
             SELECT c.*,

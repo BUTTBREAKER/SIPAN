@@ -62,7 +62,7 @@ class Receta extends BaseModel
     /**
      * Buscar receta por id incluyendo nombre del producto asociado.
      */
-    public function find($id)
+    public function find(int $id): false|array
     {
         $sql = "SELECT r.*, p.nombre AS producto_nombre
                 FROM {$this->table} r
@@ -167,7 +167,7 @@ class Receta extends BaseModel
      * Obtiene todas las recetas con el conteo de insumos pre-calculado.
      * Optimización Bolt: Evita N+1 queries al traer total_insumos en una sola consulta.
      */
-    public function all($sucursal_id = null)
+    public function all(?int $sucursal_id = null): array
     {
         $sql = "SELECT r.*, p.nombre as producto_nombre,
                        COUNT(ri.id) as total_insumos
