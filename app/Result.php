@@ -8,9 +8,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final class Result
 {
-    private function __construct(
-        private ?RequestHandlerInterface $handler = null,
-    ) {
+    private function __construct(private ?RequestHandlerInterface $handler = null)
+    {
         //
     }
 
@@ -26,7 +25,7 @@ final class Result
 
     public function isSuccess(): bool
     {
-        return (bool) $this->handler;
+        return $this->handler instanceof RequestHandlerInterface;
     }
 
     public function getHandler(): ?RequestHandlerInterface
