@@ -168,6 +168,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     id_negocio INT NOT NULL,
     id_sucursal INT NOT NULL,
     id_usuario INT NOT NULL,
+    id_cliente INT NOT NULL REFERENCES clientes(id),
     total DECIMAL(10, 2) DEFAULT 0.00,
     metodo_pago VARCHAR(50) DEFAULT 'efectivo_usd',
     estado ENUM('pendiente', 'completada', 'cancelada') DEFAULT 'completada',
