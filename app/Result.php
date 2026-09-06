@@ -23,11 +23,6 @@ final class Result
         return new self();
     }
 
-    public function isSuccess(): bool
-    {
-        return $this->handler instanceof RequestHandlerInterface;
-    }
-
     public function getHandler(): ?RequestHandlerInterface
     {
         return $this->handler;
