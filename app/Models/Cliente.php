@@ -129,7 +129,7 @@ final class Cliente extends BaseModel
      * }>
      * @throws PDOException
      */
-    public function getBySucursalWithStats(int $sucursal_id): array
+    public function getBySucursalWithStats(?int $sucursal_id): array
     {
         $sql = "SELECT c.*,
                        COUNT(v.id) as total_compras,
