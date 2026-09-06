@@ -112,10 +112,42 @@ require_once __DIR__ . '/../layouts/header.php';
         </div>
     </div>
     <!-- Reporte de Compras -->
-   
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-file-invoice-dollar fa-4x" style="color: #D4A574;"></i>
+                </div>
+                <h3 class="card-title">Reporte de Compras</h3>
+                <p class="text-muted">Historial de abastecimiento y gastos por proveedor</p>
+                <a href="/reportes/compras" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> Ver Compras
+                </a>
+                <a href="/reportes/compras?formato=pdf" class="btn btn-secondary">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Reporte de Vencimientos -->
-    
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-times fa-4x" style="color: #dc3545;"></i>
+                </div>
+                <h3 class="card-title">Reporte de Vencimientos</h3>
+                <p class="text-muted">Control de lotes próximos a vencer y vencidos</p>
+                <a href="/reportes/vencimientos" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> Ver Vencimientos
+                </a>
+                <a href="/reportes/vencimientos?formato=pdf" class="btn btn-secondary">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal para Reporte de Ventas -->

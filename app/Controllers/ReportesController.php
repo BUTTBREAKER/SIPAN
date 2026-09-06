@@ -8,6 +8,9 @@ use App\Models\Cliente;
 use App\Models\Produccion;
 use App\Models\Insumo;
 use App\Models\Pedido;
+use App\Models\Lote;
+use App\Models\Compra;
+use App\Models\Proveedor;
 
 class ReportesController
 {
@@ -17,6 +20,9 @@ class ReportesController
     private $produccionModel;
     private $insumoModel;
     private $pedidoModel;
+    private $loteModel;
+    private $compraModel;
+    private $proveedorModel;
 
     public function __construct()
     {
@@ -26,6 +32,9 @@ class ReportesController
         $this->produccionModel = new Produccion();
         $this->insumoModel = new Insumo();
         $this->pedidoModel = new Pedido();
+        $this->loteModel = new Lote();
+        $this->compraModel = new Compra();
+        $this->proveedorModel = new Proveedor();
     }
 
     public function index()
@@ -769,4 +778,338 @@ class ReportesController
         <?php
         return ob_get_clean();
     }
+
+    public function vencimientos()
+    {
+        $dias = isset($_GET['dias']) ? (int)$_GET['dias'] : 30;
+        if (!in_array($dias, [15, 30, 60, 90], true)) {
+            $dias = 30;
+        }
+        $formato = $_GET['formato'] ?? 'html';
+
+        $sucursal_id = $_SESSION['sucursal_id'] ?? 1;
+        $lotes = $this->loteModel->getPorVencer($sucursal_id, $dias, true);
+
+        $pageTitle = 'Reporte de Vencimientos';
+        $currentPage = 'reportes';
+
+        $data = [
+            'lotes' => $lotes,
+            'dias' => $dias,
+            'pageTitle' => $pageTitle,
+            'currentPage' => $currentPage
+        ];
+
+        if ($formato === 'excel') {
+            $this->generarExcelVencimientos($data);
+        } elseif ($formato === 'pdf') {
+            $this->generarPDFVencimientos($data);
+        } else {
+            require_once dirname(__DIR__) . '/Views/reportes/vencimientos.php';
+        }
+    }
+
+    private function generarExcelVencimientos($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $spreadsheet->getProperties()->setCreator("SIPAN")
+            ->setTitle("Reporte de Vencimientos")
+            ->setSubject("Lotes por vencer (" . $data['dias'] . " días)");
+
+        $sheet->setCellValue('A1', 'Reporte de Vencimientos de Lotes');
+        $sheet->setCellValue('A2', 'Rango: Próximos ' . $data['dias'] . ' días | Fecha reporte: ' . date('d/m/Y H:i'));
+
+        $headers = ['Código Lote', 'Item', 'Tipo', 'Fecha Entrada', 'Fecha Vencimiento', 'Días Restantes', 'Cant. Inicial', 'Stock Actual', 'Estado'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '4', $header);
+            $sheet->getStyle($col . '4')->getFont()->setBold(true);
+            $col++;
+        }
+
+        $row = 5;
+        $hoy = time();
+        foreach ($data['lotes'] as $lote) {
+            $fecha_venc = strtotime($lote['fecha_vencimiento']);
+            $dias_restantes = ceil(($fecha_venc - $hoy) / 86400);
+            $estado = $dias_restantes <= 0 ? 'Vencido' : ($dias_restantes <= 15 ? 'Crítico' : 'Ok');
+
+            $sheet->setCellValue('A' . $row, $lote['codigo_lote']);
+            $sheet->setCellValue('B' . $row, $lote['nombre_item'] ?? '-');
+            $sheet->setCellValue('C' . $row, ucfirst($lote['tipo'] ?? ''));
+            $sheet->setCellValue('D' . $row, date('d/m/Y', strtotime($lote['fecha_entrada'])));
+            $sheet->setCellValue('E' . $row, date('d/m/Y', strtotime($lote['fecha_vencimiento'])));
+            $sheet->setCellValue('F' . $row, $dias_restantes);
+            $sheet->setCellValue('G' . $row, $lote['cantidad_inicial']);
+            $sheet->setCellValue('H' . $row, $lote['cantidad_actual']);
+            $sheet->setCellValue('I' . $row, $estado);
+
+            $sheet->getStyle('F' . $row)->getNumberFormat()->setFormatCode('#,##0');
+            $sheet->getStyle('G' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('H' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+            $row++;
+        }
+
+        foreach (range('A', 'I') as $c) {
+            $sheet->getColumnDimension($c)->setAutoSize(true);
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="reporte_vencimientos_' . date('Y-m-d') . '.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function generarPDFVencimientos($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        $html = $this->getHTMLVencimientos($data);
+        $mpdf = new \Mpdf\Mpdf(['format' => 'A4', 'orientation' => 'L']);
+        $mpdf->WriteHTML($html);
+        $mpdf->Output('reporte_vencimientos_' . date('Y-m-d') . '.pdf', 'D');
+        exit;
+    }
+
+    private function getHTMLVencimientos($data)
+    {
+        ob_start();
+        $hoy = time();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; font-size: 11px; }
+                h1 { text-align: center; margin-bottom: 4px; }
+                p.sub { text-align: center; color: #555; margin-top: 0; margin-bottom: 16px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border-bottom: 1px solid #ddd; padding: 6px; text-align: left; }
+                th { background-color: #f5f5f5; }
+                .num { text-align: right; }
+                .text-danger { color: #dc3545; font-weight: bold; }
+                .text-warning { color: #d39e00; font-weight: bold; }
+                .text-success { color: #198754; }
+            </style>
+        </head>
+        <body>
+            <h1>Reporte de Vencimientos</h1>
+            <p class="sub">Lotes con vencimiento en los próximos <?= $data['dias'] ?> días | Fecha: <?= date('d/m/Y H:i') ?></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código Lote</th>
+                        <th>Item</th>
+                        <th>Tipo</th>
+                        <th>Fecha Entrada</th>
+                        <th>Fecha Vencimiento</th>
+                        <th class="num">Días Rest.</th>
+                        <th class="num">Stock Actual</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($data['lotes'])) : ?>
+                        <tr><td colspan="8" style="text-align: center; padding: 15px; color: #666;">No se encontraron lotes por vencer.</td></tr>
+                    <?php else : ?>
+                        <?php foreach ($data['lotes'] as $l) :
+                            $fecha_venc = strtotime($l['fecha_vencimiento']);
+                            $dias_restantes = ceil(($fecha_venc - $hoy) / 86400);
+                            $clase = $dias_restantes <= 0 ? 'text-danger' : ($dias_restantes <= 15 ? 'text-warning' : 'text-success');
+                            $estado = $dias_restantes <= 0 ? 'Vencido' : ($dias_restantes <= 15 ? 'Crítico' : 'Ok');
+                        ?>
+                            <tr>
+                                <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
+                                <td><?= htmlspecialchars($l['nombre_item'] ?? '-') ?></td>
+                                <td><?= ucfirst($l['tipo']) ?></td>
+                                <td><?= date('d/m/Y', strtotime($l['fecha_entrada'])) ?></td>
+                                <td><?= date('d/m/Y', strtotime($l['fecha_vencimiento'])) ?></td>
+                                <td class="num <?= $clase ?>"><?= $dias_restantes ?></td>
+                                <td class="num"><?= number_format((float)$l['cantidad_actual'], 2) ?></td>
+                                <td class="<?= $clase ?>"><?= $estado ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
+    }
+
+    public function compras()
+    {
+        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
+        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
+        $id_proveedor = !empty($_GET['id_proveedor']) ? (int)$_GET['id_proveedor'] : null;
+        $formato = $_GET['formato'] ?? 'html';
+
+        $sucursal_id = $_SESSION['sucursal_id'] ?? 1;
+
+        $proveedores = $this->proveedorModel->getAllBySucursal($sucursal_id);
+        foreach ($proveedores as &$prov) {
+            $prov['nombre_empresa'] = $prov['nombre'];
+        }
+        unset($prov);
+
+        $compras = $this->compraModel->getByDateRangeAndProveedor($sucursal_id, $fecha_inicio, $fecha_fin, $id_proveedor);
+        $total_compras = array_sum(array_column($compras, 'total'));
+
+        $pageTitle = 'Reporte de Compras';
+        $currentPage = 'reportes';
+
+        $data = [
+            'compras' => $compras,
+            'total_compras' => $total_compras,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin,
+            'id_proveedor' => $id_proveedor,
+            'proveedores' => $proveedores,
+            'pageTitle' => $pageTitle,
+            'currentPage' => $currentPage
+        ];
+
+        if ($formato === 'excel') {
+            $this->generarExcelCompras($data);
+        } elseif ($formato === 'pdf') {
+            $this->generarPDFCompras($data);
+        } else {
+            require_once dirname(__DIR__) . '/Views/reportes/compras.php';
+        }
+    }
+
+    private function generarExcelCompras($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $spreadsheet->getProperties()->setCreator("SIPAN")
+            ->setTitle("Reporte de Compras")
+            ->setSubject("Historial de Compras del " . $data['fecha_inicio'] . " al " . $data['fecha_fin']);
+
+        $sheet->setCellValue('A1', 'Reporte de Compras y Abastecimiento');
+        $sheet->setCellValue('A2', 'Período: ' . date('d/m/Y', strtotime($data['fecha_inicio'])) . ' al ' . date('d/m/Y', strtotime($data['fecha_fin'])) . ' | Fecha emisión: ' . date('d/m/Y H:i'));
+
+        $headers = ['Fecha', 'Proveedor', 'Comprobante', 'Items (Insumos/Productos)', 'Total ($)', 'Registrado por'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '4', $header);
+            $sheet->getStyle($col . '4')->getFont()->setBold(true);
+            $col++;
+        }
+
+        $row = 5;
+        foreach ($data['compras'] as $compra) {
+            $sheet->setCellValue('A' . $row, date('d/m/Y H:i', strtotime($compra['fecha_compra'])));
+            $sheet->setCellValue('B' . $row, $compra['proveedor_nombre'] ?? 'Sin Proveedor');
+            $sheet->setCellValue('C' . $row, $compra['numero_comprobante'] ?: 'S/N');
+            $sheet->setCellValue('D' . $row, $compra['items_resumen'] ?? '-');
+            $sheet->setCellValue('E' . $row, (float)$compra['total']);
+            $sheet->setCellValue('F' . $row, $compra['usuario_nombre'] ?? '-');
+
+            $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+            $row++;
+        }
+
+        // Totales
+        $sheet->setCellValue('D' . $row, 'TOTAL COMPRAS:');
+        $sheet->setCellValue('E' . $row, (float)$data['total_compras']);
+        $sheet->getStyle('D' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('E' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('E' . $row)->getNumberFormat()->setFormatCode('#,##0.00');
+
+        foreach (range('A', 'F') as $c) {
+            $sheet->getColumnDimension($c)->setAutoSize(true);
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="reporte_compras_' . date('Y-m-d') . '.xlsx"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function generarPDFCompras($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        $html = $this->getHTMLCompras($data);
+        $mpdf = new \Mpdf\Mpdf(['format' => 'A4', 'orientation' => 'L']);
+        $mpdf->WriteHTML($html);
+        $mpdf->Output('reporte_compras_' . date('Y-m-d') . '.pdf', 'D');
+        exit;
+    }
+
+    private function getHTMLCompras($data)
+    {
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; font-size: 11px; }
+                h1 { text-align: center; margin-bottom: 4px; }
+                p.sub { text-align: center; color: #555; margin-top: 0; margin-bottom: 16px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border-bottom: 1px solid #ddd; padding: 6px; text-align: left; }
+                th { background-color: #f5f5f5; }
+                .num { text-align: right; }
+                .fw-bold { font-weight: bold; }
+                .total-row { background-color: #f0f0f0; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h1>Reporte de Compras y Abastecimiento</h1>
+            <p class="sub">Período: <?= date('d/m/Y', strtotime($data['fecha_inicio'])) ?> al <?= date('d/m/Y', strtotime($data['fecha_fin'])) ?> | Total: $ <?= number_format((float)$data['total_compras'], 2) ?></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Proveedor</th>
+                        <th>Comprobante</th>
+                        <th>Items (Insumos/Productos)</th>
+                        <th>Registrado por</th>
+                        <th class="num">Total ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($data['compras'])) : ?>
+                        <tr><td colspan="6" style="text-align: center; padding: 15px; color: #666;">No se encontraron compras en el rango seleccionado.</td></tr>
+                    <?php else : ?>
+                        <?php foreach ($data['compras'] as $c) : ?>
+                            <tr>
+                                <td><?= date('d/m/Y H:i', strtotime($c['fecha_compra'])) ?></td>
+                                <td><?= htmlspecialchars($c['proveedor_nombre'] ?? 'Sin Proveedor') ?></td>
+                                <td><?= htmlspecialchars($c['numero_comprobante'] ?: 'S/N') ?></td>
+                                <td><?= htmlspecialchars($c['items_resumen'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($c['usuario_nombre'] ?? '-') ?></td>
+                                <td class="num fw-bold">$ <?= number_format((float)$c['total'], 2) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <tr class="total-row">
+                            <td colspan="5" style="text-align: right;">TOTAL GENERAL:</td>
+                            <td class="num">$ <?= number_format((float)$data['total_compras'], 2) ?></td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
+    }
 }
+

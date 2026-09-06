@@ -63,12 +63,19 @@ class Lote extends BaseModel
     }
 
     /**
-     * Obtener lotes por vencer en X días
+     * Obtener lotes por vencer en X días (o ya vencidos si $incluir_vencidos es true)
      */
-    public function getPorVencer($sucursal_id, $dias = 30)
+    public function getPorVencer($sucursal_id, $dias = 30, $incluir_vencidos = true)
     {
         $fecha_limite = date('Y-m-d', strtotime("+{$dias} days"));
         $fecha_hoy = date('Y-m-d');
+
+        $whereFecha = $incluir_vencidos
+            ? "AND l.fecha_vencimiento <= ?"
+            : "AND l.fecha_vencimiento BETWEEN ? AND ?";
+        $params = $incluir_vencidos
+            ? [$sucursal_id, $fecha_limite]
+            : [$sucursal_id, $fecha_hoy, $fecha_limite];
 
         // Consulta unificada para productos e insumos
         $sql = "SELECT l.*, 
@@ -83,10 +90,10 @@ class Lote extends BaseModel
                 AND l.estado = 'activo'
                 AND l.cantidad_actual > 0
                 AND l.fecha_vencimiento IS NOT NULL
-                AND l.fecha_vencimiento BETWEEN ? AND ?
+                {$whereFecha}
                 ORDER BY l.fecha_vencimiento ASC";
 
-        return $this->db->fetchAll($sql, [$sucursal_id, $fecha_hoy, $fecha_limite]);
+        return $this->db->fetchAll($sql, $params);
     }
 
     /**

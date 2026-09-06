@@ -207,4 +207,70 @@ class Compra extends BaseModel
                 ORDER BY c.fecha_compra DESC";
         return $this->db->fetchAll($sql, [$proveedor_id]);
     }
+
+    public function getByDateRangeAndProveedor($sucursal_id, $fecha_inicio, $fecha_fin, $id_proveedor = null)
+    {
+        $sql = "SELECT c.*, 
+                       p.nombre as proveedor_nombre,
+                       CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as usuario_nombre
+                FROM {$this->table} c
+                LEFT JOIN proveedores p ON c.id_proveedor = p.id
+                LEFT JOIN usuarios u ON c.id_usuario = u.id
+                WHERE c.id_sucursal = ? 
+                  AND c.fecha_compra >= ? 
+                  AND c.fecha_compra <= ?";
+
+        $params = [
+            $sucursal_id,
+            $fecha_inicio . ' 00:00:00',
+            $fecha_fin . ' 23:59:59'
+        ];
+
+        if (!empty($id_proveedor)) {
+            $sql .= " AND c.id_proveedor = ?";
+            $params[] = $id_proveedor;
+        }
+
+        $sql .= " ORDER BY c.fecha_compra DESC";
+
+        $compras = $this->db->fetchAll($sql, $params);
+
+        if (!empty($compras)) {
+            $compraIds = array_column($compras, 'id');
+            $placeholders = implode(',', array_fill(0, count($compraIds), '?'));
+            $sqlItems = "SELECT cd.id_compra,
+                                CASE 
+                                    WHEN cd.tipo_item = 'insumo' THEN i.nombre 
+                                    WHEN cd.tipo_item = 'producto' THEN p.nombre 
+                                    ELSE 'Item'
+                                END as item_nombre,
+                                cd.cantidad,
+                                CASE 
+                                    WHEN cd.tipo_item = 'insumo' THEN i.unidad_medida 
+                                    ELSE 'unid'
+                                END as unidad_medida
+                         FROM compra_detalles cd
+                         LEFT JOIN insumos i ON cd.tipo_item = 'insumo' AND cd.id_item = i.id
+                         LEFT JOIN productos p ON cd.tipo_item = 'producto' AND cd.id_item = p.id
+                         WHERE cd.id_compra IN ($placeholders)
+                         ORDER BY cd.id ASC";
+
+            $items = $this->db->fetchAll($sqlItems, $compraIds);
+            $itemsMap = [];
+            foreach ($items as $item) {
+                $qty = rtrim(rtrim(number_format((float)$item['cantidad'], 2, '.', ''), '0'), '.');
+                $itemsMap[$item['id_compra']][] = "{$item['item_nombre']} ({$qty} {$item['unidad_medida']})";
+            }
+
+            foreach ($compras as &$c) {
+                $c['items_resumen'] = isset($itemsMap[$c['id']]) 
+                    ? implode(', ', $itemsMap[$c['id']]) 
+                    : '-';
+            }
+            unset($c);
+        }
+
+        return $compras;
+    }
 }
+

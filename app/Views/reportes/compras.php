@@ -4,12 +4,12 @@ $pageTitle = 'Reporte de Compras';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
 
-$fecha_inicio ??= null;
-$fecha_fin ??= null;
-$id_proveedor ??= null;
-$proveedores ??= null;
-$total_compras ??= null;
-$compras ??= null;
+$fecha_inicio = $fecha_inicio ?? date('Y-m-01');
+$fecha_fin = $fecha_fin ?? date('Y-m-d');
+$id_proveedor = $id_proveedor ?? null;
+$proveedores = $proveedores ?? [];
+$total_compras = (float)($total_compras ?? 0);
+$compras = $compras ?? [];
 
 ?>
 
@@ -44,11 +44,11 @@ $compras ??= null;
         <form method="GET" action="/reportes/compras" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label class="form-label">Fecha Inicio</label>
-                <input type="date" name="fecha_inicio" class="form-control" value="<?= $fecha_inicio ?>">
+                <input type="date" name="fecha_inicio" class="form-control" value="<?= htmlspecialchars($fecha_inicio) ?>">
             </div>
             <div class="col-md-3">
                 <label class="form-label">Fecha Fin</label>
-                <input type="date" name="fecha_fin" class="form-control" value="<?= $fecha_fin ?>">
+                <input type="date" name="fecha_fin" class="form-control" value="<?= htmlspecialchars($fecha_fin) ?>">
             </div>
             <div class="col-md-3">
                 <label class="form-label">Proveedor</label>
@@ -56,7 +56,7 @@ $compras ??= null;
                     <option value="">Todos los proveedores</option>
                     <?php foreach ($proveedores as $prov) : ?>
                     <option value="<?= $prov['id'] ?>" <?= $id_proveedor == $prov['id'] ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($prov['nombre_empresa']) ?>
+                        <?= htmlspecialchars($prov['nombre_empresa'] ?? $prov['nombre'] ?? '') ?>
                     </option>
                     <?php endforeach; ?>
                 </select>
@@ -87,7 +87,7 @@ $compras ??= null;
             <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="mb-0">Proveedores Activos</h6>
-                    <h2 class="mb-0"><?= count(array_unique(array_column($compras, 'id_proveedor'))) ?></h2>
+                    <h2 class="mb-0"><?= count(array_filter(array_unique(array_column($compras, 'id_proveedor')))) ?></h2>
                 </div>
                 <i class="fas fa-truck fa-3x opacity-50"></i>
             </div>
@@ -116,14 +116,14 @@ $compras ??= null;
                         <?php foreach ($compras as $compra) : ?>
                     <tr>
                         <td><?= date('d/m/Y H:i', strtotime($compra['fecha_compra'])) ?></td>
-                        <td><?= htmlspecialchars($compra['proveedor_nombre']) ?></td>
-                        <td><?= htmlspecialchars($compra['numero_comprobante']) ?></td>
+                        <td><?= htmlspecialchars($compra['proveedor_nombre'] ?? 'Sin Proveedor') ?></td>
+                        <td><?= htmlspecialchars($compra['numero_comprobante'] ?: 'S/N') ?></td>
                         <td>
-                            <small class="text-muted">Ver detalles</small>
+                            <small class="text-muted"><?= htmlspecialchars($compra['items_resumen'] ?? 'Ver detalles') ?></small>
                         </td>
-                        <td><strong>$ <?= number_format($compra['total'], 2) ?></strong></td>
+                        <td><strong>$ <?= number_format((float)$compra['total'], 2) ?></strong></td>
                         <td>
-                            <button class="btn btn-sm btn-info" title="Ver Detalle"><i class="fas fa-eye"></i></button>
+                            <a href="/compras/show/<?= $compra['id'] ?>" class="btn btn-sm btn-info text-white" title="Ver Detalle"><i class="fas fa-eye"></i></a>
                         </td>
                     </tr>
                         <?php endforeach; ?>
@@ -133,5 +133,4 @@ $compras ??= null;
         </div>
     </div>
 </div>
-
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
