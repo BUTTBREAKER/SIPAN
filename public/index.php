@@ -95,34 +95,47 @@ $queueRequestHandler = new QueueRequestHandler(
                             $request->getHeader('accept'),
                         );
 
+                        $response = $this->responseFactory->createResponse();
+                        $code = 200;
+                        $headers = [];
+                        $body = '';
+
                         try {
-                            $response = $this->responseFactory->createResponse();
-                            $message = 'Failed to capture output for route';
                             ob_start();
                             $this->route->getCallable()(...$this->params);
-                            $response
-                                ->getBody()
-                                ->write(ob_get_clean() ?: throw new RuntimeException($message));
+                            $body = ob_get_clean() ?: '';
+
+                            foreach (headers_list() as $header) {
+                                [$name, $values] = explode(':', $header, 2);
+                                $headers[$name] = $values;
+
+                                if (strtolower($name) === 'location') {
+                                    $code = 302;
+                                }
+                            }
                         } catch (Throwable $throwable) {
-                            $response = $this->responseFactory->createResponse(500);
+                            $code = 500;
                             $message = "Error: {$throwable->getMessage()}";
 
                             if ($acceptJson) {
-                                $response = $response->withHeader(
-                                    'content-type',
-                                    'application/json',
-                                );
+                                $headers['content-type'] = 'application/json';
 
-                                $response->getBody()->write(json_encode([
+                                $body = json_encode([
                                     'success' => false,
                                     'message' => $message,
-                                ]) ?: throw new RuntimeException('Failed to encode JSON response for error'));
+                                ]) ?: '';
                             } else {
-                                $response->getBody()->write($message);
+                                $body = $message;
                             }
                         }
 
-                        return $response;
+                        foreach ($headers as $name => $values) {
+                            $response = $response->withHeader($name, $values);
+                        }
+
+                        $response->getBody()->write($body);
+
+                        return $response->withStatus($code);
                     }
                 };
 

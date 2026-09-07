@@ -367,7 +367,7 @@
             <h2 class="login-form-title">Bienvenido</h2>
             <p class="login-form-subtitle">Ingresa tus credenciales para acceder al sistema</p>
             
-            <form id="loginForm" action="/login" method="POST">
+            <form id="loginForm" action="./login" method="post">
                 <?php
                 require_once __DIR__ . '/../../Helpers/CSRF.php';
                 echo \App\Helpers\CSRF::field();
