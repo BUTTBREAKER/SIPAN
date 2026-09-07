@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use Closure;
-use flight\Container;
 use InvalidArgumentException;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
 use Throwable;
 
 final class Route
@@ -27,7 +24,7 @@ final class Route
         $this->pattern = str_replace('/', '\\/', $this->pattern);
 
         $this->pattern = preg_replace(
-            '/\{([a-zA-Z0-9_]+)\}/',
+            '/\{(.+)\}/',
             '(?<$1>.+)',
             $this->pattern,
         ) ?: throw new InvalidArgumentException("Invalid pattern: $this->pattern");
@@ -39,28 +36,18 @@ final class Route
                 if (
                     is_array($callable)
                     && count($callable) === 2
+                    && is_string($callable[0])
+                    && is_string($callable[1])
+                    && class_exists($callable[0])
                     && method_exists($callable[0], $callable[1])
                 ) {
-                    if (is_string($callable[0]) && class_exists($callable[0])) {
-                        $object = Container::getInstance()->get($callable[0]);
+                    (new $callable[0]())->{$callable[1]}(...$attributes);
 
-                        if (
-                            $object instanceof LoggerAwareInterface
-                            && Container::getInstance()->has(LoggerInterface::class)
-                        ) {
-                            $object->setLogger(Container::getInstance()->get(LoggerInterface::class));
-                        }
-
-                        $object->{$callable[1]}(...$attributes);
-
-                        continue;
-                    }
+                    continue;
                 }
 
                 if (is_callable($callable)) {
                     $callable(...$attributes);
-
-                    continue;
                 }
             }
         };
