@@ -28,9 +28,6 @@ use App\Controllers\UsuariosController;
 use App\Controllers\VentasController;
 use App\Middlewares\AuthMiddleware;
 use App\Route;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 $redirectToLoginIfUserIsNotLogged = static function (): void {
     if (!isset($_SESSION['user_id'])) {

@@ -11,7 +11,7 @@ use Throwable;
 final class Route
 {
     private Closure $callable;
-    private RequestHandlerInterface $handler;
+    private ?RequestHandlerInterface $handler = null;
 
     /**
      * @param RequestHandlerInterface|callable|array{class-string<object>, string} ...$callables
@@ -67,7 +67,7 @@ final class Route
         return $this->callable;
     }
 
-    public function getHandler(): RequestHandlerInterface
+    public function getHandler(): ?RequestHandlerInterface
     {
         return $this->handler;
     }
