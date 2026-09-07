@@ -40,7 +40,7 @@ final class Router
                 continue;
             }
 
-            $handler = new class(
+            $handler = $route->getHandler() ?? new class(
                 $responseFactory,
                 $route,
                 ...$params,
@@ -97,7 +97,7 @@ final class Router
                 }
             };
 
-            return Result::success($handler);
+            return Result::success($handler, $params);
         }
 
         return Result::failure();

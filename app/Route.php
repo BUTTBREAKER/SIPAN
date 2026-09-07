@@ -5,31 +5,40 @@ declare(strict_types=1);
 namespace App;
 
 use Closure;
-use InvalidArgumentException;
+use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 
 final class Route
 {
     private Closure $callable;
+    private RequestHandlerInterface $handler;
 
     /**
-     * @param array{class-string<object>, string}|callable ...$callables
+     * @param RequestHandlerInterface|callable|array{class-string<object>, string} ...$callables
      * @throws Throwable
      */
     public function __construct(
         private string $method,
         private string $pattern,
-        array|callable ...$callables,
+        RequestHandlerInterface|callable|array ...$callables,
     ) {
-        $this->pattern = str_replace('/', '\\/', $this->pattern);
+        if (preg_match('/^\/\^.+\$\/$/', $pattern) === 0) {
+            $pattern = str_replace('/', '\\/', $pattern);
 
-        $this->pattern = preg_replace(
-            '/\{(.+)\}/',
-            '(?<$1>.+)',
-            $this->pattern,
-        ) ?: throw new InvalidArgumentException("Invalid pattern: $this->pattern");
+            $pattern = preg_replace(
+                '/\{(.+)\}/',
+                '(?<$1>.+)',
+                $pattern,
+            );
 
-        $this->pattern = "/^{$this->pattern}$/";
+            $pattern = "/^{$pattern}$/";
+        }
+
+        $this->pattern = $pattern;
+
+        if (count($callables) === 1 && $callables[0] instanceof RequestHandlerInterface) {
+            $this->handler = $callables[0];
+        }
 
         $this->callable = static function (string ...$attributes) use ($callables): void {
             foreach ($callables as $callable) {
@@ -56,6 +65,11 @@ final class Route
     public function getCallable(): callable
     {
         return $this->callable;
+    }
+
+    public function getHandler(): RequestHandlerInterface
+    {
+        return $this->handler;
     }
 
     /** @return ?array<string, string> */

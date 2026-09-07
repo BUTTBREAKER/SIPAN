@@ -8,14 +8,18 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final class Result
 {
-    private function __construct(private ?RequestHandlerInterface $handler = null)
-    {
+    /** @param array<string, string> $attributes */
+    private function __construct(
+        private ?RequestHandlerInterface $handler = null,
+        private array $attributes = [],
+    ) {
         //
     }
 
-    public static function success(RequestHandlerInterface $handler): self
+    /** @param array<string, string> $attributes */
+    public static function success(RequestHandlerInterface $handler, array $attributes = []): self
     {
-        return new self($handler);
+        return new self($handler, $attributes);
     }
 
     public static function failure(): self
@@ -23,8 +27,22 @@ final class Result
         return new self();
     }
 
-    public function getHandler(): ?RequestHandlerInterface
+    /** @phpstan-assert-if-true RequestHandlerInterface $this->handler */
+    public function isSuccess(): bool
     {
+        return $this->handler instanceof RequestHandlerInterface;
+    }
+
+    public function getHandler(): RequestHandlerInterface
+    {
+        assert($this->isSuccess(), 'Result is not successful, cannot get handler.');
+
         return $this->handler;
+    }
+
+    /** @return array<string, string> */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
     }
 }

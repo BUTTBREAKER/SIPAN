@@ -25,9 +25,16 @@ final class RoutingMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler,
     ): ResponseInterface {
-        return (
-            $this->router->match($request)->getHandler()?->handle($request)
-            ?? $handler->handle($request)
-        );
+        $result = $this->router->match($request);
+
+        if ($result->isSuccess()) {
+            $handler = $result->getHandler();
+
+            foreach ($result->getAttributes() as $name => $value) {
+                $request = $request->withAttribute($name, $value);
+            }
+        }
+
+        return $handler->handle($request);
     }
 }
