@@ -137,16 +137,70 @@ class Compra extends BaseModel
                 $loteModel->registrarBatch($lotesBatch);
             }
 
-            // 4c. Batch update insumos (O(N_unique_items) database round-trips, still better than O(N_items))
-            foreach ($insumosUpdates as $id => $data) {
-                $sql = "UPDATE insumos SET stock_actual = ?, precio_unitario = ? WHERE id = ?";
-                $this->db->execute($sql, [$data['stock_actual'], $data['precio_unitario'], $id]);
+            // 4c. Bolt Optimization: Batch update insumos in a single O(1) query
+            if (!empty($insumosUpdates)) {
+                if (count($insumosUpdates) === 1) {
+                    $id = array_key_first($insumosUpdates);
+                    $data = $insumosUpdates[$id];
+                    $sql = "UPDATE insumos SET stock_actual = ?, precio_unitario = ? WHERE id = ?";
+                    $this->db->execute($sql, [$data['stock_actual'], $data['precio_unitario'], $id]);
+                } else {
+                    $casesStock = [];
+                    $casesPrice = [];
+                    $paramsStock = [];
+                    $paramsPrice = [];
+                    $ids = [];
+
+                    foreach ($insumosUpdates as $id => $data) {
+                        $casesStock[] = "WHEN ? THEN ?";
+                        $paramsStock[] = $id;
+                        $paramsStock[] = $data['stock_actual'];
+
+                        $casesPrice[] = "WHEN ? THEN ?";
+                        $paramsPrice[] = $id;
+                        $paramsPrice[] = $data['precio_unitario'];
+
+                        $ids[] = $id;
+                    }
+
+                    $placeholdersIds = implode(',', array_fill(0, count($ids), '?'));
+                    $sql = "UPDATE insumos SET
+                                stock_actual = CASE id " . implode(' ', $casesStock) . " END,
+                                precio_unitario = CASE id " . implode(' ', $casesPrice) . " END
+                            WHERE id IN ($placeholdersIds)";
+
+                    $allParams = array_merge($paramsStock, $paramsPrice, $ids);
+                    $this->db->execute($sql, $allParams);
+                }
             }
 
-            // 4d. Batch update productos
-            foreach ($productosUpdates as $id => $stock) {
-                $sql = "UPDATE productos SET stock_actual = ? WHERE id = ?";
-                $this->db->execute($sql, [$stock, $id]);
+            // 4d. Bolt Optimization: Batch update productos in a single O(1) query
+            if (!empty($productosUpdates)) {
+                if (count($productosUpdates) === 1) {
+                    $id = array_key_first($productosUpdates);
+                    $stock = $productosUpdates[$id];
+                    $sql = "UPDATE productos SET stock_actual = ? WHERE id = ?";
+                    $this->db->execute($sql, [$stock, $id]);
+                } else {
+                    $casesStock = [];
+                    $paramsStock = [];
+                    $ids = [];
+
+                    foreach ($productosUpdates as $id => $stock) {
+                        $casesStock[] = "WHEN ? THEN ?";
+                        $paramsStock[] = $id;
+                        $paramsStock[] = $stock;
+                        $ids[] = $id;
+                    }
+
+                    $placeholdersIds = implode(',', array_fill(0, count($ids), '?'));
+                    $sql = "UPDATE productos SET
+                                stock_actual = CASE id " . implode(' ', $casesStock) . " END
+                            WHERE id IN ($placeholdersIds)";
+
+                    $allParams = array_merge($paramsStock, $ids);
+                    $this->db->execute($sql, $allParams);
+                }
             }
 
             $this->db->commit();
@@ -263,8 +317,8 @@ class Compra extends BaseModel
             }
 
             foreach ($compras as &$c) {
-                $c['items_resumen'] = isset($itemsMap[$c['id']]) 
-                    ? implode(', ', $itemsMap[$c['id']]) 
+                $c['items_resumen'] = isset($itemsMap[$c['id']])
+                    ? implode(', ', $itemsMap[$c['id']])
                     : '-';
             }
             unset($c);
@@ -273,4 +327,3 @@ class Compra extends BaseModel
         return $compras;
     }
 }
-
