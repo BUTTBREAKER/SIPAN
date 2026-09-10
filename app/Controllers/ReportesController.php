@@ -487,6 +487,32 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id'], null, null, $fecha_inicio, $fecha_fin);
+        $pedidoIds = array_column($pedidos, 'id');
+
+        // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries
+        $pagos_agrupados = [];
+        if (!empty($pedidoIds)) {
+            $todos_los_pagos = $this->pedidoModel->getPagosPorPedidos($pedidoIds);
+            foreach ($todos_los_pagos as $p) {
+                $pagos_agrupados[$p['id_pedido']][] = $p;
+            }
+        }
+
+        foreach ($pedidos as &$pedido) {
+            $pagos = $pagos_agrupados[$pedido['id']] ?? [];
+            if (!empty($pagos)) {
+                $lista_pagos = [];
+                foreach ($pagos as $p) {
+                    $m = $p['metodo_pago'];
+                    $v = $p['monto'];
+                    $lista_pagos[] = ucfirst(str_replace('_', ' ', $m)) . ': ' . number_format($v, 2);
+                }
+                $pedido['detalle_pagos_str'] = implode('<br>', $lista_pagos);
+            } else {
+                $pedido['detalle_pagos_str'] = 'Sin pagos';
+            }
+        }
+        unset($pedido);
 
         $data = [
             'pedidos' => $pedidos,
@@ -924,7 +950,7 @@ class ReportesController
                             $dias_restantes = ceil(($fecha_venc - $hoy) / 86400);
                             $clase = $dias_restantes <= 0 ? 'text-danger' : ($dias_restantes <= 15 ? 'text-warning' : 'text-success');
                             $estado = $dias_restantes <= 0 ? 'Vencido' : ($dias_restantes <= 15 ? 'Crítico' : 'Ok');
-                        ?>
+                            ?>
                             <tr>
                                 <td><?= htmlspecialchars($l['codigo_lote']) ?></td>
                                 <td><?= htmlspecialchars($l['nombre_item'] ?? '-') ?></td>

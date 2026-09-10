@@ -86,6 +86,29 @@ class Pedido extends BaseModel
         return $this->db->fetchAll($sql, [$pedido_id]);
     }
 
+    /**
+     * Obtiene los pagos de múltiples pedidos en una sola consulta (Optimización Bolt)
+     * Reduces database round-trips from O(N) to O(1).
+     *
+     * @param array $pedido_ids List of order IDs
+     * @return array
+     */
+    public function getPagosPorPedidos(array $pedido_ids): array
+    {
+        if (empty($pedido_ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($pedido_ids), '?'));
+        $sql = "SELECT pp.*, u.primer_nombre, u.apellido_paterno
+                FROM pedido_pagos pp
+                LEFT JOIN usuarios u ON pp.id_usuario = u.id
+                WHERE pp.id_pedido IN ($placeholders)
+                ORDER BY pp.fecha_pago DESC";
+
+        return $this->db->fetchAll($sql, $pedido_ids);
+    }
+
     public function getProductos($pedido_id)
     {
         $sql = "SELECT pp.*, p.nombre as producto_nombre

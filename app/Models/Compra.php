@@ -263,8 +263,8 @@ class Compra extends BaseModel
             }
 
             foreach ($compras as &$c) {
-                $c['items_resumen'] = isset($itemsMap[$c['id']]) 
-                    ? implode(', ', $itemsMap[$c['id']]) 
+                $c['items_resumen'] = isset($itemsMap[$c['id']])
+                    ? implode(', ', $itemsMap[$c['id']])
                     : '-';
             }
             unset($c);
@@ -273,4 +273,3 @@ class Compra extends BaseModel
         return $compras;
     }
 }
-
