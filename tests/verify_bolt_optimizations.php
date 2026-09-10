@@ -1,23 +1,20 @@
 <?php
 
-require_once __DIR__ . '/../vendor/autoload.php';
+namespace App\Core;
 
-use App\Models\Compra;
-use App\Models\Pedido;
-use App\Models\Insumo;
-use App\Models\Producto;
-use App\Models\Lote;
-
-// Mock session
-$_SESSION['id_usuario'] = 1;
-$_SESSION['sucursal_id'] = 1;
-$_SESSION['id_negocio'] = 1;
-
-// Mock Database to avoid real connection
-class MockDatabase
+class Database
 {
+    private static $instance = null;
     public $queries = [];
     public $lastInsertId = 999;
+
+    public static function getInstance()
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     public function beginTransaction()
     {
@@ -69,45 +66,40 @@ class MockDatabase
 
     public function lastInsertId()
     {
-        return $this->lastInsertId++;
+        return (string)($this->lastInsertId++);
     }
 }
 
-// Subclass to avoid constructor calling Database::getInstance()
+namespace Tests;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use App\Models\Compra;
+use App\Models\Pedido;
+use App\Models\Insumo;
+use App\Models\Producto;
+use App\Models\Lote;
+use App\Core\Database;
+
+// Mock session
+$_SESSION['id_usuario'] = 1;
+$_SESSION['sucursal_id'] = 1;
+$_SESSION['id_negocio'] = 1;
+
 class MockCompra extends Compra
 {
     public $loteModel;
-    public function __construct($db)
-    {
-        $this->db = $db;
-        $this->table = 'compras';
-    }
     protected function hasColumn($column)
     {
         return true;
-    }
-    public function create($data)
-    {
-        $this->db->execute("INSERT INTO {$this->table} ...", array_values($data));
-        return $this->db->lastInsertId();
     }
 }
 
 class MockPedido extends Pedido
 {
-    public function __construct($db)
-    {
-        $this->db = $db;
-        $this->table = 'pedidos';
-    }
     protected function hasColumn($column)
     {
         return true;
-    }
-    public function create($data)
-    {
-        $this->db->execute("INSERT INTO {$this->table} ...", array_values($data));
-        return $this->db->lastInsertId();
     }
     public function query($sql, $params = [])
     {
@@ -121,21 +113,16 @@ class MockPedido extends Pedido
 
 class MockLote extends Lote
 {
-    public function __construct($db)
-    {
-        $this->db = $db;
-        $this->table = 'lotes';
-    }
 }
 
 function testOptimizations()
 {
-    $mockDb = new MockDatabase();
+    $mockDb = Database::getInstance();
 
-    $compraModel = new MockCompra($mockDb);
-    $loteModel = new MockLote($mockDb);
+    $compraModel = new MockCompra();
+    $loteModel = new MockLote();
     $compraModel->loteModel = $loteModel;
-    $pedidoModel = new MockPedido($mockDb);
+    $pedidoModel = new MockPedido();
 
     echo "--- Testing Compra::createWithDetails Optimization (Mocked) ---\n";
 
@@ -223,6 +210,25 @@ function testOptimizations()
         echo "✅ Pedido optimization verified (Mocked)!\n";
     } else {
         echo "❌ Pedido optimization verification failed!\n";
+    }
+
+    echo "\n--- Testing Pedido::getPagosPorPedidos Batch Fetch (Mocked) ---\n";
+    $mockDb->queries = [];
+
+    $pedidoModel->getPagosPorPedidos([10, 11, 12]);
+
+    $batchPagosQueryFound = false;
+    foreach ($mockDb->queries as $q) {
+        if (is_array($q) && strpos($q['sql'], 'WHERE pp.id_pedido IN (?,?,?)') !== false) {
+            $batchPagosQueryFound = true;
+            echo "Found single batch query for pedido payments with IN (?,?,?)\n";
+        }
+    }
+
+    if ($batchPagosQueryFound) {
+        echo "✅ Pedido::getPagosPorPedidos batch fetch verified!\n";
+    } else {
+        echo "❌ Pedido::getPagosPorPedidos batch fetch verification failed!\n";
     }
 }
 
