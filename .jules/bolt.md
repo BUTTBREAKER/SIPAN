@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Request-Level Static Caching for High-Frequency Models]
+**Learning:** High-frequency method calls like `Caja::getActiva()` in `AuthMiddleware` and `Sucursal::getActivas()` in header layouts execute duplicate SQL queries multiple times within a single HTTP request lifecycle. Adding a static array property to cache query results per request reduces database queries from N to 1 per request without risks of stale data across requests. Cache invalidation on mutation methods (e.g., `abrir`, `cerrar`) ensures state consistency.
+**Action:** Identify methods called by both middleware and views, and implement static in-memory request-level caching in model methods.
