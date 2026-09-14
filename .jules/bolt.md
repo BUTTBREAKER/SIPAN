@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-25 - [Selective Column Projection and Bound Limits in AJAX Polling]
+**Learning:** High-frequency AJAX polling endpoints (such as notifications checked every 30s) must project only required columns and apply explicit `LIMIT` parameters. Selecting unneeded columns or unconstrained result sets bloats JSON payloads and DB buffer pool usage. Additionally, interpolating sanitized integer bounds directly (`LIMIT (int)$limit`) avoids PDO driver errors where bound string parameters in `LIMIT ?` fail under native prepared statements.
+**Action:** Always project specific columns and apply bounded limits with integer interpolation for polling endpoints.
