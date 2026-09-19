@@ -99,36 +99,79 @@ class Lote extends BaseModel
     /**
      * Actualizar stock de un lote (consumo)
      * Retorna la cantidad que NO se pudo descontar (si stock insuficiente)
+     * Optimización Bolt: Selecciona solo id y cantidad_actual, y agrupa actualizaciones multi-lote en 1 sola consulta
      */
     public function descontarStock($tipo, $id_item, $cantidad, $sucursal_id)
     {
         // Buscar lotes activos ordenados por vencimiento (FIFO / FEFO)
-        $sql = "SELECT * FROM {$this->table} 
+        // Optimización Bolt: Traer solo las columnas necesarias (id, cantidad_actual)
+        $sql = "SELECT id, cantidad_actual FROM {$this->table}
                 WHERE tipo = ? AND id_item = ? AND id_sucursal = ? 
                 AND estado = 'activo' AND cantidad_actual > 0
                 ORDER BY fecha_vencimiento ASC, created_at ASC";
 
         $lotes = $this->db->fetchAll($sql, [$tipo, $id_item, $sucursal_id]);
 
-        $pendiente = $cantidad;
+        $pendiente = (float)$cantidad;
+        $updates = [];
 
         foreach ($lotes as $lote) {
             if ($pendiente <= 0) {
                 break;
             }
 
-            $descontar = min($pendiente, $lote['cantidad_actual']);
+            $cantActual = (float)$lote['cantidad_actual'];
+            $descontar = min($pendiente, $cantActual);
 
-            // Actualizar lote
-            $nuevo_stock = $lote['cantidad_actual'] - $descontar;
+            // Calcular nuevo stock y estado
+            $nuevo_stock = $cantActual - $descontar;
             $estado = ($nuevo_stock <= 0) ? 'agotado' : 'activo';
 
-            $this->db->execute(
-                "UPDATE {$this->table} SET cantidad_actual = ?, estado = ? WHERE id = ?",
-                [$nuevo_stock, $estado, $lote['id']]
-            );
+            $updates[] = [
+                'id' => $lote['id'],
+                'cantidad_actual' => $nuevo_stock,
+                'estado' => $estado
+            ];
 
             $pendiente -= $descontar;
+        }
+
+        // Optimización Bolt: Ejecutar actualizaciones en batch (1 consulta en lugar de N)
+        if (!empty($updates)) {
+            if (count($updates) === 1) {
+                $this->db->execute(
+                    "UPDATE {$this->table} SET cantidad_actual = ?, estado = ? WHERE id = ?",
+                    [$updates[0]['cantidad_actual'], $updates[0]['estado'], $updates[0]['id']]
+                );
+            } else {
+                $stockCases = [];
+                $estadoCases = [];
+                $stockParams = [];
+                $estadoParams = [];
+                $ids = [];
+
+                foreach ($updates as $u) {
+                    $stockCases[] = "WHEN id = ? THEN ?";
+                    $stockParams[] = $u['id'];
+                    $stockParams[] = $u['cantidad_actual'];
+
+                    $estadoCases[] = "WHEN id = ? THEN ?";
+                    $estadoParams[] = $u['id'];
+                    $estadoParams[] = $u['estado'];
+
+                    $ids[] = $u['id'];
+                }
+
+                $idPlaceholders = implode(',', array_fill(0, count($ids), '?'));
+
+                $sql = "UPDATE {$this->table}
+                        SET cantidad_actual = CASE " . implode(' ', $stockCases) . " END,
+                            estado = CASE " . implode(' ', $estadoCases) . " END
+                        WHERE id IN ($idPlaceholders)";
+
+                $allParams = array_merge($stockParams, $estadoParams, $ids);
+                $this->db->execute($sql, $allParams);
+            }
         }
 
         return $pendiente; // Si es 0, se descontó todo correctamente
