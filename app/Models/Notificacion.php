@@ -23,7 +23,17 @@ class Notificacion extends BaseModel
         ]);
     }
 
-    public function getNoLeidas($sucursal_id, $usuario_id = null)
+    /**
+     * Obtiene notificaciones no leídas para una sucursal y usuario.
+     * Bolt Optimization: Agregado límite por defecto ($limit = 50) a la consulta para acotar los resultados
+     * y reducir el uso de memoria/payload en el sondeo automático cada 30 segundos en el header.
+     *
+     * @param int $sucursal_id
+     * @param int|null $usuario_id
+     * @param int $limit
+     * @return array
+     */
+    public function getNoLeidas($sucursal_id, $usuario_id = null, int $limit = 50)
     {
         $sql = "SELECT * FROM {$this->table} 
                 WHERE id_sucursal = ? 
@@ -36,7 +46,8 @@ class Notificacion extends BaseModel
             $params[] = $usuario_id;
         }
 
-        $sql .= " ORDER BY fecha_creacion DESC";
+        $sql .= " ORDER BY fecha_creacion DESC LIMIT ?";
+        $params[] = $limit;
 
         return $this->db->fetchAll($sql, $params);
     }
