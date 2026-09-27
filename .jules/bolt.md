@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-25 - [SARGable Query Design and Multi-Row Batch Inserts in Relationships]
+**Learning:** Using `LEFT JOIN ... GROUP BY ... HAVING COUNT(pi.id) = 0` to find unassociated records creates unnecessary temporary tables and grouping overhead. Replacing it with `NOT EXISTS (SELECT 1 FROM ...)` makes the query SARGable and allows index-based filtering. Additionally, replacing individual `INSERT` queries in loops with single multi-row `INSERT` queries reduces DB round-trips from O(N) to O(1).
+**Action:** Use `NOT EXISTS` for unassociated entity lookups and construct multi-row `VALUES (?, ?)` arrays for batch insertions in relational models.
