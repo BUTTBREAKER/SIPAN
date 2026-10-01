@@ -237,7 +237,7 @@ final class Auditoria extends BaseModel
 
             // Marcar como deshecho
             $sql = "
-                UPDATE $this->table}
+                UPDATE $this->table
                 SET deshacer = 1, fecha_deshacer = NOW(), usuario_deshacer = ?
                 WHERE id = ?
             ";
