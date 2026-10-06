@@ -292,12 +292,16 @@ class ReportesController
 
     public function clientes()
     {
+        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
+        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         // Optimización Bolt: Usar método que trae estadísticas en una sola consulta
-        $clientes = $this->clienteModel->getBySucursalWithStats($_SESSION['sucursal_id']);
+        $clientes = $this->clienteModel->getStatsByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
         $formato = $_GET['formato'] ?? 'html';
 
         $data = [
-            'clientes' => $clientes
+            'clientes' => $clientes,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin
         ];
 
         if ($formato === 'pdf') {
@@ -496,14 +500,35 @@ class ReportesController
     {
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
+        $estado_filtro = $_GET['estado_pedido'] ?? null;
+        $pago_filtro = $_GET['estado_pago'] ?? null;
         $formato = $_GET['formato'] ?? 'html';
 
-        $pedidos = $this->pedidoModel->getWithDetails($_SESSION['sucursal_id'], null, null, $fecha_inicio, $fecha_fin);
+        $pedidos = $this->pedidoModel->getWithDetails(
+            $_SESSION['sucursal_id'],
+            $estado_filtro ?: null,
+            $pago_filtro ?: null,
+            $fecha_inicio,
+            $fecha_fin
+        );
+
+        $resumen_estados = $this->pedidoModel->getResumenEstados($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $repartidores = $this->pedidoModel->getRepartidorStats($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+
+        // Calcular totales rápidos
+        $total_monto = array_sum(array_column($pedidos, 'total'));
+        $total_deuda = array_sum(array_column($pedidos, 'monto_deuda'));
 
         $data = [
             'pedidos' => $pedidos,
             'fecha_inicio' => $fecha_inicio,
-            'fecha_fin' => $fecha_fin
+            'fecha_fin' => $fecha_fin,
+            'estado_filtro' => $estado_filtro,
+            'pago_filtro' => $pago_filtro,
+            'resumen_estados' => $resumen_estados,
+            'repartidores' => $repartidores,
+            'total_monto' => $total_monto,
+            'total_deuda' => $total_deuda
         ];
 
         if ($formato === 'pdf') {

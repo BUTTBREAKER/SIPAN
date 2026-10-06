@@ -92,19 +92,24 @@ $data ??= null;
     <?php if ($user_rol !== 'cajero') : ?>
     <!-- 3. Gráfico Principal (Span 3) -->
     <div class="bento-widget span-3 widget-chart">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <h3 class="card-title mb-0">
                 <i class="fas fa-chart-area"></i> Tendencia de Ventas
             </h3>
-            <div class="btn-group btn-group-sm">
-                <button
-                    type="button"
-                    class="btn btn-outline-secondary active"
-                    onclick="updateChart(7, this)">
-                    7 D
-                </button>
-                <button type="button" class="btn btn-outline-secondary" onclick="updateChart(15, this)">15 D</button>
-                <button type="button" class="btn btn-outline-secondary" onclick="updateChart(30, this)">30 D</button>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-secondary active" onclick="updateChart(7, this)">7 D</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="updateChart(15, this)">15 D</button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="updateChart(30, this)">30 D</button>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <input type="date" id="chartFechaInicio" class="form-control form-control-sm" style="width:140px" value="<?= date('Y-m-01') ?>">
+                    <span class="text-muted small">al</span>
+                    <input type="date" id="chartFechaFin" class="form-control form-control-sm" style="width:140px" value="<?= date('Y-m-d') ?>">
+                    <button type="button" class="btn btn-sm btn-primary" onclick="updateChartRango()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
             </div>
         </div>
         <div class="chart-container">
@@ -318,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function updateChart(dias, btn) {
     document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (btn) btn.classList.add('active');
 
     fetch(`/dashboard/ventas-chart?dias=${dias}`)
         .then(response => response.json())
@@ -330,6 +335,28 @@ function updateChart(dias, btn) {
             }
         })
         .catch(error => console.error('Error al actualizar gráfico:', error));
+}
+
+function updateChartRango() {
+    const fi = document.getElementById('chartFechaInicio').value;
+    const ff = document.getElementById('chartFechaFin').value;
+    if (!fi || !ff || fi > ff) {
+        Swal.fire({ icon: 'warning', title: 'Fechas inválidas', toast: true, position: 'top-end', showConfirmButton: false, timer: 2500 });
+        return;
+    }
+    // Quitar 'active' de los botones rápidos
+    document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+
+    fetch(`/dashboard/ventas-chart?fecha_inicio=${fi}&fecha_fin=${ff}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                ventasChart.data.labels = data.data.map(v => v.fecha);
+                ventasChart.data.datasets[0].data = data.data.map(v => v.total);
+                ventasChart.update();
+            }
+        })
+        .catch(e => console.error('Error:', e));
 }
 
 // Alertas Stock

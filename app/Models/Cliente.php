@@ -142,4 +142,33 @@ final class Cliente extends BaseModel
 
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
+
+    public function getStatsByDateRange(int $sucursal_id, string $fecha_inicio, string $fecha_fin): array
+    {
+        $sql = "SELECT c.*,
+                       COUNT(DISTINCT v.id) as total_compras,
+                       COALESCE(SUM(v.total), 0) as monto_periodo,
+                       COUNT(DISTINCT pe.id) as total_pedidos,
+                       COALESCE(SUM(pe.total), 0) as monto_pedidos,
+                       COALESCE(SUM(pe.monto_deuda), 0) as total_deuda,
+                       MAX(GREATEST(
+                           COALESCE(v.fecha_venta, '2000-01-01'),
+                           COALESCE(pe.fecha_pedido, '2000-01-01')
+                       )) as ultima_actividad
+                FROM {$this->table} c
+                LEFT JOIN ventas v ON c.id = v.id_cliente 
+                     AND v.fecha_venta >= ? AND v.fecha_venta <= ?
+                     AND v.estado = 'completada'
+                LEFT JOIN pedidos pe ON c.id = pe.id_cliente 
+                     AND pe.fecha_pedido >= ? AND pe.fecha_pedido <= ?
+                WHERE c.id_sucursal = ?
+                GROUP BY c.id
+                ORDER BY monto_periodo DESC, monto_pedidos DESC, c.nombre ASC";
+
+        return $this->db->fetchAll($sql, [
+            $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59',
+            $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59',
+            $sucursal_id
+        ]);
+    }
 }

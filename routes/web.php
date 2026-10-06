@@ -111,6 +111,11 @@ return [
         '/dashboard/notificacion/leida',
         [DashboardController::class, 'marcarNotificacionLeida'],
     ),
+    new Route(
+        'GET',
+        '/dashboard/ventas-chart',
+        [DashboardController::class, 'getVentasChartData']
+    ),
 
     // Productos
     new Route('GET', '/productos', [ProductosController::class, 'index']),

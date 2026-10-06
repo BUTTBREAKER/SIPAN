@@ -224,4 +224,45 @@ class Pedido extends BaseModel
 
         return $this->update($id, $data);
     }
+
+    public function getRepartidorStats($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT CONCAT(u.primer_nombre, ' ', u.apellido_paterno) as repartidor,
+                       COUNT(p.id) as total_pedidos,
+                       COALESCE(SUM(p.total), 0) as monto_total,
+                       COUNT(CASE WHEN p.estado_pedido = 'entregado' THEN 1 END) as entregados,
+                       COUNT(CASE WHEN p.estado_pedido = 'pendiente' THEN 1 END) as pendientes
+                FROM {$this->table} p
+                INNER JOIN usuarios u ON p.id_repartidor = u.id
+                WHERE p.id_sucursal = ?
+                  AND p.fecha_pedido >= ? AND p.fecha_pedido <= ?
+                  AND p.id_repartidor IS NOT NULL
+                GROUP BY p.id_repartidor, u.primer_nombre, u.apellido_paterno
+                ORDER BY total_pedidos DESC";
+
+        return $this->db->fetchAll($sql, [$sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59']);
+    }
+
+    public function getResumenEstados($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT estado_pedido, estado_pago,
+                       COUNT(*) as total,
+                       COALESCE(SUM(total), 0) as monto,
+                       COALESCE(SUM(monto_deuda), 0) as deuda
+                FROM {$this->table}
+                WHERE id_sucursal = ?
+                  AND fecha_pedido >= ? AND fecha_pedido <= ?
+                GROUP BY estado_pedido, estado_pago";
+
+        return $this->db->fetchAll($sql, [$sucursal_id, $fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59']);
+    }
+
+    public function getLastByCliente($cliente_id, $sucursal_id)
+    {
+        $sql = "SELECT * FROM {$this->table}
+                WHERE id_cliente = ? AND id_sucursal = ?
+                ORDER BY fecha_pedido DESC
+                LIMIT 1";
+        return $this->db->fetchOne($sql, [$cliente_id, $sucursal_id]);
+    }
 }

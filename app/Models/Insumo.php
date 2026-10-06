@@ -9,14 +9,13 @@ class Insumo extends BaseModel
     // ✅ Nuevo método compatible con el controlador
     public function getAllBySucursal($sucursal_id)
     {
-        $sql = "SELECT i.*, p.nombre as proveedor_nombre 
-                FROM {$this->table} i
-                LEFT JOIN providers p ON i.id_proveedor = p.id
-                WHERE i.id_sucursal = ? 
-                ORDER BY i.nombre";
-        // Corregir nombre de tabla si es 'proveedores' en lugar de 'providers'
-        // Asumiendo 'proveedores' por el SQL anterior
-        $sql = "SELECT i.*, GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre 
+        $sql = "SELECT i.*, 
+                       GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
+                       (SELECT cd.costo_unitario 
+                        FROM compra_detalles cd 
+                        INNER JOIN compras c ON cd.id_compra = c.id 
+                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id AND c.id_sucursal = i.id_sucursal 
+                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
@@ -33,7 +32,13 @@ class Insumo extends BaseModel
             return $this->getAllBySucursal($sucursal_id);
         }
 
-        $sql = "SELECT i.*, GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre 
+        $sql = "SELECT i.*, 
+                       GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
+                       (SELECT cd.costo_unitario 
+                        FROM compra_detalles cd 
+                        INNER JOIN compras c ON cd.id_compra = c.id 
+                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id 
+                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id

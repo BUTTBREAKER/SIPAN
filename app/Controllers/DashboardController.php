@@ -131,4 +131,62 @@ class DashboardController
         ]);
         exit;
     }
+
+    public function getVentasChartData()
+    {
+        AuthMiddleware::check();
+        header('Content-Type: application/json');
+
+        $sucursal_id = $_SESSION['sucursal_id'] ?? null;
+        if (!$sucursal_id) {
+            echo json_encode(['success' => false, 'message' => 'Sucursal no definida']);
+            return;
+        }
+
+        $dias = isset($_GET['dias']) ? (int)$_GET['dias'] : null;
+        $fecha_inicio = $_GET['fecha_inicio'] ?? null;
+        $fecha_fin = $_GET['fecha_fin'] ?? null;
+
+        if ($dias) {
+            $data = $this->ventaModel->getVentasUltimosDias($sucursal_id, $dias);
+        } elseif ($fecha_inicio && $fecha_fin) {
+            // Reutilizar el método del modelo pero adaptándolo al rango
+            $ventas = $this->ventaModel->getByDateRange($sucursal_id, $fecha_inicio, $fecha_fin);
+            
+            // Agrupar por fecha
+            $agrupado = [];
+            
+            // Crear el rango de fechas para que no queden huecos
+            $current = strtotime($fecha_inicio);
+            $end = strtotime($fecha_fin);
+            while ($current <= $end) {
+                $agrupado[date('Y-m-d', $current)] = 0;
+                $current = strtotime('+1 day', $current);
+            }
+
+            foreach ($ventas as $v) {
+                $f = date('Y-m-d', strtotime($v['fecha_venta']));
+                if (isset($agrupado[$f])) {
+                    $agrupado[$f] += (float)$v['total'];
+                }
+            }
+
+            $data = [];
+            foreach ($agrupado as $f => $total) {
+                $data[] = [
+                    'fecha' => date('d/m', strtotime($f)),
+                    'fecha_full' => $f,
+                    'total' => $total
+                ];
+            }
+        } else {
+            $data = $this->ventaModel->getVentasUltimosDias($sucursal_id, 7);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'data' => $data
+        ]);
+        exit;
+    }
 }

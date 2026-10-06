@@ -65,11 +65,15 @@ $insumos ??= null;
                                 <?php foreach ($insumos as $ins) : ?>
                                 <option value="<?= $ins['id'] ?>" 
                                         data-nombre="<?= htmlspecialchars($ins['nombre']) ?>"
-                                        data-costo="<?= $ins['costo_unitario'] ?? 0 ?>">
+                                        data-costo="<?= $ins['precio_unitario'] ?? 0 ?>"
+                                        data-ultimo="<?= $ins['costo_ultimo'] ?? 0 ?>">
                                     <?= htmlspecialchars($ins['nombre']) ?> (<?= $ins['unidad_medida'] ?>)
                                 </option>
                                 <?php endforeach; ?>
                             </select>
+                            <small class="text-muted" x-show="item_temp.id && item_temp.ultimo_costo > 0">
+                                Gasto pedido anterior: <strong class="text-info" x-text="'$' + item_temp.ultimo_costo"></strong>
+                            </small>
                         </div>
                         <div class="col-md-2">
                              <label class="form-label small">Costo Unit.</label>
@@ -159,6 +163,7 @@ function compraApp() {
             id: '',
             nombre: '',
             costo: '',
+            ultimo_costo: '',
             cantidad: '',
             lote: '',
             vencimiento: ''
@@ -174,12 +179,19 @@ function compraApp() {
             select.addEventListener('change', () => {
                 const option = select.options[select.selectedIndex];
                 const costo = option.getAttribute('data-costo');
+                const ultimo = option.getAttribute('data-ultimo');
                 const nombre = option.getAttribute('data-nombre');
                 
                 this.item_temp.id = select.value;
                 this.item_temp.nombre = nombre;
-                // Sugerir ultimo costo
-                if(costo) this.item_temp.costo = costo;
+                this.item_temp.ultimo_costo = ultimo ? parseFloat(ultimo).toFixed(2) : 0;
+                
+                // Sugerir ultimo costo o costo actual
+                if(ultimo && parseFloat(ultimo) > 0) {
+                    this.item_temp.costo = ultimo;
+                } else if(costo) {
+                    this.item_temp.costo = costo;
+                }
             });
         },
 
