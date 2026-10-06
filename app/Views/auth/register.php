@@ -260,8 +260,16 @@
                         <input type="text" name="primer_nombre" class="form-control" x-model="formData.primer_nombre" required placeholder="Ej: Maria">
                     </div>
                     <div class="col-md-6">
+                        <label class="form-label">Segundo Nombre (Opcional)</label>
+                        <input type="text" name="segundo_nombre" class="form-control" x-model="formData.segundo_nombre" placeholder="Ej: Isabel">
+                    </div>
+                    <div class="col-md-6">
                         <label class="form-label">Apellido Paterno *</label>
                         <input type="text" name="apellido_paterno" class="form-control" x-model="formData.apellido_paterno" required placeholder="Ej: Garcia">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Apellido Materno *</label>
+                        <input type="text" name="apellido_materno" class="form-control" x-model="formData.apellido_materno" required placeholder="Ej: Lopez">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Cédula / RIF *</label>
@@ -363,13 +371,13 @@
                 sucursalInfo: {},
                 isSubmitting: false,
                 formData: {
-                    primer_nombre: '', apellido_paterno: '', dni: '', telefono: '',
+                    primer_nombre: '', segundo_nombre: '', apellido_paterno: '', apellido_materno: '', dni: '', telefono: '',
                     clave_sucursal: '', id_sucursal: '', correo: '', clave: '', confirmar_clave: '', rol: ''
                 },
 
                 nextStep() {
                     if (this.step === 1) {
-                        if (!this.formData.primer_nombre || !this.formData.apellido_paterno || !this.formData.dni || !this.formData.telefono) {
+                        if (!this.formData.primer_nombre || !this.formData.apellido_paterno || !this.formData.apellido_materno || !this.formData.dni || !this.formData.telefono) {
                             return Swal.fire('Error', 'Completa los campos obligatorios', 'error');
                         }
                         

@@ -78,15 +78,21 @@ class Compra extends BaseModel
                     $detalle['fecha_vencimiento'] ?? null
                 ];
 
-                // Collect lotes for batch insert
+                // Collect lotes for batch insert (siempre creamos lote si es insumo o si se solicitó)
+                if (empty($detalle['lote_codigo']) && $tipo === 'insumo') {
+                    // Generar lote automático: L-[FECHA_COMPRA]-[ID_INSUMO]
+                    $fechaC = date('Ymd', strtotime($compraData['fecha_compra']));
+                    $detalle['lote_codigo'] = "L-{$fechaC}-{$id_item}";
+                }
+
                 if (!empty($detalle['lote_codigo'])) {
                     $lotesBatch[] = [
                         'id_sucursal' => $compraData['id_sucursal'],
                         'tipo' => $tipo,
                         'id_item' => $id_item,
                         'codigo_lote' => $detalle['lote_codigo'],
-                        'fecha_entrada' => date('Y-m-d'),
-                        'fecha_vencimiento' => $detalle['fecha_vencimiento'],
+                        'fecha_entrada' => $compraData['fecha_compra'],
+                        'fecha_vencimiento' => $detalle['fecha_vencimiento'] ?? null,
                         'cantidad_inicial' => $cantidad,
                         'costo_unitario' => $costo
                     ];

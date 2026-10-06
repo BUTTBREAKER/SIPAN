@@ -133,6 +133,26 @@ class ProductosController
         exit;
     }
 
+    public function updatePrecio($id)
+    {
+        AuthMiddleware::checkRole(['administrador', 'empleado']);
+        header('Content-Type: application/json');
+
+        $precio = $_POST['precio_actual'] ?? null;
+        if ($precio === null) {
+            echo json_encode(['success' => false, 'message' => 'Precio no especificado']);
+            return;
+        }
+
+        try {
+            $this->productoModel->update($id, ['precio_actual' => floatval($precio)]);
+            echo json_encode(['success' => true, 'message' => 'Precio actualizado']);
+        } catch (\Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+
     public function delete($id)
     {
         AuthMiddleware::checkRole(['administrador']);

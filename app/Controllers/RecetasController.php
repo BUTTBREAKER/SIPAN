@@ -71,7 +71,22 @@ class RecetasController
             }
 
             $this->recetaModel->createWithInsumos($id_producto, $rendimiento, $instrucciones, $sucursal_id, $insumos);
-            echo json_encode(['success' => true, 'message' => 'Receta guardada correctamente']);
+
+            // Calcular costo de produccion (en base a últimos precios o promedios)
+            // Ya lo recibe el controlador si pasamos el costo en $insumos, o lo calculamos aquí
+            $costo_total = 0;
+            foreach ($insumos as $insumo) {
+                // $insumo['costo_unitario'] podría venir del front, lo usamos para el estimado
+                $costo_total += floatval($insumo['cantidad']) * floatval($insumo['costo_unitario'] ?? 0);
+            }
+            $costo_unitario_produccion = $rendimiento > 0 ? $costo_total / $rendimiento : 0;
+
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Receta guardada correctamente',
+                'costo_produccion' => round($costo_unitario_produccion, 2),
+                'id_producto' => $id_producto
+            ]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al guardar receta: ' . $e->getMessage()]);
         }

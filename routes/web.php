@@ -141,6 +141,11 @@ return [
     ),
     new Route(
         'POST',
+        '/productos/update-precio/{id}',
+        [ProductosController::class, 'updatePrecio'],
+    ),
+    new Route(
+        'POST',
         '/productos/delete/{id}',
         [ProductosController::class, 'delete'],
     ),

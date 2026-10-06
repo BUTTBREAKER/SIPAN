@@ -31,7 +31,7 @@ $insumos ??= null;
                 <div class="col-md-6">
                     <div class="form-group">
                         <label class="form-label">Producto <span class="text-danger">*</span></label>
-                        <select x-model="id_producto" class="form-control" required>
+                        <select x-model="id_producto" class="form-control" required id="productoSelect" data-preselect="<?= htmlspecialchars($_GET['producto_id'] ?? '') ?>">
                             <option value="">Seleccionar producto</option>
                             <?php foreach ($productos as $producto) : ?>
                                 <option value="<?= $producto['id'] ?>">
@@ -238,9 +238,44 @@ $insumos ??= null;
 
                     if (data.success) {
                         SIPAN.success(data.message);
-                        setTimeout(() => {
+                        
+                        // Preguntar por el precio de venta sugerido
+                        Swal.fire({
+                            title: 'Receta Guardada',
+                            html: `
+                                <div class="text-start">
+                                    <p>El costo de producción estimado es: <strong class="text-danger">$ ${data.costo_produccion}</strong> por unidad.</p>
+                                    <label class="form-label mt-3">Establecer Precio de Venta ($):</label>
+                                    <input type="number" id="swal-precio-venta" class="form-control" step="0.01" min="0" value="${(data.costo_produccion * 1.5).toFixed(2)}">
+                                    <small class="text-muted">Margen sugerido del 50%</small>
+                                </div>
+                            `,
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonText: 'Guardar Precio',
+                            cancelButtonText: 'Omitir',
+                            preConfirm: () => {
+                                const precio = document.getElementById('swal-precio-venta').value;
+                                if (!precio || isNaN(precio) || parseFloat(precio) < 0) {
+                                    Swal.showValidationMessage('Ingrese un precio válido');
+                                }
+                                return precio;
+                            }
+                        }).then(async (result) => {
+                            if (result.isConfirmed) {
+                                // Actualizar precio_actual del producto
+                                const formDataPrecio = new FormData();
+                                formDataPrecio.append('precio_actual', result.value);
+                                await fetch(`/productos/update-precio/${data.id_producto}`, {
+                                    method: 'POST',
+                                    headers: { 'X-CSRF-Token': csrfToken },
+                                    body: formDataPrecio
+                                });
+                                SIPAN.success('Precio actualizado correctamente');
+                            }
                             window.location.href = '/recetas';
-                        }, 1500);
+                        });
+
                     } else {
                         SIPAN.error(data.message);
                     }
