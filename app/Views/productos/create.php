@@ -23,7 +23,19 @@ require_once __DIR__ . '/../layouts/header.php';
             echo \App\Helpers\CSRF::field();
             ?>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Código del Producto</label>
+                        <div class="input-group">
+                            <input type="text" name="codigo" id="codigoProducto" class="form-control text-uppercase" placeholder="PRD-001" maxlength="20">
+                            <button type="button" class="btn btn-outline-secondary" onclick="generarCodigoProd()" title="Generar código">
+                                <i class="fas fa-magic"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Déjalo vacío para auto-generar.</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
                         <input type="text" name="nombre" class="form-control" required x-model="nombre">
@@ -96,6 +108,13 @@ require_once __DIR__ . '/../layouts/header.php';
 </div>
 
 <script>
+function generarCodigoProd() {
+    const nombre = document.querySelector('input[name="nombre"]').value.trim();
+    const prefix = nombre ? nombre.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X') : 'PRD';
+    const rand = Math.floor(100 + Math.random() * 900);
+    document.getElementById('codigoProducto').value = prefix + '-' + rand;
+}
+
 function productoForm() {
     return {
         nombre: '',

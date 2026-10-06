@@ -89,6 +89,7 @@ $data ??= null;
     </div>
     <?php endif; ?>
 
+    <?php if ($user_rol !== 'cajero') : ?>
     <!-- 3. Gráfico Principal (Span 3) -->
     <div class="bento-widget span-3 widget-chart">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -110,7 +111,9 @@ $data ??= null;
             <canvas id="ventasChart"></canvas>
         </div>
     </div>
+    <?php endif; ?>
 
+    <?php if ($user_rol !== 'cajero') : ?>
     <!-- 4. Top Productos (Span 1) -->
     <div class="bento-widget span-1">
         <div class="mb-3">
@@ -122,6 +125,7 @@ $data ??= null;
             <canvas id="productosChart"></canvas>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- 5. Listas de Stock (Span 2 each) -->
     <div class="bento-widget span-2">
@@ -229,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
     Chart.defaults.color = '#78716C';
     Chart.defaults.maintainAspectRatio = false;
 
+    <?php if ($user_rol !== 'cajero') : ?>
     // 1. Gráfico de Ventas
     const ctxVentas = document.getElementById('ventasChart').getContext('2d');
     const ventasData = <?= json_encode($data['ventas_ultimos_dias']) ?>;
@@ -308,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
             layout: { padding: 10 }
         }
     });
+    <?php endif; ?>
 });
 
 function updateChart(dias, btn) {

@@ -53,10 +53,18 @@ class ProductosController
             exit;
         }
 
+        $codigo = trim($_POST['codigo'] ?? '');
+        if (empty($codigo)) {
+            $nombre_raw = strtoupper(substr(trim($_POST['nombre'] ?? 'PRD'), 0, 3));
+            $prefix = preg_replace('/[^A-Z]/', 'X', $nombre_raw) ?: 'PRD';
+            $codigo = $prefix . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        }
+
         $data = [
             'id_negocio' => $negocio['id'],
             'id_sucursal' => $sucursal_id,
             'id_usuario' => $user['id'],
+            'codigo' => strtoupper($codigo),
             'nombre' => $_POST['nombre'] ?? '',
             'categoria' => $_POST['categoria'] ?? 'Otro',
             'descripcion' => $_POST['descripcion'] ?? '',
@@ -99,7 +107,15 @@ class ProductosController
 
         header('Content-Type: application/json');
 
+        $codigo = trim($_POST['codigo'] ?? '');
+        if (empty($codigo)) {
+            $nombre_raw = strtoupper(substr(trim($_POST['nombre'] ?? 'PRD'), 0, 3));
+            $prefix = preg_replace('/[^A-Z]/', 'X', $nombre_raw) ?: 'PRD';
+            $codigo = $prefix . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        }
+
         $data = [
+            'codigo' => strtoupper($codigo),
             'nombre' => $_POST['nombre'] ?? '',
             'categoria' => $_POST['categoria'] ?? 'Otro',
             'descripcion' => $_POST['descripcion'] ?? '',

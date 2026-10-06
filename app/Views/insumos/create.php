@@ -24,10 +24,29 @@ $proveedores ??= null;
         <form id="formInsumo" action="/insumos/store" method="POST">
             <?= \App\Helpers\CSRF::field() ?>
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Código del Insumo</label>
+                        <div class="input-group">
+                            <input type="text" name="codigo" id="codigoInsumo" class="form-control text-uppercase" placeholder="INS-001" maxlength="20">
+                            <button type="button" class="btn btn-outline-secondary" onclick="generarCodigo()" title="Generar código automático">
+                                <i class="fas fa-magic"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">Déjalo vacío para auto-generar al guardar.</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Nombre del Insumo <span class="text-danger">*</span></label>
                         <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Compra</label>
+                        <input type="date" name="fecha_compra" class="form-control" value="<?= date('Y-m-d') ?>">
+                        <small class="text-muted">Fecha en que se adquirió este insumo.</small>
                     </div>
                 </div>
                 
@@ -107,6 +126,13 @@ $proveedores ??= null;
 </div>
 
 <script>
+function generarCodigo() {
+    const nombre = document.querySelector('input[name="nombre"]').value.trim();
+    const prefix = nombre ? nombre.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X') : 'INS';
+    const rand = Math.floor(100 + Math.random() * 900);
+    document.getElementById('codigoInsumo').value = prefix + '-' + rand;
+}
+
 document.getElementById('formInsumo').addEventListener('submit', async function(e) {
     e.preventDefault();
     

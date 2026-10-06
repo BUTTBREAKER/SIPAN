@@ -203,15 +203,20 @@ class ReportesController
 
     public function productos()
     {
-        $productos = $this->productoModel->getBySucursal($_SESSION['sucursal_id']);
+        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
+        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
+
+        $productos = $this->productoModel->getStatsByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
 
         // Optimización Bolt: El valor_stock ya viene calculado desde el modelo (SQL)
         $valor_total = array_sum(array_column($productos, 'valor_stock'));
 
         $data = [
             'productos' => $productos,
-            'valor_total' => $valor_total
+            'valor_total' => $valor_total,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin
         ];
 
         if ($formato === 'pdf') {
@@ -354,10 +359,17 @@ class ReportesController
 
     public function insumos()
     {
-        $insumos = $this->insumoModel->getAllBySucursal($_SESSION['sucursal_id']);
+        $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
+        $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
 
-        $data = ['insumos' => $insumos];
+        $insumos = $this->insumoModel->getStatsByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+
+        $data = [
+            'insumos' => $insumos,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin
+        ];
 
         if ($formato === 'pdf') {
             $this->generarPDFInsumos($data);

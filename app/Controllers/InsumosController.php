@@ -65,16 +65,26 @@ class InsumosController
 
         $proveedor_id = !empty($_POST['id_proveedor']) ? $_POST['id_proveedor'] : null;
 
+        // Auto-generar código si está vacío
+        $codigo = trim($_POST['codigo'] ?? '');
+        if (empty($codigo)) {
+            $nombre_raw = strtoupper(substr(trim($_POST['nombre'] ?? 'INS'), 0, 3));
+            $prefix = preg_replace('/[^A-Z]/', 'X', $nombre_raw) ?: 'INS';
+            $codigo = $prefix . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        }
+
         $data = [
-            'id_negocio' => $negocio['id'],
-            'id_sucursal' => $sucursal_id,
-            'id_usuario' => $user['id'],
-            'nombre' => trim($_POST['nombre'] ?? ''),
-            'descripcion' => trim($_POST['descripcion'] ?? ''),
+            'id_negocio'    => $negocio['id'],
+            'id_sucursal'   => $sucursal_id,
+            'id_usuario'    => $user['id'],
+            'codigo'        => strtoupper($codigo),
+            'nombre'        => trim($_POST['nombre'] ?? ''),
+            'descripcion'   => trim($_POST['descripcion'] ?? ''),
             'unidad_medida' => (!empty($_POST['unidad_medida'])) ? $_POST['unidad_medida'] : 'kg',
-            'stock_actual' => (isset($_POST['stock_actual']) && $_POST['stock_actual'] !== '') ? $_POST['stock_actual'] : 0,
-            'stock_minimo' => (isset($_POST['stock_minimo']) && $_POST['stock_minimo'] !== '') ? $_POST['stock_minimo'] : 0,
-            'precio_unitario' => (isset($_POST['precio_unitario']) && $_POST['precio_unitario'] !== '') ? $_POST['precio_unitario'] : 0
+            'stock_actual'  => (isset($_POST['stock_actual']) && $_POST['stock_actual'] !== '') ? $_POST['stock_actual'] : 0,
+            'stock_minimo'  => (isset($_POST['stock_minimo']) && $_POST['stock_minimo'] !== '') ? $_POST['stock_minimo'] : 0,
+            'precio_unitario' => (isset($_POST['precio_unitario']) && $_POST['precio_unitario'] !== '') ? $_POST['precio_unitario'] : 0,
+            'fecha_compra'  => !empty($_POST['fecha_compra']) ? $_POST['fecha_compra'] : date('Y-m-d')
         ];
 
         try {
@@ -120,13 +130,23 @@ class InsumosController
 
         $proveedor_id = !empty($_POST['id_proveedor']) ? $_POST['id_proveedor'] : null;
 
+        // Auto-generar código si está vacío
+        $codigo = trim($_POST['codigo'] ?? '');
+        if (empty($codigo)) {
+            $nombre_raw = strtoupper(substr(trim($_POST['nombre'] ?? 'INS'), 0, 3));
+            $prefix = preg_replace('/[^A-Z]/', 'X', $nombre_raw) ?: 'INS';
+            $codigo = $prefix . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        }
+
         $data = [
-            'nombre' => trim($_POST['nombre'] ?? ''),
-            'descripcion' => trim($_POST['descripcion'] ?? ''),
+            'codigo'        => strtoupper($codigo),
+            'nombre'        => trim($_POST['nombre'] ?? ''),
+            'descripcion'   => trim($_POST['descripcion'] ?? ''),
             'unidad_medida' => (!empty($_POST['unidad_medida'])) ? $_POST['unidad_medida'] : 'kg',
-            'stock_actual' => (isset($_POST['stock_actual']) && $_POST['stock_actual'] !== '') ? $_POST['stock_actual'] : 0,
-            'stock_minimo' => (isset($_POST['stock_minimo']) && $_POST['stock_minimo'] !== '') ? $_POST['stock_minimo'] : 0,
-            'precio_unitario' => (isset($_POST['precio_unitario']) && $_POST['precio_unitario'] !== '') ? $_POST['precio_unitario'] : 0
+            'stock_actual'  => (isset($_POST['stock_actual']) && $_POST['stock_actual'] !== '') ? $_POST['stock_actual'] : 0,
+            'stock_minimo'  => (isset($_POST['stock_minimo']) && $_POST['stock_minimo'] !== '') ? $_POST['stock_minimo'] : 0,
+            'precio_unitario' => (isset($_POST['precio_unitario']) && $_POST['precio_unitario'] !== '') ? $_POST['precio_unitario'] : 0,
+            'fecha_compra'  => !empty($_POST['fecha_compra']) ? $_POST['fecha_compra'] : date('Y-m-d')
         ];
 
         try {

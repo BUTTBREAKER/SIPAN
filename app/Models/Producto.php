@@ -94,4 +94,20 @@ class Producto extends BaseModel
                 WHERE id_sucursal = ?";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
+
+    public function getStatsByDateRange($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT p.*, (p.stock_actual * p.precio_actual) as valor_stock,
+                       COALESCE(SUM(vp.cantidad), 0) as total_vendido,
+                       COALESCE(SUM(vp.subtotal), 0) as total_generado
+                FROM {$this->table} p
+                LEFT JOIN venta_productos vp ON p.id = vp.id_producto
+                LEFT JOIN ventas v ON vp.id_venta = v.id AND v.estado = 'completada' 
+                     AND v.fecha_venta >= ? AND v.fecha_venta <= ?
+                WHERE p.id_sucursal = ?
+                GROUP BY p.id
+                ORDER BY total_vendido DESC, p.nombre ASC";
+        
+        return $this->db->fetchAll($sql, [$fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59', $sucursal_id]);
+    }
 }

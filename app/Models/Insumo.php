@@ -107,4 +107,20 @@ class Insumo extends BaseModel
             $this->db->execute($sqlInsert, [$proveedor_id, $insumo_id, $precio]);
         }
     }
+
+    public function getStatsByDateRange($sucursal_id, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT i.*, 
+                       COALESCE(SUM(pi.cantidad_utilizada), 0) as cantidad_usada,
+                       COALESCE(SUM(pi.cantidad_utilizada * i.precio_unitario), 0) as gasto_total
+                FROM {$this->table} i
+                LEFT JOIN produccion_insumos pi ON i.id = pi.id_insumo
+                LEFT JOIN producciones pr ON pi.id_produccion = pr.id 
+                     AND pr.fecha_produccion >= ? AND pr.fecha_produccion <= ?
+                WHERE i.id_sucursal = ?
+                GROUP BY i.id
+                ORDER BY cantidad_usada DESC, i.nombre ASC";
+        
+        return $this->db->fetchAll($sql, [$fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59', $sucursal_id]);
+    }
 }
