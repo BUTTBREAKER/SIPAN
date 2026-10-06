@@ -114,23 +114,6 @@ class DashboardController
         exit;
     }
 
-    public function getVentasChartData()
-    {
-        AuthMiddleware::check();
-        header('Content-Type: application/json');
-
-        $user = AuthMiddleware::getUser();
-        $sucursal_id = $user['sucursal_id'];
-        $dias = $_GET['dias'] ?? 7;
-
-        $ventas = $this->ventaModel->getVentasUltimosDias($sucursal_id, $dias);
-
-        echo json_encode([
-            'success' => true,
-            'data' => $ventas
-        ]);
-        exit;
-    }
 
     public function getVentasChartData()
     {
