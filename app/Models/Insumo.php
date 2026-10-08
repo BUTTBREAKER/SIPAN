@@ -7,25 +7,36 @@ class Insumo extends BaseModel
     protected string $table = 'insumos';
 
     // ✅ Nuevo método compatible con el controlador
+    // Optimización Bolt: Se reemplazó la subconsulta correlacionada escalar por un LEFT JOIN
+    // con una tabla derivada (ultimo_costo) que precalcula el último ID de compra por insumo.
+    // Esto reduce la complejidad de O(N * M) a O(N + M).
     public function getAllBySucursal($sucursal_id)
     {
         $sql = "SELECT i.*, 
                        GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id AND c.id_sucursal = i.id_sucursal 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       MAX(ultimo_costo.costo_unitario) as costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item, cd.costo_unitario
+                    FROM compra_detalles cd
+                    INNER JOIN (
+                        SELECT cd_sub.id_item, MAX(cd_sub.id) AS max_cd_id
+                        FROM compra_detalles cd_sub
+                        INNER JOIN compras c_sub ON cd_sub.id_compra = c_sub.id
+                        WHERE cd_sub.tipo_item = 'insumo' AND c_sub.id_sucursal = ?
+                        GROUP BY cd_sub.id_item
+                    ) max_cd ON cd.id = max_cd.max_cd_id
+                ) ultimo_costo ON i.id = ultimo_costo.id_item
                 WHERE i.id_sucursal = ? 
                 GROUP BY i.id
                 ORDER BY i.nombre";
-        return $this->db->fetchAll($sql, [$sucursal_id]);
+        return $this->db->fetchAll($sql, [$sucursal_id, $sucursal_id]);
     }
 
     // ✅ Método general (sin sucursal)
+    // Optimización Bolt: Se utiliza LEFT JOIN con tabla derivada para evitar subconsultas correlacionadas escalares.
     public function all(?int $sucursal_id = null): array
     {
         if ($sucursal_id) {
@@ -34,14 +45,21 @@ class Insumo extends BaseModel
 
         $sql = "SELECT i.*, 
                        GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       MAX(ultimo_costo.costo_unitario) as costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item, cd.costo_unitario
+                    FROM compra_detalles cd
+                    INNER JOIN (
+                        SELECT cd_sub.id_item, MAX(cd_sub.id) AS max_cd_id
+                        FROM compra_detalles cd_sub
+                        INNER JOIN compras c_sub ON cd_sub.id_compra = c_sub.id
+                        WHERE cd_sub.tipo_item = 'insumo'
+                        GROUP BY cd_sub.id_item
+                    ) max_cd ON cd.id = max_cd.max_cd_id
+                ) ultimo_costo ON i.id = ultimo_costo.id_item
                 GROUP BY i.id
                 ORDER BY i.nombre";
         return $this->db->fetchAll($sql);
@@ -125,7 +143,7 @@ class Insumo extends BaseModel
                 WHERE i.id_sucursal = ?
                 GROUP BY i.id
                 ORDER BY cantidad_usada DESC, i.nombre ASC";
-        
+
         return $this->db->fetchAll($sql, [$fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59', $sucursal_id]);
     }
 }
