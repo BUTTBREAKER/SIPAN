@@ -120,27 +120,11 @@ class DashboardController
         header('Content-Type: application/json');
 
         $user = AuthMiddleware::getUser();
-        $sucursal_id = $user['sucursal_id'];
-        $dias = $_GET['dias'] ?? 7;
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? null);
 
-        $ventas = $this->ventaModel->getVentasUltimosDias($sucursal_id, $dias);
-
-        echo json_encode([
-            'success' => true,
-            'data' => $ventas
-        ]);
-        exit;
-    }
-
-    public function getVentasChartData()
-    {
-        AuthMiddleware::check();
-        header('Content-Type: application/json');
-
-        $sucursal_id = $_SESSION['sucursal_id'] ?? null;
         if (!$sucursal_id) {
             echo json_encode(['success' => false, 'message' => 'Sucursal no definida']);
-            return;
+            exit;
         }
 
         $dias = isset($_GET['dias']) ? (int)$_GET['dias'] : null;
