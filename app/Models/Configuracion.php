@@ -122,14 +122,21 @@ class Configuracion extends BaseModel implements LoggerAwareInterface
      */
     private function fetchFromApi()
     {
-        $url = 'https://bcv-api.rafnixg.dev/rates/';
+        $url = 'https://api.montosve.com/v1/fx/rates';
 
         try {
             $ch = curl_init();
+            $headers = [];
+            $apiKey = $this->get('montosve_api_key'); // optional API key
+            if ($apiKey) {
+                $headers[] = 'X-API-Key: ' . $apiKey;
+            }
+            $headers[] = 'Accept: application/json';
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
             $json = curl_exec($ch);
@@ -139,28 +146,24 @@ class Configuracion extends BaseModel implements LoggerAwareInterface
 
             if ($httpCode === 200 && $json) {
                 $data = json_decode($json, true);
-
-                if (isset($data['dollar'])) {
-                    return (float)$data['dollar'];
+                // MontosVE response handling
+                $inner = $data['data'] ?? $data;
+                if (isset($inner['rates']['USD'])) {
+                    return (float)$inner['rates']['USD'];
                 }
-                if (isset($data['USD'])) {
-                    return (float)$data['USD'];
+                if (isset($inner['rates']['bcv'])) {
+                    return (float)$inner['rates']['bcv'];
                 }
-                if (isset($data['usd'])) {
-                    return (float)$data['usd'];
+                if (isset($inner['rate'])) {
+                    return (float)$inner['rate'];
                 }
-                if (isset($data['price'])) {
-                    return (float)$data['price'];
-                }
-                if (isset($data['rate'])) {
-                    return (float)$data['rate'];
-                }
-
-                if (is_array($data)) {
-                    foreach ($data as $key => $val) {
-                        if (strtoupper($key) === 'USD') {
-                            return (float)$val;
-                        }
+                // Fallback: look for any USD key
+                foreach ($inner as $key => $val) {
+                    if (is_string($key) && strtoupper($key) === 'USD' && is_numeric($val)) {
+                        return (float)$val;
+                    }
+                    if (is_array($val) && isset($val['USD'])) {
+                        return (float)$val['USD'];
                     }
                 }
             } else {
