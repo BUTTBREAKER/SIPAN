@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-05-18 - [Batched Supplier Insumos and SARGable Unlinked Items]
+**Learning:** Inserting supplier insumos line-by-line in a loop creates unnecessary database round-trips (O(N)). Batching them into a single multi-row `INSERT` reduces execution to O(1). Additionally, using `LEFT JOIN ... GROUP BY ... HAVING COUNT(pi.id) = 0` to find unlinked items forces temporary tables and filesorts; replacing it with a SARGable `NOT EXISTS` query allows MySQL to leverage the index on `proveedor_insumos.id_insumo` and short-circuit execution.
+**Action:** Always batch relation insertions and use `NOT EXISTS` instead of `LEFT JOIN ... GROUP BY ... HAVING COUNT = 0` when querying unlinked records.
