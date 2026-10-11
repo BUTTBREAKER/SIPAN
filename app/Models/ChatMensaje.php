@@ -10,6 +10,13 @@ final class ChatMensaje extends BaseModel
 {
     /**
      * Obtener conversaciones del usuario con último mensaje y conteo no leídos
+     *
+     * Bolt Optimization: Refactored correlated scalar subqueries into JOINs with derived tables.
+     * The unread message count and last message ID were previously computed per row via scalar
+     * subqueries, resulting in O(N*M) table scans on `chat_mensajes` during every 15-second chat poll.
+     * By aggregating unread counts and latest message IDs in derived tables pre-filtered for the active
+     * user's conversations, complexity is reduced to O(N+M) with single-pass index scans.
+     *
      * @return list<array{
      *   id: int,
      *   tipo: 'directa'|'grupo',
@@ -32,32 +39,42 @@ final class ChatMensaje extends BaseModel
             SELECT
                 c.id,
                 c.tipo,
-                c.nombre grupo_nombre,
+                c.nombre AS grupo_nombre,
                 c.id_sucursal,
                 -- Último mensaje
-                m.mensaje ultimo_mensaje,
-                m.created_at ultimo_mensaje_fecha,
-                m_user.primer_nombre ultimo_mensaje_autor,
+                COALESCE(m.mensaje, '') AS ultimo_mensaje,
+                m.created_at AS ultimo_mensaje_fecha,
+                m_user.primer_nombre AS ultimo_mensaje_autor,
                 -- Conteo no leídos
-                (SELECT COUNT(*) FROM chat_mensajes cm2
-                 WHERE cm2.id_conversacion = c.id
-                   AND cm2.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                   AND cm2.id_usuario != ?) no_leidos,
+                COALESCE(unread.no_leidos, 0) AS no_leidos,
                 -- Info del otro participante (para directas)
-                other_user.id otro_usuario_id,
-                CONCAT_WS(' ', other_user.primer_nombre, other_user.apellido_paterno) otro_usuario_nombre,
-                other_user.rol otro_usuario_rol,
+                other_user.id AS otro_usuario_id,
+                CONCAT_WS(' ', other_user.primer_nombre, other_user.apellido_paterno) AS otro_usuario_nombre,
+                other_user.rol AS otro_usuario_rol,
                 -- Sucursal del otro usuario
-                s.nombre otro_usuario_sucursal
+                s.nombre AS otro_usuario_sucursal
             FROM chat_participantes cp
             INNER JOIN chat_conversaciones c ON c.id = cp.id_conversacion
-            -- Último mensaje (subquery para obtener el más reciente)
-            LEFT JOIN chat_mensajes m ON m.id = (
-                SELECT m2.id FROM chat_mensajes m2
-                WHERE m2.id_conversacion = c.id
-                ORDER BY m2.created_at DESC LIMIT 1
-            )
+            -- Bolt Optimization: Joined derived table to retrieve the latest message ID per conversation in O(1)
+            LEFT JOIN (
+                SELECT cm_last.id_conversacion, MAX(cm_last.id) AS max_id
+                FROM chat_mensajes cm_last
+                INNER JOIN chat_participantes cp_filter ON cp_filter.id_conversacion = cm_last.id_conversacion
+                WHERE cp_filter.id_usuario = ?
+                GROUP BY cm_last.id_conversacion
+            ) m_last ON m_last.id_conversacion = c.id
+            LEFT JOIN chat_mensajes m ON m.id = m_last.max_id
             LEFT JOIN usuarios m_user ON m_user.id = m.id_usuario
+            -- Bolt Optimization: Joined derived table for unread counts, eliminating per-row scalar subquery scans
+            LEFT JOIN (
+                SELECT cm_unread.id_conversacion, COUNT(*) AS no_leidos
+                FROM chat_mensajes cm_unread
+                INNER JOIN chat_participantes cp_unread ON cp_unread.id_conversacion = cm_unread.id_conversacion
+                WHERE cp_unread.id_usuario = ?
+                  AND cm_unread.created_at > COALESCE(cp_unread.ultimo_leido, '1970-01-01')
+                  AND cm_unread.id_usuario != ?
+                GROUP BY cm_unread.id_conversacion
+            ) unread ON unread.id_conversacion = c.id
             -- Otro participante (para conversaciones directas)
             LEFT JOIN chat_participantes cp2 ON cp2.id_conversacion = c.id
                 AND cp2.id_usuario != ? AND c.tipo = 'directa'
@@ -67,7 +84,7 @@ final class ChatMensaje extends BaseModel
             ORDER BY COALESCE(m.created_at, c.created_at) DESC
         ";
 
-        return $this->db->fetchAll($sql, [$userId, $userId, $userId]);
+        return $this->db->fetchAll($sql, [$userId, $userId, $userId, $userId, $userId]);
     }
 
     /**
@@ -196,22 +213,22 @@ final class ChatMensaje extends BaseModel
 
     /**
      * Contar total de mensajes no leídos del usuario (para sidebar badge)
+     *
+     * Bolt Optimization: Refactored correlated scalar subquery in loop/subquery into a single JOIN.
+     * Replaced nested subquery aggregation with a direct INNER JOIN between `chat_participantes`
+     * and `chat_mensajes`, matching user participation and filtering unread timestamps.
+     *
      * @throws PDOException
      */
     public function contarNoLeidos(int $userId): int
     {
         $sql = "
-            SELECT COALESCE(SUM(sub.no_leidos), 0) total
-            FROM (
-                SELECT (
-                    SELECT COUNT(*) FROM chat_mensajes cm
-                    WHERE cm.id_conversacion = cp.id_conversacion
-                      AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                      AND cm.id_usuario != ?
-                ) no_leidos
-                FROM chat_participantes cp
-                WHERE cp.id_usuario = ?
-            ) sub
+            SELECT COUNT(cm.id) AS total
+            FROM chat_participantes cp
+            INNER JOIN chat_mensajes cm ON cm.id_conversacion = cp.id_conversacion
+            WHERE cp.id_usuario = ?
+              AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
+              AND cm.id_usuario != ?
         ";
 
         $result = $this->db->fetchOne($sql, [$userId, $userId]);
