@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Derived Table Join for Latest Related Record]
+**Learning:** Correlated scalar subqueries in the SELECT clause (e.g. fetching `costo_ultimo` from purchase details per item) execute N times for N rows (O(N*M)). Refactoring these into a `LEFT JOIN` on a derived table that pre-filters by branch (`id_sucursal`) and computes a formatted composite `max_key` (`MAX(CONCAT(DATE_FORMAT(fecha_compra...), LPAD(c.id...), LPAD(cd.id...)))`) retrieves the correct chronological record in O(N+M) complexity while maintaining exact ordering semantics.
+**Action:** Replace SELECT scalar subqueries that fetch the latest child record with derived table joins using early branch filtering and composite key aggregation.
