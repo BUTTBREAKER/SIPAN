@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Anti-Join Optimization for Unmapped Relationship Queries]
+**Learning:** Using `LEFT JOIN ... GROUP BY ... HAVING COUNT(...) = 0` to find unmapped records (e.g. insumos without a provider) causes MySQL to generate temporary tables and perform unnecessary aggregation filesorts over the whole dataset. Replacing this with `NOT EXISTS` allows short-circuit index evaluations (anti-join optimization), returning results faster and using less memory.
+**Action:** When querying for records lacking a child relationship, prefer `NOT EXISTS (SELECT 1 FROM child WHERE ...)` over `LEFT JOIN ... GROUP BY ... HAVING`.
