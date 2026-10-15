@@ -42,8 +42,8 @@ use App\Core\Database;
 
 class BaseModel
 {
-    protected $db;
-    protected $table;
+    protected Database $db;
+    protected string $table;
     public function __construct()
     {
         $this->db = Database::getInstance();
