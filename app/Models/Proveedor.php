@@ -22,21 +22,38 @@ class Proveedor extends BaseModel
         return $this->db->fetchAll($sql, [$id]);
     }
 
+    /**
+     * Asserts and inserts supplier insumos in a single batched query (Bolt Optimization: O(1) DB round-trip)
+     */
     public function addInsumos($proveedor_id, $insumos)
     {
         $this->db->beginTransaction();
         try {
             $this->db->execute("DELETE FROM proveedor_insumos WHERE id_proveedor = ?", [$proveedor_id]);
-            foreach ($insumos as $insumo) {
-                $sql = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio, tiempo_entrega)
-                        VALUES (?, ?, ?, ?)";
-                $this->db->execute($sql, [
-                    $proveedor_id,
-                    $insumo['id_insumo'],
-                    $insumo['precio'] ?? 0,
-                    $insumo['tiempo_entrega'] ?? null
-                ]);
+
+            if (!empty($insumos)) {
+                $placeholders = [];
+                $params = [];
+                foreach ($insumos as $insumo) {
+                    if (!isset($insumo['id_insumo'])) {
+                        continue;
+                    }
+                    $placeholders[] = "(?, ?, ?, ?)";
+                    array_push(
+                        $params,
+                        $proveedor_id,
+                        $insumo['id_insumo'],
+                        $insumo['precio'] ?? 0,
+                        $insumo['tiempo_entrega'] ?? null
+                    );
+                }
+
+                if (!empty($placeholders)) {
+                    $sql = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio, tiempo_entrega) VALUES " . implode(', ', $placeholders);
+                    $this->db->execute($sql, $params);
+                }
             }
+
             $this->db->commit();
         } catch (\Exception $e) {
             $this->db->rollback();
@@ -44,14 +61,18 @@ class Proveedor extends BaseModel
         }
     }
 
+    /**
+     * Obtiene los insumos que no tienen proveedor asignado.
+     * Bolt Optimization: Utiliza NOT EXISTS para evitar JOINs globales y agrupamiento GROUP BY / HAVING.
+     */
     public function getInsumosSinProveedor($sucursal_id)
     {
         $sql = "SELECT i.id, i.nombre, i.unidad_medida, i.stock_actual, i.stock_minimo
             FROM insumos i
-            LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
             WHERE i.id_sucursal = ?
-            GROUP BY i.id
-            HAVING COUNT(pi.id) = 0
+              AND NOT EXISTS (
+                  SELECT 1 FROM proveedor_insumos pi WHERE pi.id_insumo = i.id
+              )
             ORDER BY i.nombre";
         return $this->db->fetchAll($sql, [$sucursal_id]);
     }
