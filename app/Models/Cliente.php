@@ -65,25 +65,24 @@ final class Cliente extends BaseModel
      */
     public function getWithResumen(?int $sucursal_id = null): array
     {
-        $sql = "SELECT * FROM v_resumen_pedidos_cliente";
+        // Optimización Bolt: Consulta unificada con LEFT JOIN y COALESCE para evitar dependencia de vistas inexistentes y retornos NULL
+        $sql = "SELECT c.*,
+                       COUNT(p.id) as total_pedidos,
+                       COALESCE(SUM(p.total), 0) as total_comprado,
+                       COALESCE(SUM(p.monto_pagado), 0) as total_pagado,
+                       COALESCE(SUM(p.monto_deuda), 0) as total_deuda
+                FROM {$this->table} c
+                LEFT JOIN pedidos p ON c.id = p.id_cliente";
 
-        if ($sucursal_id) {
-            // Filtrar por sucursal si es necesario
-            $sql = "SELECT c.*, 
-                           COUNT(p.id) total_pedidos,
-                           SUM(p.total) total_comprado,
-                           SUM(p.monto_pagado) total_pagado,
-                           SUM(p.monto_deuda) total_deuda
-                    FROM {$this->table} c
-                    LEFT JOIN pedidos p ON c.id = p.id_cliente
-                    WHERE c.id_sucursal = ?
-                    GROUP BY c.id
-                    ORDER BY c.nombre";
-
-            return $this->db->fetchAll($sql, [$sucursal_id]);
+        $params = [];
+        if ($sucursal_id !== null) {
+            $sql .= " WHERE c.id_sucursal = ?";
+            $params[] = $sucursal_id;
         }
 
-        return $this->db->fetchAll($sql);
+        $sql .= " GROUP BY c.id ORDER BY c.nombre";
+
+        return $this->db->fetchAll($sql, $params);
     }
 
     /**
