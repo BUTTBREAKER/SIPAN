@@ -22,21 +22,40 @@ class Proveedor extends BaseModel
         return $this->db->fetchAll($sql, [$id]);
     }
 
+    /**
+     * Agrega insumos asociados a un proveedor.
+     * Optimización Bolt: Reemplaza las inserciones individuales en bucle O(N) por un
+     * INSERT multilínea por lotes (batch insert) en una sola consulta SQL O(1).
+     */
     public function addInsumos($proveedor_id, $insumos)
     {
         $this->db->beginTransaction();
         try {
             $this->db->execute("DELETE FROM proveedor_insumos WHERE id_proveedor = ?", [$proveedor_id]);
-            foreach ($insumos as $insumo) {
-                $sql = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio, tiempo_entrega)
-                        VALUES (?, ?, ?, ?)";
-                $this->db->execute($sql, [
-                    $proveedor_id,
-                    $insumo['id_insumo'],
-                    $insumo['precio'] ?? 0,
-                    $insumo['tiempo_entrega'] ?? null
-                ]);
+
+            if (!empty($insumos)) {
+                $placeholders = [];
+                $params = [];
+
+                foreach ($insumos as $insumo) {
+                    $insumo_id = $insumo['id_insumo'] ?? null;
+                    if (!$insumo_id) {
+                        continue;
+                    }
+
+                    $placeholders[] = "(?, ?, ?, ?)";
+                    $params[] = $proveedor_id;
+                    $params[] = $insumo_id;
+                    $params[] = $insumo['precio'] ?? 0;
+                    $params[] = $insumo['tiempo_entrega'] ?? null;
+                }
+
+                if (!empty($placeholders)) {
+                    $sql = "INSERT INTO proveedor_insumos (id_proveedor, id_insumo, precio, tiempo_entrega) VALUES " . implode(', ', $placeholders);
+                    $this->db->execute($sql, $params);
+                }
             }
+
             $this->db->commit();
         } catch (\Exception $e) {
             $this->db->rollback();
