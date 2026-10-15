@@ -12,6 +12,13 @@ final class Caja extends BaseModel
     protected string $table = 'cajas';
 
     /**
+     * Cache estático a nivel de petición para cajas activas por sucursal.
+     * Optimización Bolt: Evita consultas redundantes a la BD durante la misma petición HTTP.
+     * @var array<int, false|array>
+     */
+    protected static array $activaCache = [];
+
+    /**
      * Obtiene la caja activa para una sucursal
      * @return false|array{
      *   id: int,
@@ -38,9 +45,18 @@ final class Caja extends BaseModel
      */
     public function getActiva(?int $id_sucursal): false|array
     {
-        $sql = "SELECT * FROM $this->table WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
+        if ($id_sucursal !== null && array_key_exists($id_sucursal, self::$activaCache)) {
+            return self::$activaCache[$id_sucursal];
+        }
 
-        return $this->db->fetchOne($sql, [$id_sucursal]);
+        $sql = "SELECT * FROM $this->table WHERE id_sucursal = ? AND estado = 'abierta' LIMIT 1";
+        $result = $this->db->fetchOne($sql, [$id_sucursal]);
+
+        if ($id_sucursal !== null) {
+            self::$activaCache[$id_sucursal] = $result;
+        }
+
+        return $result;
     }
 
     /**
@@ -54,6 +70,7 @@ final class Caja extends BaseModel
         float $monto_bs,
         float $tasa,
     ): string|false {
+        self::$activaCache = [];
         $total_usd = $monto_usd + ($monto_bs / $tasa);
 
         return $this->create([
@@ -113,6 +130,7 @@ final class Caja extends BaseModel
         float $tasa,
         string $observaciones = '',
     ): int {
+        self::$activaCache = [];
         $resumen = $this->getResumen($id_caja);
         $total_cierre_usd = $monto_usd + ($monto_bs / $tasa);
 
