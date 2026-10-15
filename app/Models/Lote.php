@@ -99,36 +99,83 @@ class Lote extends BaseModel
     /**
      * Actualizar stock de un lote (consumo)
      * Retorna la cantidad que NO se pudo descontar (si stock insuficiente)
+     * Optimización Bolt: Selección de columnas necesarias y actualización en lote (batch UPDATE)
      */
     public function descontarStock($tipo, $id_item, $cantidad, $sucursal_id)
     {
         // Buscar lotes activos ordenados por vencimiento (FIFO / FEFO)
-        $sql = "SELECT * FROM {$this->table} 
+        $sql = "SELECT id, cantidad_actual FROM {$this->table}
                 WHERE tipo = ? AND id_item = ? AND id_sucursal = ? 
                 AND estado = 'activo' AND cantidad_actual > 0
                 ORDER BY fecha_vencimiento ASC, created_at ASC";
 
         $lotes = $this->db->fetchAll($sql, [$tipo, $id_item, $sucursal_id]);
 
-        $pendiente = $cantidad;
+        $pendiente = (float)$cantidad;
+        $updates = [];
 
         foreach ($lotes as $lote) {
             if ($pendiente <= 0) {
                 break;
             }
 
-            $descontar = min($pendiente, $lote['cantidad_actual']);
+            $cant_actual = (float)$lote['cantidad_actual'];
+            $descontar = min($pendiente, $cant_actual);
 
-            // Actualizar lote
-            $nuevo_stock = $lote['cantidad_actual'] - $descontar;
+            // Actualizar lote en memoria
+            $nuevo_stock = $cant_actual - $descontar;
             $estado = ($nuevo_stock <= 0) ? 'agotado' : 'activo';
 
-            $this->db->execute(
-                "UPDATE {$this->table} SET cantidad_actual = ?, estado = ? WHERE id = ?",
-                [$nuevo_stock, $estado, $lote['id']]
-            );
+            $updates[] = [
+                'id' => $lote['id'],
+                'cantidad_actual' => $nuevo_stock,
+                'estado' => $estado
+            ];
 
             $pendiente -= $descontar;
+        }
+
+        // Ejecutar actualización de lotes en un solo batch
+        if (!empty($updates)) {
+            if (count($updates) === 1) {
+                $u = $updates[0];
+                $this->db->execute(
+                    "UPDATE {$this->table} SET cantidad_actual = ?, estado = ? WHERE id = ?",
+                    [$u['cantidad_actual'], $u['estado'], $u['id']]
+                );
+            } else {
+                $ids = array_column($updates, 'id');
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+                $caseStock = "CASE id ";
+                $caseEstado = "CASE id ";
+                $params = [];
+
+                foreach ($updates as $u) {
+                    $caseStock .= "WHEN ? THEN ? ";
+                    $params[] = $u['id'];
+                    $params[] = $u['cantidad_actual'];
+                }
+                $caseStock .= "END";
+
+                foreach ($updates as $u) {
+                    $caseEstado .= "WHEN ? THEN ? ";
+                    $params[] = $u['id'];
+                    $params[] = $u['estado'];
+                }
+                $caseEstado .= "END";
+
+                foreach ($ids as $id) {
+                    $params[] = $id;
+                }
+
+                $sqlUpdate = "UPDATE {$this->table}
+                              SET cantidad_actual = {$caseStock},
+                                  estado = {$caseEstado}
+                              WHERE id IN ({$placeholders})";
+
+                $this->db->execute($sqlUpdate, $params);
+            }
         }
 
         return $pendiente; // Si es 0, se descontó todo correctamente
