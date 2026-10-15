@@ -7,6 +7,7 @@ use App\Models\Pedido;
 use App\Models\Insumo;
 use App\Models\Producto;
 use App\Models\Lote;
+use App\Models\Proveedor;
 
 // Mock session
 $_SESSION['id_usuario'] = 1;
@@ -128,6 +129,15 @@ class MockLote extends Lote
     }
 }
 
+class MockProveedor extends Proveedor
+{
+    public function __construct($db)
+    {
+        $this->db = $db;
+        $this->table = 'proveedores';
+    }
+}
+
 function testOptimizations()
 {
     $mockDb = new MockDatabase();
@@ -223,6 +233,33 @@ function testOptimizations()
         echo "✅ Pedido optimization verified (Mocked)!\n";
     } else {
         echo "❌ Pedido optimization verification failed!\n";
+    }
+
+    echo "\n--- Testing Proveedor::addInsumos Optimization (Mocked) ---\n";
+    $mockDb->queries = [];
+
+    $proveedorModel = new MockProveedor($mockDb);
+    $insumos = [
+        ['id_insumo' => 10, 'precio' => 15.5, 'tiempo_entrega' => 3],
+        ['id_insumo' => 11, 'precio' => 20.0, 'tiempo_entrega' => 5]
+    ];
+
+    $proveedorModel->addInsumos(5, $insumos);
+
+    $batchInsertFound = false;
+    foreach ($mockDb->queries as $q) {
+        if (is_array($q) && strpos($q['sql'], 'INSERT INTO proveedor_insumos') !== false) {
+            if (strpos($q['sql'], 'VALUES (?, ?, ?, ?), (?, ?, ?, ?)') !== false) {
+                $batchInsertFound = true;
+                echo "Found batch insert for proveedor insumos (multiple rows)\n";
+            }
+        }
+    }
+
+    if ($batchInsertFound) {
+        echo "✅ Proveedor optimization verified (Mocked)!\n";
+    } else {
+        echo "❌ Proveedor optimization verification failed!\n";
     }
 }
 
