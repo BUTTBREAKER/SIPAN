@@ -89,6 +89,9 @@ class Configuracion extends BaseModel implements LoggerAwareInterface
 
         self::$cache[$key] = $rate;
 
+        // Bolt Optimization: Mark BCV rate as checked for this request to prevent redundant DB queries
+        self::$tasaBcvChecked = true;
+
         // Check if expired (1 hour = 3600 seconds)
         if (time() - $lastUpdate > 3600) {
             $newRate = $this->fetchFromApi();
