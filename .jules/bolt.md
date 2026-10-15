@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Unbounded Query Results in Background Polling]
+**Learning:** Background polling endpoints (such as header notification polling every 30 seconds) that run queries like `SELECT * WHERE leida = 0` without a `LIMIT` clause cause degrading performance as unread records accumulate over time. Setting a sensible default `$limit` (e.g. 50) caps database reads, memory usage, and JSON payload sizes without affecting UI requirements.
+**Action:** Always check polling endpoints for unbounded `SELECT` statements and add default limits.
