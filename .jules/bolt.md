@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Batched CASE WHEN Stock Deduction]
+**Learning:** Performing database `UPDATE` statements inside a `foreach` loop during inventory/lot consumption creates an N-query database bottleneck. Selecting only necessary columns (`id`, `cantidad_actual`) and consolidating updates into a single `UPDATE ... SET col = CASE id WHEN ... END` query reduces database round-trips from O(N) to O(1) while maintaining exact stock calculation correctness.
+**Action:** Replace sequential `UPDATE` queries inside loops with single-query `CASE id WHEN ... THEN ... END` batched updates.
