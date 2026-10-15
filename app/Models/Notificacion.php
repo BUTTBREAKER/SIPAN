@@ -23,9 +23,16 @@ class Notificacion extends BaseModel
         ]);
     }
 
-    public function getNoLeidas($sucursal_id, $usuario_id = null)
+    /**
+     * Bolt Optimization: Selects only necessary fields instead of SELECT *
+     * and applies a LIMIT to optimize payload size and performance for 30s AJAX polling.
+     */
+    public function getNoLeidas($sucursal_id, $usuario_id = null, int $limit = 50)
     {
-        $sql = "SELECT * FROM {$this->table} 
+        $limit = max(1, $limit);
+
+        $sql = "SELECT id, tipo, titulo, mensaje, referencia_tipo, referencia_id, fecha_creacion
+                FROM {$this->table}
                 WHERE id_sucursal = ? 
                 AND leida = 0";
 
@@ -36,7 +43,7 @@ class Notificacion extends BaseModel
             $params[] = $usuario_id;
         }
 
-        $sql .= " ORDER BY fecha_creacion DESC";
+        $sql .= " ORDER BY fecha_creacion DESC LIMIT " . (int)$limit;
 
         return $this->db->fetchAll($sql, $params);
     }
