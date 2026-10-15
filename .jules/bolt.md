@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [NOT EXISTS vs LEFT JOIN GROUP BY for Unassociated Filter Queries]
+**Learning:** Using `LEFT JOIN ... GROUP BY ... HAVING COUNT(...) = 0` to filter for unassociated entities (e.g., supplies without suppliers) causes full table group-by aggregations and can fail under strict MySQL `ONLY_FULL_GROUP_BY` modes. Refactoring to `NOT EXISTS (SELECT 1 ...)` produces an optimized anti-semi-join plan without sorting or aggregate overhead.
+**Action:** Replace `LEFT JOIN ... GROUP BY ... HAVING COUNT(...) = 0` patterns with SARGable `NOT EXISTS` subqueries when identifying unlinked rows.
