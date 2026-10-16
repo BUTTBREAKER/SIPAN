@@ -6,23 +6,29 @@ class Insumo extends BaseModel
 {
     protected string $table = 'insumos';
 
-    // ✅ Nuevo método compatible con el controlador
+    // ✅ Nuevo método optimizado (sin subconsultas correlacionadas)
     public function getAllBySucursal($sucursal_id)
     {
+        // Se utiliza LEFT JOIN con una tabla derivada agrupada por id_item para obtener el costo_ultimo
+        // evitando subconsultas escalar por cada registro O(N*M) y reduciendo la complejidad a O(N+M).
         $sql = "SELECT i.*, 
-                       GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id AND c.id_sucursal = i.id_sucursal 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       GROUP_CONCAT(DISTINCT p.nombre SEPARATOR ', ') as proveedor_nombre,
+                       uc.costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item,
+                           CAST(SUBSTRING_INDEX(MAX(CONCAT(DATE_FORMAT(c.fecha_compra, '%Y%m%d%H%i%s'), LPAD(c.id, 10, '0'), LPAD(cd.id, 10, '0'), ':', cd.costo_unitario)), ':', -1) AS DECIMAL(10, 4)) as costo_ultimo
+                    FROM compra_detalles cd
+                    INNER JOIN compras c ON cd.id_compra = c.id
+                    WHERE cd.tipo_item = 'insumo' AND c.id_sucursal = ?
+                    GROUP BY cd.id_item
+                ) uc ON uc.id_item = i.id
                 WHERE i.id_sucursal = ? 
                 GROUP BY i.id
                 ORDER BY i.nombre";
-        return $this->db->fetchAll($sql, [$sucursal_id]);
+        return $this->db->fetchAll($sql, [$sucursal_id, $sucursal_id]);
     }
 
     // ✅ Método general (sin sucursal)
@@ -33,15 +39,19 @@ class Insumo extends BaseModel
         }
 
         $sql = "SELECT i.*, 
-                       GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       GROUP_CONCAT(DISTINCT p.nombre SEPARATOR ', ') as proveedor_nombre,
+                       uc.costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item,
+                           CAST(SUBSTRING_INDEX(MAX(CONCAT(DATE_FORMAT(c.fecha_compra, '%Y%m%d%H%i%s'), LPAD(c.id, 10, '0'), LPAD(cd.id, 10, '0'), ':', cd.costo_unitario)), ':', -1) AS DECIMAL(10, 4)) as costo_ultimo
+                    FROM compra_detalles cd
+                    INNER JOIN compras c ON cd.id_compra = c.id
+                    WHERE cd.tipo_item = 'insumo'
+                    GROUP BY cd.id_item
+                ) uc ON uc.id_item = i.id
                 GROUP BY i.id
                 ORDER BY i.nombre";
         return $this->db->fetchAll($sql);
