@@ -9,20 +9,26 @@ class Insumo extends BaseModel
     // ✅ Nuevo método compatible con el controlador
     public function getAllBySucursal($sucursal_id)
     {
+        // Bolt Optimization: Replace correlated scalar subquery with a derived table LEFT JOIN.
+        // This reduces execution complexity from O(N * M) to O(N + M) and avoids repeated table scans.
         $sql = "SELECT i.*, 
                        GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id AND c.id_sucursal = i.id_sucursal 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       lc.costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item,
+                           CAST(SUBSTRING_INDEX(GROUP_CONCAT(cd.costo_unitario ORDER BY c.fecha_compra DESC, c.id DESC SEPARATOR '|'), '|', 1) AS DECIMAL(10,2)) as costo_ultimo
+                    FROM compra_detalles cd
+                    INNER JOIN compras c ON cd.id_compra = c.id
+                    WHERE cd.tipo_item = 'insumo' AND c.id_sucursal = ?
+                    GROUP BY cd.id_item
+                ) lc ON i.id = lc.id_item
                 WHERE i.id_sucursal = ? 
                 GROUP BY i.id
                 ORDER BY i.nombre";
-        return $this->db->fetchAll($sql, [$sucursal_id]);
+        return $this->db->fetchAll($sql, [$sucursal_id, $sucursal_id]);
     }
 
     // ✅ Método general (sin sucursal)
@@ -32,16 +38,21 @@ class Insumo extends BaseModel
             return $this->getAllBySucursal($sucursal_id);
         }
 
+        // Bolt Optimization: Replace correlated scalar subquery with a derived table LEFT JOIN.
         $sql = "SELECT i.*, 
                        GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       lc.costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item,
+                           CAST(SUBSTRING_INDEX(GROUP_CONCAT(cd.costo_unitario ORDER BY c.fecha_compra DESC, c.id DESC SEPARATOR '|'), '|', 1) AS DECIMAL(10,2)) as costo_ultimo
+                    FROM compra_detalles cd
+                    INNER JOIN compras c ON cd.id_compra = c.id
+                    WHERE cd.tipo_item = 'insumo'
+                    GROUP BY cd.id_item
+                ) lc ON i.id = lc.id_item
                 GROUP BY i.id
                 ORDER BY i.nombre";
         return $this->db->fetchAll($sql);
