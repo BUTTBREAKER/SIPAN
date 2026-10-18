@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Derived Table Aggregation for Latest Prices]
+**Learning:** Correlated scalar subqueries in `SELECT` statements (e.g. `(SELECT price FROM purchase_details ORDER BY date DESC LIMIT 1)`) execute $N$ times for $N$ primary records ($O(N \cdot M)$). Joining a derived table that uses `GROUP_CONCAT(value ORDER BY date DESC SEPARATOR ',')` and `SUBSTRING_INDEX(..., ',', 1)` aggregates all latest values in a single pass ($O(N + M)$) without needing correlated row-by-row lookups.
+**Action:** Replace correlated scalar subqueries in `SELECT` lists with derived table `LEFT JOIN`s using ordered string aggregation or window functions.
