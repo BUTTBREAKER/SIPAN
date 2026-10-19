@@ -194,6 +194,12 @@ function compraApp() {
                 } else if(costo) {
                     this.item_temp.costo = costo;
                 }
+
+                // Generar automáticamente lote del día de la compra si está vacío
+                if (!this.item_temp.lote && this.item_temp.id) {
+                    const fStr = (this.fecha_compra || new Date().toISOString().split('T')[0]).replace(/-/g, '');
+                    this.item_temp.lote = `L-${fStr}-${this.item_temp.id}`;
+                }
             });
         },
 
@@ -203,20 +209,26 @@ function compraApp() {
                 return;
             }
 
+            const fStr = (this.fecha_compra || new Date().toISOString().split('T')[0]).replace(/-/g, '');
+            const loteFinal = this.item_temp.lote || `L-${fStr}-${this.item_temp.id}`;
+            const costoVal = parseFloat(this.item_temp.costo);
+
             this.items.push({
                 tipo_item: 'insumo', // Por defecto solo insumos por ahora
                 id_item: this.item_temp.id,
                 nombre: this.item_temp.nombre,
                 cantidad: parseFloat(this.item_temp.cantidad),
-                costo: parseFloat(this.item_temp.costo),
-                lote_codigo: this.item_temp.lote,
+                costo: costoVal,
+                costo_unitario: costoVal,
+                lote: loteFinal,
+                lote_codigo: loteFinal,
                 fecha_vencimiento: this.item_temp.vencimiento,
-                subtotal: parseFloat(this.item_temp.cantidad) * parseFloat(this.item_temp.costo)
+                subtotal: parseFloat(this.item_temp.cantidad) * costoVal
             });
 
             // Reset temp, dejar fechas si va a agregar lotes similares
             this.item_temp.cantidad = '';
-            // this.item_temp.lote = ''; // A veces el lote es el mismo para todo
+            this.item_temp.lote = '';
         },
 
         removerItem(index) {

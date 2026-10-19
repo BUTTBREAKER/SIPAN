@@ -288,6 +288,7 @@ return [
     new Route('GET', '/pedidos', [PedidosController::class, 'index']),
     new Route('GET', '/pedidos/create', [PedidosController::class, 'create']),
     new Route('POST', '/pedidos/store', [PedidosController::class, 'store']),
+    new Route('GET', '/pedidos/ultimo-cliente/{cliente_id}', [PedidosController::class, 'ultimoCliente']),
     new Route(
         'GET',
         '/pedidos/show/{id}',

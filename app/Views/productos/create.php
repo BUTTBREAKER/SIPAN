@@ -139,27 +139,25 @@ function productoForm() {
                 
                 try {
                     const data = await SIPAN.submitForm(form, (response) => {
-                    // Preguntar si quiere crear la receta ahora
-                     Swal.fire({
-                        title: 'Producto creado',
-                        text: '¿Deseas crear la receta para este producto ahora?',
-                        icon: 'success',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Sí, crear receta',
-                        cancelButtonText: 'No, volver a lista'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                             // Redirigir a crear receta pasando el producto ID y nombre
-                            window.location.href = `/recetas/create?producto_id=${response.id}&nombre=${encodeURIComponent(response.nombre || '')}`;
-                        } else {
-                            window.location.href = '/productos';
-                        }
+                        // Preguntar si quiere crear la receta ahora
+                        Swal.fire({
+                            title: 'Producto creado',
+                            text: '¿Deseas crear la receta para este producto ahora?',
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Sí, crear receta',
+                            cancelButtonText: 'No, volver a lista'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Redirigir a crear receta pasando el producto ID y nombre
+                                window.location.href = `/recetas/create?producto_id=${response.id}&nombre=${encodeURIComponent(response.nombre || '')}`;
+                            } else {
+                                window.location.href = '/productos';
+                            }
+                        });
                     });
-                        }
-                    });
-                });
                 } finally {
                     this.isSubmitting = false;
                 }

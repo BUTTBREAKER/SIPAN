@@ -35,15 +35,26 @@ $clientes ??= null;
             require_once __DIR__ . '/../../Helpers/CSRF.php';
             echo \App\Helpers\CSRF::field();
             ?>
-            <!-- Selección de Cliente con Botón Rápido -->
+            <!-- Selección de Cliente con Buscador por Cédula y Botón Rápido -->
             <div class="row mb-4">
-                <div class="col-md-5">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Buscar por Cédula</label>
+                        <div class="input-group">
+                            <input type="text" id="inputBuscarCedula" class="form-control" placeholder="Ej. 12345678" @keydown.enter.prevent="buscarClienteCedula()">
+                            <button type="button" class="btn btn-outline-primary" @click="buscarClienteCedula()" title="Buscar por cédula">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
                     <div class="form-group">
                         <label class="form-label">Cliente (Opcional)</label>
                         <select name="id_cliente" class="form-select" id="selectCliente" x-model="id_cliente">
                             <option value="">Cliente General</option>
                             <?php foreach ($clientes as $cliente) : ?>
-                            <option value="<?= $cliente['id'] ?>">
+                            <option value="<?= $cliente['id'] ?>" data-cedula="<?= htmlspecialchars($cliente['documento_numero'] ?? '') ?>">
                                 <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido']) ?>
                                 <?php if ($cliente['documento_numero']) :
                                     ?> (<?= $cliente['documento_numero'] ?>) <?php
@@ -511,6 +522,71 @@ function ventaApp() {
             } finally {
                 this.isSubmitting = false;
             }
+        },
+
+        async buscarClienteCedula() {
+            const cedulaInput = document.getElementById('inputBuscarCedula');
+            const cedula = cedulaInput ? cedulaInput.value.trim() : '';
+            if (!cedula) {
+                SIPAN.warning('Ingrese un número de cédula para buscar');
+                return;
+            }
+
+            const select = document.getElementById('selectCliente');
+            // Buscar primero en opciones cargadas
+            for (let i = 0; i < select.options.length; i++) {
+                const opt = select.options[i];
+                const optCedula = opt.getAttribute('data-cedula') || '';
+                if (optCedula.trim() === cedula) {
+                    this.id_cliente = opt.value;
+                    select.value = opt.value;
+                    select.dispatchEvent(new Event('change'));
+                    SIPAN.success('Cliente encontrado: ' + opt.text);
+                    return;
+                }
+            }
+
+            // Buscar en servidor si no está en la lista inicial
+            try {
+                const resp = await fetch(`/clientes/search?q=${encodeURIComponent(cedula)}`);
+                const data = await resp.json();
+                if (data.success && data.clientes && data.clientes.length > 0) {
+                    const cli = data.clientes.find(c => (c.documento_numero || '').trim() === cedula) || data.clientes[0];
+                    const option = new Option(
+                        `${cli.nombre} ${cli.apellido} (${cli.documento_numero || ''})`,
+                        cli.id,
+                        true,
+                        true
+                    );
+                    option.setAttribute('data-cedula', cli.documento_numero || '');
+                    select.add(option);
+                    this.id_cliente = cli.id;
+                    select.value = cli.id;
+                    select.dispatchEvent(new Event('change'));
+                    SIPAN.success(`Cliente encontrado: ${cli.nombre} ${cli.apellido}`);
+                } else {
+                    Swal.fire({
+                        title: 'Cliente no registrado',
+                        text: `No se encontró ningún cliente con la cédula "${cedula}". ¿Desea registrarlo ahora?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fas fa-user-plus me-1"></i> Sí, Registrar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#0d6efd'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const modalEl = document.getElementById('modalNuevoCliente');
+                            const modal = new bootstrap.Modal(modalEl);
+                            modal.show();
+                            const docInput = modalEl.querySelector('input[name="documento_numero"]');
+                            if (docInput) docInput.value = cedula;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                SIPAN.error('Error al consultar cliente');
+            }
         }
     }
 }
@@ -544,38 +620,32 @@ async function guardarClienteExpress() {
         // if we can't get the ID without an API.
         // Ideally: ClientesController should return JSON if AJAX.
         
-        try {
-            const data = await response.json();
-            if (data.success || data.id) {
-                // Success path
-                const select = document.getElementById('selectCliente');
-                const option = new Option(
-                    `${formData.get('nombre')} ${formData.get('apellido')} (${formData.get('documento_numero')})`, 
-                    data.id || 0, 
-                    true, 
-                    true
-                );
-                select.add(option);
-                select.dispatchEvent(new Event('change'));
-                
-                const modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevoCliente'));
-                modal.hide();
-                SIPAN.success('Cliente registrado');
-                form.reset();
-                return;
-            }
-        } catch(e) {
-             // Backend returned HTML (redirect) probably.
-             // We can't easily get the ID.
-             SIPAN.success('Cliente registrado. Por favor búsquelo en la lista.');
-             const modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevoCliente'));
-             modal.hide();
-             // Reload page to refresh list is the safest fallback without API
-             setTimeout(() => location.reload(), 1000);
+        const data = await response.json();
+        if (data.success && data.id) {
+            const select = document.getElementById('selectCliente');
+            const docNum = formData.get('documento_numero') || '';
+            const option = new Option(
+                `${formData.get('nombre')} ${formData.get('apellido')} (${docNum})`, 
+                data.id, 
+                true, 
+                true
+            );
+            option.setAttribute('data-cedula', docNum);
+            select.add(option);
+            select.value = data.id;
+            select.dispatchEvent(new Event('change'));
+            
+            const modalEl = document.getElementById('modalNuevoCliente');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            SIPAN.success('Cliente registrado correctamente');
+            form.reset();
+        } else {
+            SIPAN.error(data.message || 'Error al registrar cliente');
         }
-
-        console.error(e);
-        SIPAN.error('Error de conexión');
+    } catch(err) {
+        console.error(err);
+        SIPAN.error('Error de conexión al registrar cliente');
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalContent;

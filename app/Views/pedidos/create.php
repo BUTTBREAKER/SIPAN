@@ -23,11 +23,27 @@ require_once __DIR__ . '/../layouts/header.php';
             echo \App\Helpers\CSRF::field();
             ?>
             <!-- Información del Cliente y Fechas -->
-            <div class="row mb-4">
+            <div class="row mb-3">
                 <div class="col-md-3">
                     <div class="form-group">
-                        <label class="form-label">Cliente <span class="text-danger">*</span></label>
-                        <select x-model="id_cliente" class="form-control" required>
+                        <label class="form-label">Buscar por Cédula</label>
+                        <div class="input-group">
+                            <input type="text" id="inputBuscarCedulaPedido" class="form-control" placeholder="Ej. 12345678" @keydown.enter.prevent="buscarClienteCedula()">
+                            <button type="button" class="btn btn-outline-primary" @click="buscarClienteCedula()" title="Buscar por cédula">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label class="form-label mb-0">Cliente <span class="text-danger">*</span></label>
+                            <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" data-bs-toggle="modal" data-bs-target="#modalNuevoClientePedido">
+                                <i class="fas fa-user-plus me-1"></i>Nuevo
+                            </button>
+                        </div>
+                        <select x-model="id_cliente" id="selectClientePedido" class="form-control mt-1" required @change="cargarGastoAnterior()">
                             <option value="">Seleccionar cliente</option>
                             <?php
                             require_once __DIR__ . '/../../Models/Cliente.php';
@@ -35,15 +51,16 @@ require_once __DIR__ . '/../layouts/header.php';
                             $clientes = $clienteModel->getBySucursal($_SESSION['sucursal_id']);
                             foreach ($clientes as $cliente) :
                                 ?>
-                            <option value="<?= $cliente['id'] ?>">
+                            <option value="<?= $cliente['id'] ?>" data-cedula="<?= htmlspecialchars($cliente['documento_numero'] ?? '') ?>">
                                 <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido']) ?>
+                                <?php if (!empty($cliente['documento_numero'])) : ?>(<?= $cliente['documento_numero'] ?>)<?php endif; ?>
                             </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
                 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="form-group">
                         <label class="form-label">Repartidor (Opcional)</label>
                         <select x-model="id_repartidor" class="form-control">
@@ -62,21 +79,40 @@ require_once __DIR__ . '/../layouts/header.php';
                     </div>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="form-group">
                         <label class="form-label">Fecha Entrega <span class="text-danger">*</span></label>
                         <input type="date" x-model="fecha_entrega" class="form-control" required :min="minDate">
                     </div>
                 </div>
                 
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <div class="form-group">
                         <label class="form-label">Hora Entrega</label>
                         <input type="time" x-model="hora_entrega" class="form-control">
                     </div>
                 </div>
             </div>
-            
+
+            <!-- Panel Informativo: Gasto del Pedido Anterior (Insumos) -->
+            <div x-show="ultimo_pedido" class="alert alert-info border-info d-flex align-items-center mb-4 py-2" style="background-color: #e0f2fe; border-left: 4px solid #0284c7;">
+                <i class="fas fa-history fa-2x text-primary me-3"></i>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="text-dark">Historial del Cliente — Último Pedido (<span x-text="ultimo_pedido?.numero_pedido"></span>)</strong>
+                        <span class="badge bg-primary text-white" x-text="'Total: $' + parseFloat(ultimo_pedido?.total || 0).toFixed(2)"></span>
+                    </div>
+                    <div class="small text-muted mt-1">
+                        Fecha: <span x-text="ultimo_pedido?.fecha_pedido ? ultimo_pedido.fecha_pedido.substring(0, 10) : ''"></span> |
+                        Items: <span x-text="ultimo_pedido?.productos_resumen || 'Detalles'"></span>
+                    </div>
+                    <div class="mt-1">
+                        <span class="badge bg-warning text-dark me-2">Gasto en Insumos Pedido Anterior:</span>
+                        <strong class="text-danger h6 mb-0" x-text="'$' + parseFloat(ultimo_pedido?.gasto_insumos || 0).toFixed(2)"></strong>
+                        <small class="text-muted ms-2">(Costo estimado de insumos utilizados en su orden previa)</small>
+                    </div>
+                </div>
+            </div>
             <!-- Búsqueda y Selección de Productos -->
             <div class="row mb-4">
                 <div class="col-md-12">
@@ -211,6 +247,49 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
+<!-- Modal Nuevo Cliente Pedido -->
+<div class="modal fade" id="modalNuevoClientePedido" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Nuevo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNuevoClientePedido">
+                    <?= \App\Helpers\CSRF::field() ?>
+                    <div class="mb-3">
+                        <label class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Apellido</label>
+                        <input type="text" class="form-control" name="apellido">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cédula / Documento <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="documento_numero" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" name="telefono">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dirección</label>
+                        <textarea class="form-control" name="direccion" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnGuardarClientePedido" onclick="guardarClienteExpressPedido()">
+                    <i class="fas fa-save me-1"></i> Guardar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function pedidoApp() {
     return {
@@ -228,10 +307,102 @@ function pedidoApp() {
         observaciones: '',
         isSubmitting: false,
         minDate: new Date().toISOString().split('T')[0],
+        ultimo_pedido: null,
         
         init() {
             // Establecer fecha mínima como hoy
             this.fecha_entrega = this.minDate;
+        },
+
+        async cargarGastoAnterior() {
+            if (!this.id_cliente) {
+                this.ultimo_pedido = null;
+                return;
+            }
+
+            try {
+                const response = await fetch(`/pedidos/ultimo-cliente/${this.id_cliente}`);
+                const data = await response.json();
+                if (data.success && data.pedido) {
+                    this.ultimo_pedido = {
+                        numero_pedido: data.pedido.numero_pedido,
+                        fecha_pedido: data.pedido.fecha_pedido,
+                        total: data.pedido.total,
+                        gasto_insumos: data.gasto_insumos,
+                        productos_resumen: data.productos_resumen
+                    };
+                } else {
+                    this.ultimo_pedido = null;
+                }
+            } catch (err) {
+                console.error('Error cargando gasto anterior:', err);
+                this.ultimo_pedido = null;
+            }
+        },
+
+        async buscarClienteCedula() {
+            const cedulaInput = document.getElementById('inputBuscarCedulaPedido');
+            const cedula = cedulaInput ? cedulaInput.value.trim() : '';
+            if (!cedula) {
+                SIPAN.warning('Ingrese un número de cédula para buscar');
+                return;
+            }
+
+            const select = document.getElementById('selectClientePedido');
+            // 1. Buscar en opciones ya cargadas
+            for (let i = 0; i < select.options.length; i++) {
+                const opt = select.options[i];
+                const optCedula = (opt.getAttribute('data-cedula') || '').trim();
+                if (optCedula === cedula) {
+                    this.id_cliente = opt.value;
+                    select.value = opt.value;
+                    this.cargarGastoAnterior();
+                    SIPAN.success('Cliente encontrado: ' + opt.text);
+                    return;
+                }
+            }
+
+            // 2. Buscar en servidor
+            try {
+                const resp = await fetch(`/clientes/search?q=${encodeURIComponent(cedula)}`);
+                const data = await resp.json();
+                if (data.success && data.clientes && data.clientes.length > 0) {
+                    const cli = data.clientes.find(c => (c.documento_numero || '').trim() === cedula) || data.clientes[0];
+                    const option = new Option(
+                        `${cli.nombre} ${cli.apellido} (${cli.documento_numero || ''})`,
+                        cli.id,
+                        true,
+                        true
+                    );
+                    option.setAttribute('data-cedula', cli.documento_numero || '');
+                    select.add(option);
+                    this.id_cliente = cli.id;
+                    select.value = cli.id;
+                    this.cargarGastoAnterior();
+                    SIPAN.success(`Cliente seleccionado: ${cli.nombre} ${cli.apellido}`);
+                } else {
+                    Swal.fire({
+                        title: 'Cliente no registrado',
+                        text: `No se encontró ningún cliente con la cédula "${cedula}". ¿Desea registrarlo ahora?`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fas fa-user-plus me-1"></i> Sí, Registrar',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#0d6efd'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const modalEl = document.getElementById('modalNuevoClientePedido');
+                            const modal = new bootstrap.Modal(modalEl);
+                            modal.show();
+                            const docInput = modalEl.querySelector('input[name="documento_numero"]');
+                            if (docInput) docInput.value = cedula;
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                SIPAN.error('Error al consultar cliente');
+            }
         },
         
         async buscarProductos() {
@@ -337,8 +508,9 @@ function pedidoApp() {
                 
                 if (data.success) {
                     SIPAN.success(data.message);
+                    const targetId = data.pedido_id || data.id;
                     setTimeout(() => {
-                        window.location.href = '/pedidos/show/' + data.pedido_id;
+                        window.location.href = targetId ? ('/pedidos/show/' + targetId) : '/pedidos';
                     }, 1500);
                 } else {
                     SIPAN.error(data.message);
@@ -347,6 +519,58 @@ function pedidoApp() {
                 this.isSubmitting = false;
             }
         }
+    }
+}
+
+async function guardarClienteExpressPedido() {
+    const form = document.getElementById('formNuevoClientePedido');
+    const formData = new FormData(form);
+    const btn = document.getElementById('btnGuardarClientePedido');
+    const originalContent = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+    try {
+        const csrfToken = form.querySelector('input[name="csrf_token"]').value;
+        const response = await fetch('/clientes/store', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-Token': csrfToken
+            }
+        });
+
+        const data = await response.json();
+        if (data.success && data.id) {
+            const select = document.getElementById('selectClientePedido');
+            const docNum = formData.get('documento_numero') || '';
+            const option = new Option(
+                `${formData.get('nombre')} ${formData.get('apellido')} (${docNum})`,
+                data.id,
+                true,
+                true
+            );
+            option.setAttribute('data-cedula', docNum);
+            select.add(option);
+            select.value = data.id;
+            select.dispatchEvent(new Event('change'));
+
+            const modalEl = document.getElementById('modalNuevoClientePedido');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            SIPAN.success('Cliente registrado correctamente');
+            form.reset();
+        } else {
+            SIPAN.error(data.message || 'Error al registrar cliente');
+        }
+    } catch(err) {
+        console.error(err);
+        SIPAN.error('Error de conexión al registrar cliente');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
     }
 }
 </script>

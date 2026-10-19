@@ -360,9 +360,25 @@ function updateChartRango() {
         .catch(e => console.error('Error:', e));
 }
 
-// Alertas Stock
+// Alertas Stock y Vencimientos
 document.addEventListener('DOMContentLoaded', () => {
-    <?php if (!empty($data['productos_stock_bajo']) || !empty($data['insumos_stock_bajo'])) : ?>
+    <?php if (!empty($data['lotes_por_vencer'])) : ?>
+    const totalVencer = <?= count($data['lotes_por_vencer'] ?? []) ?>;
+    Swal.fire({
+        icon: 'warning',
+        title: '¡Alerta de Vencimiento de Productos/Insumos!',
+        html: `Se detectaron <strong>${totalVencer}</strong> lote(s) próximos a su fecha de caducidad o tiempo máximo de venta estimado.`,
+        confirmButtonText: '<i class="fas fa-calendar-times me-1"></i> Ver Lotes por Vencer',
+        showCancelButton: true,
+        cancelButtonText: 'Entendido',
+        confirmButtonColor: '#e02424',
+        cancelButtonColor: '#6b7280'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/reportes/vencimientos';
+        }
+    });
+    <?php elseif (!empty($data['productos_stock_bajo']) || !empty($data['insumos_stock_bajo'])) : ?>
     const totalBajo = <?= count($data['productos_stock_bajo'] ?? []) + count($data['insumos_stock_bajo'] ?? []) ?>;
     Swal.fire({
         icon: 'warning',

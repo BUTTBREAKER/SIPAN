@@ -64,7 +64,7 @@ class Compra extends BaseModel
                 $id_item = $detalle['id_item'];
                 $tipo = $detalle['tipo_item'];
                 $cantidad = floatval($detalle['cantidad']);
-                $costo = floatval($detalle['costo_unitario']);
+                $costo = floatval($detalle['costo_unitario'] ?? $detalle['costo'] ?? 0);
 
                 // Collect details for batch insert
                 $detallesBatch[] = [

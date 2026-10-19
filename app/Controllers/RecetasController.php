@@ -72,19 +72,40 @@ class RecetasController
 
             $this->recetaModel->createWithInsumos($id_producto, $rendimiento, $instrucciones, $sucursal_id, $insumos);
 
-            // Calcular costo de produccion (en base a últimos precios o promedios)
-            // Ya lo recibe el controlador si pasamos el costo en $insumos, o lo calculamos aquí
+            // Calcular costo de produccion (en base a precios en BD y cantidades)
             $costo_total = 0;
+            $insumoIds = array_filter(array_column($insumos, 'id'));
+            $preciosDb = [];
+            if (!empty($insumoIds)) {
+                $db = \App\Core\Database::getInstance();
+                $placeholders = implode(',', array_fill(0, count($insumoIds), '?'));
+                $rows = $db->fetchAll("SELECT id, precio_unitario FROM insumos WHERE id IN ($placeholders)", array_values($insumoIds));
+                foreach ($rows as $r) {
+                    $preciosDb[$r['id']] = floatval($r['precio_unitario']);
+                }
+            }
+
             foreach ($insumos as $insumo) {
-                // $insumo['costo_unitario'] podría venir del front, lo usamos para el estimado
-                $costo_total += floatval($insumo['cantidad']) * floatval($insumo['costo_unitario'] ?? 0);
+                $insId = $insumo['id'] ?? 0;
+                $costoUnit = floatval($insumo['costo_unitario'] ?? ($preciosDb[$insId] ?? 0));
+                if ($costoUnit == 0 && isset($preciosDb[$insId])) {
+                    $costoUnit = $preciosDb[$insId];
+                }
+                $costo_total += floatval($insumo['cantidad']) * $costoUnit;
             }
             $costo_unitario_produccion = $rendimiento > 0 ? $costo_total / $rendimiento : 0;
+
+            // Actualizar precio_costo del producto automáticamente con el costo de producción
+            $db = \App\Core\Database::getInstance();
+            $db->execute("UPDATE productos SET precio_costo = ? WHERE id = ?", [
+                round($costo_unitario_produccion, 2),
+                $id_producto
+            ]);
 
             echo json_encode([
                 'success' => true, 
                 'message' => 'Receta guardada correctamente',
-                'costo_produccion' => round($costo_unitario_produccion, 2),
+                'costo_produccion' => number_format($costo_unitario_produccion, 2, '.', ''),
                 'id_producto' => $id_producto
             ]);
         } catch (\Exception $e) {

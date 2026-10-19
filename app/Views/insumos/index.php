@@ -36,7 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const gridData = rawData.map(i => [
         i.id,
+        i.codigo || '—',
         i.nombre,
+        i.fecha_compra ? i.fecha_compra.split(' ')[0] : (i.fecha_registro ? i.fecha_registro.split(' ')[0] : '—'),
         i.proveedor_nombre || 'No asignado',
         parseFloat(i.stock_actual) + ' ' + i.unidad_medida,
         parseFloat(i.precio_unitario).toFixed(2),
@@ -49,9 +51,14 @@ document.addEventListener('DOMContentLoaded', () => {
         columns: [
             { id: 'id', name: 'ID', hidden: true },
             { 
+                name: 'Código',
+                formatter: (cell) => gridjs.html(`<span class="badge bg-light text-dark border font-monospace">${cell}</span>`)
+            },
+            { 
                 name: 'Insumo',
                 formatter: (cell) => gridjs.html(`<div class="fw-bold text-dark">${cell}</div>`)
             },
+            { name: 'F. Compra' },
             { 
                 name: 'Proveedor',
                 formatter: (cell) => {

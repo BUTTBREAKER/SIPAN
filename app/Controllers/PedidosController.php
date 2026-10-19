@@ -92,10 +92,51 @@ class PedidosController implements LoggerAwareInterface
 
         try {
             $pedido_id = $this->pedidoModel->createWithProducts($pedido_data, $productos);
-            echo json_encode(['success' => true, 'message' => 'Pedido creado correctamente', 'id' => $pedido_id]);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Pedido creado correctamente',
+                'id' => $pedido_id,
+                'pedido_id' => $pedido_id
+            ]);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al crear pedido: ' . $e->getMessage()]);
         }
+        exit;
+    }
+
+    public function ultimoCliente($cliente_id)
+    {
+        AuthMiddleware::check();
+        header('Content-Type: application/json');
+
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'];
+
+        $ultimo = $this->pedidoModel->getLastByCliente((int)$cliente_id, $sucursal_id);
+
+        if (!$ultimo) {
+            echo json_encode(['success' => false, 'message' => 'Sin pedidos anteriores para este cliente']);
+            exit;
+        }
+
+        $productos = $this->pedidoModel->getProductos($ultimo['id']);
+        $gasto_insumos = 0;
+        foreach ($productos as $prod) {
+            $pInfo = $this->productoModel->find($prod['id_producto']);
+            $costoUnit = floatval($pInfo['precio_costo'] ?? 0);
+            $gasto_insumos += $costoUnit * floatval($prod['cantidad']);
+        }
+
+        $resumenItems = array_map(function($p) {
+            return $p['producto_nombre'] . ' (' . (int)$p['cantidad'] . ')';
+        }, $productos);
+
+        echo json_encode([
+            'success' => true,
+            'pedido' => $ultimo,
+            'gasto_insumos' => round($gasto_insumos, 2),
+            'productos_resumen' => implode(', ', $resumenItems)
+        ]);
         exit;
     }
 

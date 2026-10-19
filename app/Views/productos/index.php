@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Map data for Grid.js
     const gridData = rawData.map(p => [
         p.id, // Hidden ID
+        p.codigo || '—',
         p.nombre,
         p.descripcion || '',
         parseFloat(p.precio_actual).toFixed(2),
@@ -49,6 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
         data: gridData,
         columns: [
             { id: 'id', name: 'ID', hidden: true },
+            { 
+                name: 'Código',
+                formatter: (cell) => gridjs.html(`<span class="badge bg-light text-dark border font-monospace">${cell}</span>`)
+            },
             { name: 'Producto' },
             { name: 'Descripción' },
             { 

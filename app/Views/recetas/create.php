@@ -76,12 +76,12 @@ $insumos ??= [];
                             <?php foreach ($insumos as $insumo) : ?>
                                 <option value="<?= $insumo['id'] ?>"
                                     data-nombre="<?= htmlspecialchars($insumo['nombre']) ?>"
-                                    data-unidad="<?= htmlspecialchars($insumo['unidad_medida']) ?>">
-                                    <?= htmlspecialchars($insumo['nombre']) ?> (<?= $insumo['unidad_medida'] ?>)
+                                    data-unidad="<?= htmlspecialchars($insumo['unidad_medida']) ?>"
+                                    data-costo="<?= $insumo['precio_unitario'] ?? 0 ?>">
+                                    <?= htmlspecialchars($insumo['nombre']) ?> (<?= $insumo['unidad_medida'] ?>) — $<?= number_format($insumo['precio_unitario'] ?? 0, 2) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-
                     </div>
                 </div>
 
@@ -104,26 +104,30 @@ $insumos ??= [];
 
             <!-- Lista de Insumos -->
             <div class="table-responsive mb-4">
-                <table class="table">
-                    <thead>
+                <table class="table table-bordered">
+                    <thead class="table-light">
                         <tr>
                             <th>Insumo</th>
                             <th>Cantidad</th>
                             <th>Unidad</th>
+                            <th>Costo Unit.</th>
+                            <th>Subtotal</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody>
                         <template x-if="insumos_receta.length === 0">
                             <tr>
-                                <td colspan="4" class="text-center">No hay insumos agregados</td>
+                                <td colspan="6" class="text-center text-muted py-3">No hay insumos agregados</td>
                             </tr>
                         </template>
                         <template x-for="(insumo, index) in insumos_receta" :key="index">
                             <tr>
-                                <td x-text="insumo.nombre"></td>
+                                <td class="fw-bold" x-text="insumo.nombre"></td>
                                 <td x-text="insumo.cantidad"></td>
                                 <td x-text="insumo.unidad"></td>
+                                <td x-text="'$' + parseFloat(insumo.costo_unitario).toFixed(2)"></td>
+                                <td class="fw-bold text-success" x-text="'$' + (insumo.cantidad * insumo.costo_unitario).toFixed(2)"></td>
                                 <td>
                                     <button type="button" @click="eliminarInsumo(index)" class="btn btn-sm btn-danger">
                                         <i class="fas fa-trash"></i>
@@ -132,6 +136,16 @@ $insumos ??= [];
                             </tr>
                         </template>
                     </tbody>
+                    <tfoot x-show="insumos_receta.length > 0">
+                        <tr class="table-light">
+                            <td colspan="4" class="text-end fw-bold">Costo Total Receta:</td>
+                            <td colspan="2" class="fw-bold text-primary" x-text="'$' + totalCostoReceta().toFixed(2)"></td>
+                        </tr>
+                        <tr class="table-info" x-show="rendimiento && parseFloat(rendimiento) > 0">
+                            <td colspan="4" class="text-end fw-bold">Costo Estimado de Producción por Unidad:</td>
+                            <td colspan="2" class="fw-bold text-danger h5 mb-0" x-text="'$' + (totalCostoReceta() / parseFloat(rendimiento)).toFixed(2)"></td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 
@@ -190,12 +204,14 @@ $insumos ??= [];
                 // Obtener datos del select
                 const select = document.querySelector('select[x-model="insumo_seleccionado"]');
                 const option = select.options[select.selectedIndex];
+                const costoUnit = parseFloat(option.getAttribute('data-costo') || 0);
 
                 this.insumos_receta.push({
                     id: this.insumo_seleccionado,
                     nombre: option.getAttribute('data-nombre'),
                     cantidad: parseFloat(this.cantidad_insumo),
-                    unidad: option.getAttribute('data-unidad')
+                    unidad: option.getAttribute('data-unidad'),
+                    costo_unitario: costoUnit
                 });
 
                 this.insumo_seleccionado = '';
@@ -204,6 +220,12 @@ $insumos ??= [];
 
             eliminarInsumo(index) {
                 this.insumos_receta.splice(index, 1);
+            },
+
+            totalCostoReceta() {
+                return this.insumos_receta.reduce((sum, item) => {
+                    return sum + (item.cantidad * (item.costo_unitario || 0));
+                }, 0);
             },
 
             async guardarReceta() {
