@@ -8,8 +8,8 @@ use App\Middlewares\AuthMiddleware;
 
 class SucursalesController
 {
-    private $sucursalModel;
-    private $negocioModel;
+    private Sucursal $sucursalModel;
+    private Negocio $negocioModel;
 
     public function __construct()
     {

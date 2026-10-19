@@ -68,8 +68,11 @@ class Sucursal extends BaseModel
     /**
      * Obtener empleados de una sucursal
      * Concatena los nombres completos según la estructura real de la tabla
+     *
+     * @param int|string $sucursal_id
+     * @return array
      */
-    public function getEmpleados($sucursal_id)
+    public function getEmpleados($sucursal_id): array
     {
         $sql = "SELECT 
                     u.id,
@@ -81,6 +84,6 @@ class Sucursal extends BaseModel
                 WHERE u.id_sucursal = ? 
                 ORDER BY u.primer_nombre, u.apellido_paterno ASC";
 
-        return $this->db->fetchAll($sql, [$sucursal_id]) ?? [];
+        return $this->db->fetchAll($sql, [$sucursal_id]);
     }
 }

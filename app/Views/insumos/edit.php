@@ -4,8 +4,10 @@ $pageTitle = 'Editar Insumo';
 $currentPage = 'insumos';
 require_once __DIR__ . '/../layouts/header.php';
 
-$insumo ??= null;
-$proveedores ??= null;
+/** @var array $insumo */
+$insumo ??= [];
+/** @var array $proveedores */
+$proveedores ??= [];
 
 ?>
 
@@ -22,7 +24,7 @@ $proveedores ??= null;
         </a>
     </div>
     <div class="card-body">
-        <form id="formInsumo" action="/insumos/update/<?= $insumo['id'] ?>" method="POST">
+        <form id="formInsumo" action="/insumos/update/<?= $insumo['id'] ?? '' ?>" method="POST">
             <?= \App\Helpers\CSRF::field() ?>
             <div class="row">
                 <div class="col-md-4">
@@ -39,7 +41,7 @@ $proveedores ??= null;
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Nombre del Insumo <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="form-control" required value="<?= htmlspecialchars($insumo['nombre']) ?>">
+                        <input type="text" name="nombre" class="form-control" required value="<?= htmlspecialchars($insumo['nombre'] ?? '') ?>">
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -54,13 +56,13 @@ $proveedores ??= null;
                         <label class="form-label">Unidad de Medida <span class="text-danger">*</span></label>
                         <select name="unidad_medida" class="form-control" required>
                             <option value="">Seleccionar unidad</option>
-                            <option value="kg" <?= $insumo['unidad_medida'] === 'kg' ? 'selected' : '' ?>>Kilogramo (kg)</option>
-                            <option value="g" <?= $insumo['unidad_medida'] === 'g' ? 'selected' : '' ?>>Gramo (g)</option>
-                            <option value="l" <?= $insumo['unidad_medida'] === 'l' ? 'selected' : '' ?>>Litro (l)</option>
-                            <option value="ml" <?= $insumo['unidad_medida'] === 'ml' ? 'selected' : '' ?>>Mililitro (ml)</option>
-                            <option value="unidad" <?= $insumo['unidad_medida'] === 'unidad' ? 'selected' : '' ?>>Unidad</option>
-                            <option value="caja" <?= $insumo['unidad_medida'] === 'caja' ? 'selected' : '' ?>>Caja</option>
-                            <option value="bolsa" <?= $insumo['unidad_medida'] === 'bolsa' ? 'selected' : '' ?>>Bolsa</option>
+                            <option value="kg" <?= ($insumo['unidad_medida'] ?? '') === 'kg' ? 'selected' : '' ?>>Kilogramo (kg)</option>
+                            <option value="g" <?= ($insumo['unidad_medida'] ?? '') === 'g' ? 'selected' : '' ?>>Gramo (g)</option>
+                            <option value="l" <?= ($insumo['unidad_medida'] ?? '') === 'l' ? 'selected' : '' ?>>Litro (l)</option>
+                            <option value="ml" <?= ($insumo['unidad_medida'] ?? '') === 'ml' ? 'selected' : '' ?>>Mililitro (ml)</option>
+                            <option value="unidad" <?= ($insumo['unidad_medida'] ?? '') === 'unidad' ? 'selected' : '' ?>>Unidad</option>
+                            <option value="caja" <?= ($insumo['unidad_medida'] ?? '') === 'caja' ? 'selected' : '' ?>>Caja</option>
+                            <option value="bolsa" <?= ($insumo['unidad_medida'] ?? '') === 'bolsa' ? 'selected' : '' ?>>Bolsa</option>
                         </select>
                     </div>
                 </div>
@@ -95,22 +97,22 @@ $proveedores ??= null;
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Precio Unitario <span class="text-danger">*</span></label>
-                        <input type="number" name="precio_unitario" class="form-control" step="0.01" required value="<?= $insumo['precio_unitario'] ?>">
+                        <input type="number" name="precio_unitario" class="form-control" step="0.01" required value="<?= $insumo['precio_unitario'] ?? '0' ?>">
                     </div>
                 </div>
                 
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Stock Actual <span class="text-danger">*</span></label>
-                        <input type="number" name="stock_actual" class="form-control" step="0.01" required value="<?= $insumo['stock_actual'] ?>">
-                        <small class="text-muted">Stock actual: <?= $insumo['stock_actual'] ?> <?= $insumo['unidad_medida'] ?></small>
+                        <input type="number" name="stock_actual" class="form-control" step="0.01" required value="<?= $insumo['stock_actual'] ?? '0' ?>">
+                        <small class="text-muted">Stock actual: <?= $insumo['stock_actual'] ?? '0' ?> <?= $insumo['unidad_medida'] ?? '' ?></small>
                     </div>
                 </div>
                 
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Stock Mínimo <span class="text-danger">*</span></label>
-                        <input type="number" name="stock_minimo" class="form-control" step="0.01" required value="<?= $insumo['stock_minimo'] ?>">
+                        <input type="number" name="stock_minimo" class="form-control" step="0.01" required value="<?= $insumo['stock_minimo'] ?? '0' ?>">
                     </div>
                 </div>
             </div>

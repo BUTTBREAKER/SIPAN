@@ -86,6 +86,16 @@ final class Database
 
     /**
      * @param array<null|scalar> $params
+     * @return false|array<string, null|scalar|resource>
+     * @throws PDOException
+     */
+    public function fetch(string $sql, array $params = []): false|array
+    {
+        return $this->fetchOne($sql, $params);
+    }
+
+    /**
+     * @param array<null|scalar> $params
      * @throws PDOException
      */
     public function execute(string $sql, array $params = []): int

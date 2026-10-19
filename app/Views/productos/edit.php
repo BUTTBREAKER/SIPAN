@@ -4,7 +4,8 @@ $pageTitle = 'Editar Producto';
 $currentPage = 'productos';
 require_once __DIR__ . '/../layouts/header.php';
 
-$producto ??= null;
+/** @var array $producto */
+$producto ??= [];
 
 ?>
 
@@ -21,7 +22,7 @@ $producto ??= null;
         </a>
     </div>
     <div class="card-body">
-        <form id="formProducto" action="/productos/update/<?= $producto['id'] ?>" method="POST" x-data="productoForm()">
+        <form id="formProducto" action="/productos/update/<?= $producto['id'] ?? '' ?>" method="POST" x-data="productoForm()">
             <div class="row">
                 <div class="col-md-4">
                     <div class="form-group">
@@ -37,7 +38,7 @@ $producto ??= null;
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
-                        <input type="text" name="nombre" class="form-control" required x-model="nombre" value="<?= htmlspecialchars($producto['nombre']) ?>">
+                        <input type="text" name="nombre" class="form-control" required x-model="nombre" value="<?= htmlspecialchars($producto['nombre'] ?? '') ?>">
                     </div>
                 </div>
                 
@@ -70,22 +71,22 @@ $producto ??= null;
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Precio de Venta <span class="text-danger">*</span></label>
-                        <input type="number" name="precio_actual" class="form-control" step="0.01" required x-model="precio_actual" value="<?= $producto['precio_actual'] ?>">
+                        <input type="number" name="precio_actual" class="form-control" step="0.01" required x-model="precio_actual" value="<?= $producto['precio_actual'] ?? '0' ?>">
                     </div>
                 </div>
                 
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Stock Actual <span class="text-danger">*</span></label>
-                        <input type="number" name="stock_actual" class="form-control" required x-model="stock_actual" value="<?= $producto['stock_actual'] ?>">
-                        <small class="text-muted">Stock actual: <?= $producto['stock_actual'] ?></small>
+                        <input type="number" name="stock_actual" class="form-control" required x-model="stock_actual" value="<?= $producto['stock_actual'] ?? '0' ?>">
+                        <small class="text-muted">Stock actual: <?= $producto['stock_actual'] ?? '0' ?></small>
                     </div>
                 </div>
                 
                 <div class="col-md-4">
                     <div class="form-group">
                         <label class="form-label">Stock Mínimo <span class="text-danger">*</span></label>
-                        <input type="number" name="stock_minimo" class="form-control" required x-model="stock_minimo" value="<?= $producto['stock_minimo'] ?>">
+                        <input type="number" name="stock_minimo" class="form-control" required x-model="stock_minimo" value="<?= $producto['stock_minimo'] ?? '0' ?>">
                     </div>
                 </div>
             </div>
@@ -112,12 +113,12 @@ function generarCodigoProd() {
 
 function productoForm() {
     return {
-        nombre: '<?= htmlspecialchars($producto['nombre']) ?>',
+        nombre: '<?= htmlspecialchars($producto['nombre'] ?? '', ENT_QUOTES) ?>',
         categoria: '<?= $producto['categoria'] ?? '' ?>',
-        descripcion: '<?= htmlspecialchars($producto['descripcion'] ?? '') ?>',
-        precio_actual: '<?= $producto['precio_actual'] ?>',
-        stock_actual: '<?= $producto['stock_actual'] ?>',
-        stock_minimo: '<?= $producto['stock_minimo'] ?>',
+        descripcion: '<?= htmlspecialchars($producto['descripcion'] ?? '', ENT_QUOTES) ?>',
+        precio_actual: '<?= $producto['precio_actual'] ?? '0' ?>',
+        stock_actual: '<?= $producto['stock_actual'] ?? '0' ?>',
+        stock_minimo: '<?= $producto['stock_minimo'] ?? '0' ?>',
         
         init() {
             const form = document.getElementById('formProducto');

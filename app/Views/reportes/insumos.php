@@ -4,7 +4,10 @@ $pageTitle = 'Reporte de Insumos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
 
-$insumos ??= null;
+/** @var array $insumos */
+$insumos ??= [];
+$fecha_inicio ??= date('Y-m-01');
+$fecha_fin ??= date('Y-m-d');
 
 ?>
 

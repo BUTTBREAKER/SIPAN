@@ -7,8 +7,9 @@ $currentPage = 'dashboard';
 
 require_once __DIR__ . '/../layouts/header.php';
 
-$user_rol ??= null;
-$data ??= null;
+$user_rol ??= '';
+/** @var array $data */
+$data ??= [];
 
 ?>
 
@@ -80,7 +81,7 @@ $data ??= null;
                 <h5 class="alert-heading fw-bold">¡Atención! Insumos/Productos por vencer</h5>
                 <p class="mb-0">
                     Hay
-                    <strong><?= count($data['lotes_por_vencer']) ?></strong>
+                    <strong><?= count($data['lotes_por_vencer'] ?? []) ?></strong>
                     lote(s) que vencen en los próximos 30 días.
                 </p>
             </div>
@@ -146,7 +147,7 @@ $data ??= null;
             </div>
         <?php else : ?>
             <div class="bento-list">
-                <?php foreach (array_slice($data['productos_stock_bajo'], 0, 5) as $producto) : ?>
+                <?php foreach (array_slice($data['productos_stock_bajo'] ?? [], 0, 5) as $producto) : ?>
                 <div class="bento-list-item">
                     <div>
                         <strong><?= htmlspecialchars($producto['nombre']) ?></strong>
@@ -177,7 +178,7 @@ $data ??= null;
             </div>
         <?php else : ?>
             <div class="bento-list">
-                <?php foreach (array_slice($data['insumos_stock_bajo'], 0, 5) as $insumo) : ?>
+                <?php foreach (array_slice($data['insumos_stock_bajo'] ?? [], 0, 5) as $insumo) : ?>
                 <div class="bento-list-item">
                     <div>
                         <strong><?= htmlspecialchars($insumo['nombre']) ?></strong>
@@ -241,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php if ($user_rol !== 'cajero') : ?>
     // 1. Gráfico de Ventas
     const ctxVentas = document.getElementById('ventasChart').getContext('2d');
-    const ventasData = <?= json_encode($data['ventas_ultimos_dias']) ?>;
+    const ventasData = <?= json_encode($data['ventas_ultimos_dias'] ?? []) ?>;
     
     // Gradiente para el gráfico
     const gradient = ctxVentas.createLinearGradient(0, 0, 0, 400);
@@ -295,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 2. Gráfico Productos
     const ctxProd = document.getElementById('productosChart').getContext('2d');
-    const prodData = <?= json_encode($data['productos_mas_vendidos']) ?>;
+    const prodData = <?= json_encode($data['productos_mas_vendidos'] ?? []) ?>;
     
     new Chart(ctxProd, {
         type: 'doughnut',

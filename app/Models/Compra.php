@@ -182,7 +182,7 @@ class Compra extends BaseModel
                 LEFT JOIN proveedores p ON c.id_proveedor = p.id
                 LEFT JOIN usuarios u ON c.id_usuario = u.id
                 WHERE c.id = ?";
-        return $this->db->fetch($sql, [$id]);
+        return $this->db->fetchOne($sql, [$id]);
     }
 
     public function getDetalles($id_compra)

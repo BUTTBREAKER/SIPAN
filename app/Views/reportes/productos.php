@@ -4,8 +4,11 @@ $pageTitle = 'Reporte de Productos';
 $currentPage = 'reportes';
 require_once __DIR__ . '/../layouts/header.php';
 
-$productos ??= null;
-$valor_total ??= null;
+/** @var array $productos */
+$productos ??= [];
+$valor_total = (float)($valor_total ?? 0);
+$fecha_inicio ??= date('Y-m-01');
+$fecha_fin ??= date('Y-m-d');
 
 ?>
 
