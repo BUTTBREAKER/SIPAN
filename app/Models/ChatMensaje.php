@@ -28,6 +28,8 @@ final class ChatMensaje extends BaseModel
      */
     public function getConversaciones(int $userId): array
     {
+        // Replaced scalar subqueries with JOINs to user-filtered derived tables
+        // to reduce query complexity from O(N*M) to O(N+M) during high-frequency chat polling.
         $sql = "
             SELECT
                 c.id,
@@ -39,10 +41,7 @@ final class ChatMensaje extends BaseModel
                 m.created_at ultimo_mensaje_fecha,
                 m_user.primer_nombre ultimo_mensaje_autor,
                 -- Conteo no leídos
-                (SELECT COUNT(*) FROM chat_mensajes cm2
-                 WHERE cm2.id_conversacion = c.id
-                   AND cm2.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                   AND cm2.id_usuario != ?) no_leidos,
+                COALESCE(unread.cnt, 0) no_leidos,
                 -- Info del otro participante (para directas)
                 other_user.id otro_usuario_id,
                 CONCAT_WS(' ', other_user.primer_nombre, other_user.apellido_paterno) otro_usuario_nombre,
@@ -51,13 +50,26 @@ final class ChatMensaje extends BaseModel
                 s.nombre otro_usuario_sucursal
             FROM chat_participantes cp
             INNER JOIN chat_conversaciones c ON c.id = cp.id_conversacion
-            -- Último mensaje (subquery para obtener el más reciente)
-            LEFT JOIN chat_mensajes m ON m.id = (
-                SELECT m2.id FROM chat_mensajes m2
-                WHERE m2.id_conversacion = c.id
-                ORDER BY m2.created_at DESC LIMIT 1
-            )
+            -- Último mensaje (vía JOIN a tabla derivada)
+            LEFT JOIN (
+                SELECT m_inner.id_conversacion, MAX(m_inner.id) AS max_id
+                FROM chat_mensajes m_inner
+                INNER JOIN chat_participantes cp_filter ON cp_filter.id_conversacion = m_inner.id_conversacion
+                WHERE cp_filter.id_usuario = ?
+                GROUP BY m_inner.id_conversacion
+            ) m_max ON m_max.id_conversacion = c.id
+            LEFT JOIN chat_mensajes m ON m.id = m_max.max_id
             LEFT JOIN usuarios m_user ON m_user.id = m.id_usuario
+            -- Conteo no leídos (vía JOIN a tabla derivada)
+            LEFT JOIN (
+                SELECT cm2.id_conversacion, COUNT(*) AS cnt
+                FROM chat_mensajes cm2
+                INNER JOIN chat_participantes cp_filter ON cp_filter.id_conversacion = cm2.id_conversacion
+                WHERE cp_filter.id_usuario = ?
+                  AND cm2.created_at > COALESCE(cp_filter.ultimo_leido, '1970-01-01')
+                  AND cm2.id_usuario != ?
+                GROUP BY cm2.id_conversacion
+            ) unread ON unread.id_conversacion = c.id
             -- Otro participante (para conversaciones directas)
             LEFT JOIN chat_participantes cp2 ON cp2.id_conversacion = c.id
                 AND cp2.id_usuario != ? AND c.tipo = 'directa'
@@ -67,7 +79,7 @@ final class ChatMensaje extends BaseModel
             ORDER BY COALESCE(m.created_at, c.created_at) DESC
         ";
 
-        return $this->db->fetchAll($sql, [$userId, $userId, $userId]);
+        return $this->db->fetchAll($sql, [$userId, $userId, $userId, $userId, $userId]);
     }
 
     /**
@@ -200,21 +212,19 @@ final class ChatMensaje extends BaseModel
      */
     public function contarNoLeidos(int $userId): int
     {
+        // Replaced nested subquery with direct INNER JOIN between chat_participantes and chat_mensajes
+        // for O(1) query roundtrip and single-pass aggregation.
         $sql = "
-            SELECT COALESCE(SUM(sub.no_leidos), 0) total
-            FROM (
-                SELECT (
-                    SELECT COUNT(*) FROM chat_mensajes cm
-                    WHERE cm.id_conversacion = cp.id_conversacion
-                      AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
-                      AND cm.id_usuario != ?
-                ) no_leidos
-                FROM chat_participantes cp
-                WHERE cp.id_usuario = ?
-            ) sub
+            SELECT COALESCE(COUNT(cm.id), 0) AS total
+            FROM chat_participantes cp
+            INNER JOIN chat_mensajes cm
+                ON cm.id_conversacion = cp.id_conversacion
+               AND cm.created_at > COALESCE(cp.ultimo_leido, '1970-01-01')
+               AND cm.id_usuario != cp.id_usuario
+            WHERE cp.id_usuario = ?
         ";
 
-        $result = $this->db->fetchOne($sql, [$userId, $userId]);
+        $result = $this->db->fetchOne($sql, [$userId]);
         $total = $result['total'] ?? 0;
 
         return intval($total);
