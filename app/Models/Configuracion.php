@@ -117,63 +117,145 @@ class Configuracion extends BaseModel implements LoggerAwareInterface
     }
 
     /**
-     * Fetch current USD/VES rate from Rafnixg BCV API.
-     * Timeout is 3s for resilience.
+     * Fetch current USD/VES rate from MontosVE (if API key provided)
+     * with automatic fallback to public BCV API providers.
      */
     private function fetchFromApi()
     {
-        $url = 'https://api.montosve.com/v1/fx/rates';
+        // 1. If MontosVE API key is configured, try MontosVE first
+        $apiKey = $_ENV['MONTOSVE_API_KEY'] ?? getenv('MONTOSVE_API_KEY') ?? $this->get('montosve_api_key');
+        if (!empty($apiKey)) {
+            $rate = $this->fetchFromMontosVE($apiKey);
+            if ($rate && $rate > 0) {
+                return $rate;
+            }
+        }
 
+        // 2. Primary free public provider: DolarAPI (Oficial BCV)
+        $rate = $this->fetchFromDolarApi();
+        if ($rate && $rate > 0) {
+            return $rate;
+        }
+
+        // 3. Alternate public fallback: PyDolarVenezuela
+        $rate = $this->fetchFromPyDolar();
+        if ($rate && $rate > 0) {
+            return $rate;
+        }
+
+        return null;
+    }
+
+    /**
+     * MontosVE API (https://montosve.com)
+     */
+    private function fetchFromMontosVE(string $apiKey): ?float
+    {
+        $url = 'https://api.montosve.com/v1/fx/rates';
         try {
             $ch = curl_init();
-            $headers = [];
-            $apiKey = $this->get('montosve_api_key'); // optional API key
-            if ($apiKey) {
-                $headers[] = 'X-API-Key: ' . $apiKey;
-            }
-            $headers[] = 'Accept: application/json';
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 6);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'X-API-Key: ' . $apiKey,
+                'Accept: application/json'
+            ]);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
 
             $json = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            $error = curl_error($ch);
             curl_close($ch);
 
             if ($httpCode === 200 && $json) {
                 $data = json_decode($json, true);
-                // MontosVE response handling
                 $inner = $data['data'] ?? $data;
-                if (isset($inner['rates']['USD'])) {
+                if (isset($inner['rates']['USD']) && is_numeric($inner['rates']['USD'])) {
                     return (float)$inner['rates']['USD'];
                 }
-                if (isset($inner['rates']['bcv'])) {
+                if (isset($inner['rates']['bcv']) && is_numeric($inner['rates']['bcv'])) {
                     return (float)$inner['rates']['bcv'];
                 }
-                if (isset($inner['rate'])) {
+                if (isset($inner['rate']) && is_numeric($inner['rate'])) {
                     return (float)$inner['rate'];
                 }
-                // Fallback: look for any USD key
                 foreach ($inner as $key => $val) {
                     if (is_string($key) && strtoupper($key) === 'USD' && is_numeric($val)) {
                         return (float)$val;
                     }
-                    if (is_array($val) && isset($val['USD'])) {
+                    if (is_array($val) && isset($val['USD']) && is_numeric($val['USD'])) {
                         return (float)$val['USD'];
                     }
                 }
-            } else {
-                $this->logger?->error('BCV API Error: HTTP {code} - {error}', [
-                    'code' => $httpCode,
-                    'error' => $error,
-                ]);
             }
-        } catch (\Exception $e) {
-            $this->logger?->error('BCV API Exception: {message}', ['message' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            $this->logger?->error('MontosVE API Error: {message}', ['message' => $e->getMessage()]);
+        }
+        return null;
+    }
+
+    /**
+     * DolarAPI Official BCV (https://ve.dolarapi.com/v1/dolares/oficial)
+     */
+    private function fetchFromDolarApi(): ?float
+    {
+        $url = 'https://ve.dolarapi.com/v1/dolares/oficial';
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
+
+            $json = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode === 200 && $json) {
+                $data = json_decode($json, true);
+                if (isset($data['promedio']) && is_numeric($data['promedio'])) {
+                    return (float)$data['promedio'];
+                }
+                if (isset($data['price']) && is_numeric($data['price'])) {
+                    return (float)$data['price'];
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->logger?->error('DolarAPI Error: {message}', ['message' => $e->getMessage()]);
+        }
+        return null;
+    }
+
+    /**
+     * PyDolarVenezuela fallback
+     */
+    private function fetchFromPyDolar(): ?float
+    {
+        $url = 'https://pydolarvenezuela-api.vercel.app/api/v1/dollar?page=bcv';
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
+            curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SIPAN/2.0');
+
+            $json = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode === 200 && $json) {
+                $data = json_decode($json, true);
+                if (isset($data['monitors']['usd']['price']) && is_numeric($data['monitors']['usd']['price'])) {
+                    return (float)$data['monitors']['usd']['price'];
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->logger?->error('PyDolar API Error: {message}', ['message' => $e->getMessage()]);
         }
         return null;
     }

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\ChatMensaje;
 use App\Middlewares\AuthMiddleware;
+use Leaf\Http\Session;
 
 class ChatController
 {
@@ -15,6 +16,11 @@ class ChatController
         $this->chatModel = new ChatMensaje();
     }
 
+    private function getUserId(): int
+    {
+        return (int) (Session::get('user_id') ?? $_SESSION['user_id'] ?? 0);
+    }
+
     /**
      * Vista principal del chat
      */
@@ -23,6 +29,8 @@ class ChatController
         AuthMiddleware::check();
         $pageTitle = 'Chat Interno';
         $currentPage = 'chat';
+        $csrfToken = \App\Helpers\CSRF::getToken();
+        $user = AuthMiddleware::getUser();
         require_once __DIR__ . '/../Views/chat/index.php';
     }
 
@@ -34,7 +42,11 @@ class ChatController
         AuthMiddleware::check();
         header('Content-Type: application/json');
 
-        $userId = $_SESSION['user_id'];
+        $userId = $this->getUserId();
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no iniciada']);
+            exit;
+        }
         $conversaciones = $this->chatModel->getConversaciones($userId);
 
         echo json_encode(['success' => true, 'conversaciones' => $conversaciones]);
@@ -49,7 +61,11 @@ class ChatController
         AuthMiddleware::check();
         header('Content-Type: application/json');
 
-        $userId = $_SESSION['user_id'];
+        $userId = $this->getUserId();
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no iniciada']);
+            exit;
+        }
         $usuarios = $this->chatModel->getUsuariosDisponibles($userId);
 
         // Agrupar por sucursal
@@ -79,7 +95,11 @@ class ChatController
             exit;
         }
 
-        $userId = $_SESSION['user_id'];
+        $userId = $this->getUserId();
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no iniciada']);
+            exit;
+        }
         $otherUserId = intval($_POST['user_id'] ?? 0);
 
         if ($otherUserId <= 0 || $otherUserId === $userId) {
@@ -104,7 +124,11 @@ class ChatController
         AuthMiddleware::check();
         header('Content-Type: application/json');
 
-        $userId = $_SESSION['user_id'];
+        $userId = $this->getUserId();
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no iniciada']);
+            exit;
+        }
         $convId = intval($convId);
 
         // Verificar que es participante
@@ -140,7 +164,11 @@ class ChatController
             exit;
         }
 
-        $userId = $_SESSION['user_id'];
+        $userId = $this->getUserId();
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no iniciada']);
+            exit;
+        }
         $convId = intval($convId);
         $mensaje = trim($_POST['mensaje'] ?? '');
 
@@ -180,7 +208,11 @@ class ChatController
         AuthMiddleware::check();
         header('Content-Type: application/json');
 
-        $userId = $_SESSION['user_id'];
+        $userId = $this->getUserId();
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no iniciada']);
+            exit;
+        }
         $ultima = $this->chatModel->getUltimaActividad($userId);
         $noLeidos = $this->chatModel->contarNoLeidos($userId);
 
@@ -204,7 +236,11 @@ class ChatController
         AuthMiddleware::check();
         header('Content-Type: application/json');
 
-        $userId = $_SESSION['user_id'];
+        $userId = $this->getUserId();
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Sesión no iniciada']);
+            exit;
+        }
         $convId = intval($_GET['conv_id'] ?? 0);
         $lastTs = $_GET['last_ts'] ?? null;
         $full = intval($_GET['full'] ?? 0);

@@ -515,8 +515,8 @@ $csrfToken = \App\Helpers\CSRF::getToken();
 }
 </style>
 
-<input type="hidden" id="csrf_token" value="<?= $csrfToken ?>">
-<input type="hidden" id="current_user_id" value="<?= $_SESSION['user_id'] ?>">
+<input type="hidden" id="csrf_token" value="<?= htmlspecialchars($csrfToken ?? \App\Helpers\CSRF::getToken()) ?>">
+<input type="hidden" id="current_user_id" value="<?= (int)($user['id'] ?? $_SESSION['user_id'] ?? 0) ?>">
 
 <div class="chat-container" id="chatContainer" x-data="chatApp()" x-init="init()">
 
@@ -680,8 +680,8 @@ function chatApp() {
         loadingMsgs: false,
         loadingUsers: false,
         sending: false,
-        userId: parseInt(document.getElementById('current_user_id').value),
-        csrfToken: document.getElementById('csrf_token').value,
+        userId: parseInt(document.getElementById('current_user_id')?.value || '0'),
+        csrfToken: document.getElementById('csrf_token')?.value || '',
         // Optimización: un solo timer
         syncTimer: null,
         lastActivity: null,

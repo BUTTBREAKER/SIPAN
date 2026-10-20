@@ -52,7 +52,8 @@ final class AuthMiddleware
      */
     private static function checkCaja(): bool
     {
-        $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $path = parse_url($uri, PHP_URL_PATH) ?? '/';
 
         // Rutas exceptuadas de comprobación de caja
         $excepciones = [
@@ -63,7 +64,13 @@ final class AuthMiddleware
             '/auth/verificar-sucursal',
             '/auth/cambiar-sucursal',
             '/cajas',
+            '/config/refresh-tasa',
         ];
+
+        // Chat interno y notificaciones del sistema siempre accesibles
+        if (str_starts_with($path, '/chat') || str_starts_with($path, '/notificaciones')) {
+            return true;
+        }
 
         // Si el usuario es administrador, permitir acceso a módulos de sistema sin caja abierta
         if (Session::get('user_rol') === 'administrador') {
@@ -82,6 +89,21 @@ final class AuthMiddleware
         $id_sucursal = Session::get('sucursal_id');
 
         if ($id_sucursal && !$cajaModel->getActiva($id_sucursal)) {
+            // Si la petición es AJAX/JSON, responder con JSON en vez de redirigir con HTML
+            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+                || (isset($_SERVER['HTTP_ACCEPT']) && str_contains($_SERVER['HTTP_ACCEPT'], 'application/json'))
+                || (isset($_SERVER['CONTENT_TYPE']) && str_contains($_SERVER['CONTENT_TYPE'], 'application/json'));
+
+            if ($isAjax) {
+                header('Content-Type: application/json', true, 403);
+                echo json_encode([
+                    'success' => false,
+                    'caja_cerrada' => true,
+                    'message' => 'Debes realizar la apertura de caja antes de continuar.'
+                ]);
+                exit;
+            }
+
             Session::set('flash_message', [
                 'type' => 'warning',
                 'content' => 'Debes realizar la apertura de caja antes de continuar.'
