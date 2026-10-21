@@ -26,6 +26,12 @@ class ProductosController
 
         $productos = $this->productoModel->all($sucursal_id);
 
+        $loteModel = new \App\Models\Lote();
+        $lotes_por_vencer = $loteModel->getPorVencer($sucursal_id, 30);
+        $lotes_productos = array_filter($lotes_por_vencer, function($l) {
+            return ($l['tipo'] ?? '') === 'producto';
+        });
+
         require_once __DIR__ . '/../Views/productos/index.php';
     }
 
@@ -70,7 +76,8 @@ class ProductosController
             'descripcion' => $_POST['descripcion'] ?? '',
             'stock_actual' => $_POST['stock_actual'] ?? 0,
             'stock_minimo' => $_POST['stock_minimo'] ?? 0,
-            'precio_actual' => $_POST['precio_actual'] ?? 0
+            'precio_actual' => $_POST['precio_actual'] ?? 0,
+            'precio_venta' => $_POST['precio_actual'] ?? 0
         ];
 
         try {
@@ -121,7 +128,8 @@ class ProductosController
             'descripcion' => $_POST['descripcion'] ?? '',
             'stock_actual' => $_POST['stock_actual'] ?? 0,
             'stock_minimo' => $_POST['stock_minimo'] ?? 0,
-            'precio_actual' => $_POST['precio_actual'] ?? 0
+            'precio_actual' => $_POST['precio_actual'] ?? 0,
+            'precio_venta' => $_POST['precio_actual'] ?? 0
         ];
 
         try {
@@ -145,7 +153,11 @@ class ProductosController
         }
 
         try {
-            $this->productoModel->update($id, ['precio_actual' => floatval($precio)]);
+            $precioFloat = floatval($precio);
+            $this->productoModel->update($id, [
+                'precio_actual' => $precioFloat,
+                'precio_venta' => $precioFloat
+            ]);
             echo json_encode(['success' => true, 'message' => 'Precio actualizado']);
         } catch (\Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);

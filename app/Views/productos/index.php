@@ -20,6 +20,30 @@ $userRol = $_SESSION['user_rol'] ?? '';
         </a>
     </div>
 
+    <?php if (!empty($lotes_productos)) : ?>
+    <div class="alert alert-warning border-warning d-flex align-items-center mb-4 py-3 shadow-sm" style="background-color: #fffbeb; border-left: 5px solid #f59e0b;">
+        <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+        <div class="flex-grow-1">
+            <h6 class="alert-heading fw-bold mb-1 text-dark">
+                Alerta de Tiempo Máximo de Venta (Vencimiento de Productos)
+            </h6>
+            <p class="mb-0 text-muted small">
+                Se detectaron <strong><?= count($lotes_productos) ?></strong> lote(s) de productos próximos a su tiempo límite de venta en los próximos 30 días:
+                <?php
+                $nombres = array_map(function($l) {
+                    $dias = $l['dias_restantes'] ?? ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
+                    return htmlspecialchars($l['nombre_item'] ?? 'Lote #' . $l['codigo_lote']) . " (" . ($dias <= 0 ? 'Vencido' : $dias . 'd rest.') . ")";
+                }, array_slice($lotes_productos, 0, 4));
+                echo implode(', ', $nombres) . (count($lotes_productos) > 4 ? '...' : '');
+                ?>
+            </p>
+        </div>
+        <a href="/reportes/vencimientos" class="btn btn-sm btn-outline-warning text-dark fw-bold ms-3">
+            <i class="fas fa-list me-1"></i> Ver Lotes
+        </a>
+    </div>
+    <?php endif; ?>
+
     <!-- Grid.js Container -->
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">

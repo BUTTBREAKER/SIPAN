@@ -76,6 +76,7 @@ class PedidosController implements LoggerAwareInterface
             'estado_pago' => 'pendiente',
             'subtotal' => $_POST['subtotal'] ?? 0,
             'descuento' => $_POST['descuento'] ?? 0,
+            'tipo' => in_array($_POST['tipo'] ?? '', ['insumos', 'despacho_mayor'], true) ? $_POST['tipo'] : 'despacho_mayor',
             'total' => $_POST['total'] ?? 0,
             'monto_pagado' => 0,
             'monto_deuda' => $_POST['total'] ?? 0,
@@ -121,10 +122,55 @@ class PedidosController implements LoggerAwareInterface
 
         $productos = $this->pedidoModel->getProductos($ultimo['id']);
         $gasto_insumos = 0;
+        $detallesInsumos = [];
+        $recetaModel = new \App\Models\Receta();
+
         foreach ($productos as $prod) {
-            $pInfo = $this->productoModel->find($prod['id_producto']);
-            $costoUnit = floatval($pInfo['precio_costo'] ?? 0);
-            $gasto_insumos += $costoUnit * floatval($prod['cantidad']);
+            $pId = (int)$prod['id_producto'];
+            $pQty = floatval($prod['cantidad']);
+            $pInfo = $this->productoModel->find($pId);
+
+            // Intentar calcular directamente desde la receta del producto
+            $receta = $recetaModel->getByProducto($pId);
+            $costoInsumosProducto = 0;
+
+            if ($receta) {
+                $insumosReceta = $recetaModel->getInsumos($receta['id']);
+                $rendimiento = floatval($receta['rendimiento'] ?? 1) ?: 1;
+                $costoBatch = 0;
+
+                foreach ($insumosReceta as $ir) {
+                    $cant = floatval($ir['cantidad']);
+                    $costoUnitInsumo = floatval($ir['precio_unitario'] ?? $ir['costo_unitario'] ?? 0);
+                    $sub = $cant * $costoUnitInsumo;
+                    $costoBatch += $sub;
+
+                    $nomInsumo = $ir['nombre'];
+                    if (!isset($detallesInsumos[$nomInsumo])) {
+                        $detallesInsumos[$nomInsumo] = [
+                            'nombre' => $nomInsumo,
+                            'cantidad' => 0,
+                            'unidad' => $ir['unidad_insumo'] ?? ($ir['unidad_medida'] ?? 'kg'),
+                            'costo' => 0
+                        ];
+                    }
+                    $cantInvertida = ($cant / $rendimiento) * $pQty;
+                    $detallesInsumos[$nomInsumo]['cantidad'] += $cantInvertida;
+                    $detallesInsumos[$nomInsumo]['costo'] += $cantInvertida * $costoUnitInsumo;
+                }
+                $costoInsumosProducto = ($costoBatch / $rendimiento) * $pQty;
+            } else {
+                // Fallback a precio_costo del producto si no tiene receta cargada
+                $costoInsumosProducto = floatval($pInfo['precio_costo'] ?? 0) * $pQty;
+            }
+
+            $gasto_insumos += $costoInsumosProducto;
+        }
+
+        // Formatear resumen de insumos para vista (ej: "Harina: 2.5 kg, Azúcar: 0.5 kg")
+        $insumosResumen = [];
+        foreach ($detallesInsumos as $d) {
+            $insumosResumen[] = $d['nombre'] . ': ' . round($d['cantidad'], 2) . ' ' . $d['unidad'];
         }
 
         $resumenItems = array_map(function($p) {
@@ -135,7 +181,9 @@ class PedidosController implements LoggerAwareInterface
             'success' => true,
             'pedido' => $ultimo,
             'gasto_insumos' => round($gasto_insumos, 2),
-            'productos_resumen' => implode(', ', $resumenItems)
+            'productos_resumen' => implode(', ', $resumenItems),
+            'insumos_detalle' => array_values($detallesInsumos),
+            'insumos_resumen_str' => !empty($insumosResumen) ? implode(', ', $insumosResumen) : 'Sin receta registrada'
         ]);
         exit;
     }

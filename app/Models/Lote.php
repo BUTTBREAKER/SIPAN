@@ -77,12 +77,13 @@ class Lote extends BaseModel
             ? [$sucursal_id, $fecha_limite]
             : [$sucursal_id, $fecha_hoy, $fecha_limite];
 
-        // Consulta unificada para productos e insumos
+        // Consulta unificada para productos e insumos con dias restantes
         $sql = "SELECT l.*, 
                        CASE 
                            WHEN l.tipo = 'producto' THEN p.nombre 
                            WHEN l.tipo = 'insumo' THEN i.nombre 
-                       END as nombre_item
+                       END as nombre_item,
+                       DATEDIFF(l.fecha_vencimiento, CURDATE()) as dias_restantes
                 FROM {$this->table} l
                 LEFT JOIN productos p ON l.id_item = p.id AND l.tipo = 'producto'
                 LEFT JOIN insumos i ON l.id_item = i.id AND l.tipo = 'insumo'

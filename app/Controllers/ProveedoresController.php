@@ -27,7 +27,7 @@ class ProveedoresController
 
     public function create()
     {
-        AuthMiddleware::checkRole(['administrador']);
+        AuthMiddleware::checkRole(['administrador', 'empleado']);
         $user = AuthMiddleware::getUser();
         $insumos = $this->insumoModel->getAllBySucursal($user['sucursal_id']);
         require_once __DIR__ . '/../Views/proveedores/create.php';
@@ -35,7 +35,7 @@ class ProveedoresController
 
     public function store()
     {
-        AuthMiddleware::checkRole(['administrador']);
+        AuthMiddleware::checkRole(['administrador', 'empleado']);
         header('Content-Type: application/json');
 
         $user = AuthMiddleware::getUser();
@@ -64,7 +64,7 @@ class ProveedoresController
 
     public function edit($id)
     {
-        AuthMiddleware::checkRole(['administrador']);
+        AuthMiddleware::checkRole(['administrador', 'empleado']);
 
         $proveedor = $this->proveedorModel->find($id);
         if (!$proveedor) {
@@ -91,7 +91,7 @@ class ProveedoresController
 
     public function update($id)
     {
-        AuthMiddleware::checkRole(['administrador']);
+        AuthMiddleware::checkRole(['administrador', 'empleado']);
         header('Content-Type: application/json');
 
         $data = [

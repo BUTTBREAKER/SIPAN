@@ -120,6 +120,17 @@ $pedido ??= null;
                 </div>
 
                 <div class="mb-3">
+                    <label class="text-muted">Tipo de Pedido:</label>
+                    <p class="mb-0">
+                        <?php if (($pedido['tipo'] ?? '') === 'insumos') : ?>
+                            <span class="badge bg-warning text-dark"><i class="fas fa-boxes me-1"></i> Pedido de Insumos</span>
+                        <?php else : ?>
+                            <span class="badge bg-primary"><i class="fas fa-truck me-1"></i> Despacho al Mayor</span>
+                        <?php endif; ?>
+                    </p>
+                </div>
+
+                <div class="mb-3">
                     <label class="text-muted">Fecha de Pedido:</label>
                     <p class="mb-0"><strong><?= date('d/m/Y H:i', strtotime($pedido['fecha_pedido'])) ?></strong></p>
                 </div>

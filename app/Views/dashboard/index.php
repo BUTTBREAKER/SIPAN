@@ -61,31 +61,49 @@ $data ??= [];
                 </div>
             </div>
             <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        </div>
-    <?php else : ?>
-        <div class="stat-card success span-4">
+        </div>    <?php else : ?>
+        <div class="stat-card info span-2">
             <div class="stat-content">
-                <div class="stat-label">Ventas del Día (Caja)</div>
-                <div class="stat-value">$ <?= number_format($data['ventas_hoy'] ?? 0, 2) ?></div>
+                <div class="stat-label">Stock Bajo: Productos</div>
+                <div class="stat-value"><?= count($data['productos_stock_bajo'] ?? []) ?></div>
             </div>
-            <div class="stat-icon"><i class="fas fa-cash-register"></i></div>
+            <div class="stat-icon"><i class="fas fa-box-open"></i></div>
+        </div>
+
+        <div class="stat-card warning span-2">
+            <div class="stat-content">
+                <div class="stat-label">Lotes por Vencer (30 Días)</div>
+                <div class="stat-value"><?= count($data['lotes_por_vencer'] ?? []) ?></div>
+            </div>
+            <div class="stat-icon"><i class="fas fa-calendar-times"></i></div>
         </div>
     <?php endif; ?>
 
     <!-- 2. Alertas Críticas (Full Width if any) -->
-    <?php if (!empty($data['lotes_por_vencer'])) : ?>
-    <div class="bento-widget span-4" style="background: #FEE2E2; border-color: #EF4444;">
-        <div class="d-flex align-items-center text-danger">
-            <i class="fas fa-exclamation-circle fa-2x me-3"></i>
-            <div>
-                <h5 class="alert-heading fw-bold">¡Atención! Insumos/Productos por vencer</h5>
-                <p class="mb-0">
-                    Hay
-                    <strong><?= count($data['lotes_por_vencer'] ?? []) ?></strong>
-                    lote(s) que vencen en los próximos 30 días.
+    <?php if (!empty($data['lotes_por_vencer'])) : 
+        $prods_venc = array_filter($data['lotes_por_vencer'], fn($l) => ($l['tipo'] ?? '') === 'producto');
+        $ins_venc = array_filter($data['lotes_por_vencer'], fn($l) => ($l['tipo'] ?? '') === 'insumo');
+    ?>
+    <div class="bento-widget span-4" style="background: #FFFBEB; border: 1px solid #F59E0B; border-left: 5px solid #D97706;">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading fw-bold mb-1 text-dark">
+                    Estimado de Vencimiento y Tiempo Máximo de Venta
+                </h5>
+                <p class="mb-0 small text-muted">
+                    <?php if (!empty($prods_venc)) : ?>
+                        <span class="badge bg-primary me-1"><i class="fas fa-bread-slice me-1"></i> <?= count($prods_venc) ?> producto(s)</span> límite de venta
+                    <?php endif; ?>
+                    <?php if (!empty($ins_venc)) : ?>
+                        <span class="badge bg-warning text-dark me-1"><i class="fas fa-boxes me-1"></i> <?= count($ins_venc) ?> insumo(s)</span> próximos a caducar
+                    <?php endif; ?>
+                    (en los próximos 30 días).
                 </p>
             </div>
-             <a href="/reportes/vencimientos" class="btn btn-sm btn-danger ms-auto">Ver Detalle</a>
+            <a href="/reportes/vencimientos" class="btn btn-sm btn-outline-warning text-dark fw-bold ms-auto">
+                <i class="fas fa-calendar-times me-1"></i> Ver Reporte de Vencimientos
+            </a>
         </div>
     </div>
     <?php endif; ?>
@@ -127,23 +145,31 @@ $data ??= [];
                 <i class="fas fa-crown"></i> Top Productos
             </h3>
         </div>
-        <div class="chart-container" style="min-height: 250px;">
-            <canvas id="productosChart"></canvas>
-        </div>
+        <?php if (empty($data['productos_mas_vendidos'])) : ?>
+            <div class="text-center text-muted py-4 d-flex flex-column align-items-center justify-content-center" style="min-height: 200px;">
+                <i class="fas fa-chart-pie fa-3x mb-2" style="opacity: 0.25; color: #D4A574;"></i>
+                <p class="small mb-0">Sin ventas en los últimos 30 días</p>
+                <small class="text-muted mt-1" style="font-size: 0.75rem;">Los productos más vendidos aparecerán aquí.</small>
+            </div>
+        <?php else : ?>
+            <div class="chart-container" style="min-height: 250px;">
+                <canvas id="productosChart"></canvas>
+            </div>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
 
-    <!-- 5. Listas de Stock (Span 2 each) -->
-    <div class="bento-widget span-2">
+    <!-- 5. Listas de Stock -->
+    <div class="bento-widget <?= $user_rol === 'cajero' ? 'span-4' : 'span-2' ?>">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="card-title m-0"><i class="fas fa-box"></i> Stock Bajo: Productos</h3>
-            <a href="/productos" class="btn btn-sm btn-secondary">Ver Todos</a>
+            <h3 class="card-title m-0"><i class="fas fa-box"></i> Stock de Productos</h3>
+            <a href="/productos" class="btn btn-sm btn-secondary"><?= $user_rol === 'cajero' ? 'Ver Catálogo' : 'Ver Todos' ?></a>
         </div>
         
         <?php if (empty($data['productos_stock_bajo'])) : ?>
             <div class="text-center text-muted py-4">
                 <i class="fas fa-check-circle fa-2x mb-2 text-success"></i>
-                <p>Todo en orden</p>
+                <p>Nivel de stock óptimo</p>
             </div>
         <?php else : ?>
             <div class="bento-list">
@@ -165,6 +191,7 @@ $data ??= [];
         <?php endif; ?>
     </div>
 
+    <?php if ($user_rol !== 'cajero') : ?>
     <div class="bento-widget span-2">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3 class="card-title m-0"><i class="fas fa-cubes"></i> Stock Bajo: Insumos</h3>
@@ -191,6 +218,7 @@ $data ??= [];
             </div>
         <?php endif; ?>
     </div>
+    <?php endif; ?>
 
     <!-- 6. Accesos Rápidos (Span 4 / Full Row) -->
     <div class="bento-widget span-4">
@@ -294,31 +322,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 2. Gráfico Productos
-    const ctxProd = document.getElementById('productosChart').getContext('2d');
+    // 2. Gráfico Productos (si hay datos y elemento)
+    const canvasProd = document.getElementById('productosChart');
     const prodData = <?= json_encode($data['productos_mas_vendidos'] ?? []) ?>;
     
-    new Chart(ctxProd, {
-        type: 'doughnut',
-        data: {
-            labels: prodData.map(p => p.nombre),
-            datasets: [{
-                data: prodData.map(p => p.cantidad),
-                backgroundColor: ['#D2691E', '#CD853F', '#DEB887', '#A0522D', '#8B4513'],
-                borderWidth: 0,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+    if (canvasProd && prodData && prodData.length > 0) {
+        new Chart(canvasProd.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: prodData.map(p => p.nombre),
+                datasets: [{
+                    data: prodData.map(p => p.cantidad),
+                    backgroundColor: ['#D2691E', '#CD853F', '#DEB887', '#A0522D', '#8B4513'],
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
             },
-            layout: { padding: 10 }
-        }
-    });
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                },
+                layout: { padding: 10 }
+            }
+        });
+    }
     <?php endif; ?>
 });
 

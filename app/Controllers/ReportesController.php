@@ -11,6 +11,7 @@ use App\Models\Pedido;
 use App\Models\Lote;
 use App\Models\Compra;
 use App\Models\Proveedor;
+use App\Middlewares\AuthMiddleware;
 
 class ReportesController
 {
@@ -39,6 +40,7 @@ class ReportesController
 
     public function index()
     {
+        AuthMiddleware::check();
         $data = [
             'pageTitle' => 'Reportes',
             'currentPage' => 'reportes'
@@ -49,11 +51,15 @@ class ReportesController
 
     public function ventas()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
 
-        $ventas = $this->ventaModel->getByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $ventas = $this->ventaModel->getByDateRange($sucursal_id, $fecha_inicio, $fecha_fin);
         $ventaIds = array_column($ventas, 'id');
 
         // Optimización Bolt: Batch fetch de pagos para evitar N+1 queries
@@ -126,7 +132,7 @@ class ReportesController
         ];
 
         if ($formato === 'pdf') {
-            // TODO: $this->generarPDFVentas($data);
+            $this->generarPDFVentas($data);
         } elseif ($formato === 'excel') {
             $this->generarExcelVentas($data);
         } else {
@@ -134,6 +140,76 @@ class ReportesController
             $data['currentPage'] = 'reportes';
             require_once dirname(__DIR__) . '/Views/reportes/ventas.php';
         }
+    }
+
+    private function generarPDFVentas($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        $html = $this->getHTMLVentas($data);
+        $mpdf = new \Mpdf\Mpdf(['format' => 'A4', 'orientation' => 'L']);
+        $mpdf->WriteHTML($html);
+        $mpdf->Output('reporte_ventas_' . date('Y-m-d') . '.pdf', 'D');
+        exit;
+    }
+
+    private function getHTMLVentas($data)
+    {
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; font-size: 11px; color: #222; }
+                h1 { text-align: center; margin-bottom: 4px; }
+                p.sub { text-align: center; color: #555; margin-top: 0; margin-bottom: 16px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border-bottom: 1px solid #ddd; padding: 6px; text-align: left; }
+                th { background-color: #f5f5f5; font-weight: bold; }
+                .num { text-align: right; }
+                .fw-bold { font-weight: bold; }
+                .total-row { background-color: #f0fdf4; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h1>Reporte de Ventas</h1>
+            <p class="sub">Período: <?= date('d/m/Y', strtotime($data['fecha_inicio'])) ?> al <?= date('d/m/Y', strtotime($data['fecha_fin'])) ?> | Total: $ <?= number_format((float)$data['total_ventas'], 2) ?> (<?= $data['cantidad_ventas'] ?> ventas)</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Vendedor</th>
+                        <th>Método(s) de Pago</th>
+                        <th class="num">Total ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($data['ventas'])) : ?>
+                        <tr><td colspan="6" style="text-align: center; padding: 15px; color: #666;">No se registraron ventas en el período.</td></tr>
+                    <?php else : ?>
+                        <?php foreach ($data['ventas'] as $v) : ?>
+                            <tr>
+                                <td>#<?= $v['id'] ?></td>
+                                <td><?= date('d/m/Y H:i', strtotime($v['fecha_venta'])) ?></td>
+                                <td><?= htmlspecialchars($v['cliente_nombre'] ?? 'Cliente General') ?></td>
+                                <td><?= htmlspecialchars($v['usuario_nombre'] ?? '-') ?></td>
+                                <td><?= strip_tags(str_replace('<br>', ', ', $v['detalle_pagos_str'])) ?></td>
+                                <td class="num fw-bold">$ <?= number_format((float)$v['total'], 2) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <tr class="total-row">
+                            <td colspan="5" style="text-align: right;">TOTAL GENERAL:</td>
+                            <td class="num">$ <?= number_format((float)$data['total_ventas'], 2) ?></td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
     }
 
     private function generarExcelVentas($data)
@@ -203,11 +279,15 @@ class ReportesController
 
     public function productos()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
 
-        $productos = $this->productoModel->getStatsByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $productos = $this->productoModel->getStatsByDateRange($sucursal_id, $fecha_inicio, $fecha_fin);
 
         // Optimización Bolt: El valor_stock ya viene calculado desde el modelo (SQL)
         $valor_total = array_sum(array_column($productos, 'valor_stock'));
@@ -220,7 +300,7 @@ class ReportesController
         ];
 
         if ($formato === 'pdf') {
-            //TODO: $this->generarPDFProductos($data);
+            $this->generarPDFProductos($data);
         } elseif ($formato === 'excel') {
             $this->generarExcelProductos($data);
         } else {
@@ -228,6 +308,69 @@ class ReportesController
             $data['currentPage'] = 'reportes';
             require_once dirname(__DIR__) . '/Views/reportes/productos.php';
         }
+    }
+
+    private function generarPDFProductos($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        $html = $this->getHTMLProductos($data);
+        $mpdf = new \Mpdf\Mpdf(['format' => 'A4', 'orientation' => 'P']);
+        $mpdf->WriteHTML($html);
+        $mpdf->Output('reporte_inventario_productos_' . date('Y-m-d') . '.pdf', 'D');
+        exit;
+    }
+
+    private function getHTMLProductos($data)
+    {
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; font-size: 11px; }
+                h1 { text-align: center; margin-bottom: 4px; }
+                p.sub { text-align: center; color: #555; margin-top: 0; margin-bottom: 16px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border-bottom: 1px solid #ddd; padding: 6px; text-align: left; }
+                th { background-color: #f5f5f5; font-weight: bold; }
+                .num { text-align: right; }
+                .total-row { background-color: #f0f0f0; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <h1>Reporte de Inventario de Productos</h1>
+            <p class="sub">Valor Total en Stock: $ <?= number_format((float)$data['valor_total'], 2) ?> | Fecha: <?= date('d/m/Y H:i') ?></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th class="num">Stock</th>
+                        <th class="num">Precio Unit. ($)</th>
+                        <th class="num">Valor Stock ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($data['productos'] as $prod) : ?>
+                        <tr>
+                            <td><?= htmlspecialchars($prod['nombre']) ?></td>
+                            <td><?= htmlspecialchars($prod['categoria_nombre'] ?? '-') ?></td>
+                            <td class="num"><?= $prod['stock_actual'] ?></td>
+                            <td class="num"><?= number_format((float)$prod['precio_actual'], 2) ?></td>
+                            <td class="num"><?= number_format((float)$prod['valor_stock'], 2) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr class="total-row">
+                        <td colspan="4" style="text-align: right;">VALOR TOTAL INVENTARIO:</td>
+                        <td class="num">$ <?= number_format((float)$data['valor_total'], 2) ?></td>
+                    </tr>
+                </tbody>
+            </table>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
     }
 
     private function generarExcelProductos($data)
@@ -292,10 +435,14 @@ class ReportesController
 
     public function clientes()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         // Optimización Bolt: Usar método que trae estadísticas en una sola consulta
-        $clientes = $this->clienteModel->getStatsByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $clientes = $this->clienteModel->getStatsByDateRange($sucursal_id, $fecha_inicio, $fecha_fin);
         $formato = $_GET['formato'] ?? 'html';
 
         $data = [
@@ -305,7 +452,7 @@ class ReportesController
         ];
 
         if ($formato === 'pdf') {
-            // TODO: $this->generarPDFClientes($data);
+            $this->generarPDFClientes($data);
         } elseif ($formato === 'excel') {
             $this->generarExcelClientes($data);
         } else {
@@ -313,6 +460,68 @@ class ReportesController
             $data['currentPage'] = 'reportes';
             require_once dirname(__DIR__) . '/Views/reportes/clientes.php';
         }
+    }
+
+    private function generarPDFClientes($data)
+    {
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        $html = $this->getHTMLClientes($data);
+        $mpdf = new \Mpdf\Mpdf(['format' => 'A4', 'orientation' => 'P']);
+        $mpdf->WriteHTML($html);
+        $mpdf->Output('reporte_clientes_' . date('Y-m-d') . '.pdf', 'D');
+        exit;
+    }
+
+    private function getHTMLClientes($data)
+    {
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; font-size: 11px; }
+                h1 { text-align: center; margin-bottom: 4px; }
+                p.sub { text-align: center; color: #555; margin-top: 0; margin-bottom: 16px; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border-bottom: 1px solid #ddd; padding: 6px; text-align: left; }
+                th { background-color: #f5f5f5; font-weight: bold; }
+                .num { text-align: right; }
+            </style>
+        </head>
+        <body>
+            <h1>Reporte de Clientes</h1>
+            <p class="sub">Período: <?= date('d/m/Y', strtotime($data['fecha_inicio'])) ?> al <?= date('d/m/Y', strtotime($data['fecha_fin'])) ?></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Documento</th>
+                        <th>Teléfono</th>
+                        <th class="num">Compras</th>
+                        <th class="num">Monto Total ($)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($data['clientes'])) : ?>
+                        <tr><td colspan="5" style="text-align: center; padding: 15px; color: #666;">No hay datos de clientes para el período.</td></tr>
+                    <?php else : ?>
+                        <?php foreach ($data['clientes'] as $cli) : ?>
+                            <tr>
+                                <td><?= htmlspecialchars($cli['nombre']) ?></td>
+                                <td><?= htmlspecialchars($cli['documento_numero'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($cli['telefono'] ?? '-') ?></td>
+                                <td class="num"><?= $cli['total_compras'] ?></td>
+                                <td class="num">$ <?= number_format((float)$cli['monto_total'], 2) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
     }
 
     private function generarExcelClientes($data)
@@ -359,15 +568,17 @@ class ReportesController
         exit;
     }
 
-    // ... (PDF Methods skipped for brevity if not modifying) ...
-
     public function insumos()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
 
-        $insumos = $this->insumoModel->getStatsByDateRange($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $insumos = $this->insumoModel->getStatsByDateRange($sucursal_id, $fecha_inicio, $fecha_fin);
 
         $data = [
             'insumos' => $insumos,
@@ -430,11 +641,15 @@ class ReportesController
 
     public function producciones()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $formato = $_GET['formato'] ?? 'html';
 
-        $producciones = $this->produccionModel->getWithDetails($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $producciones = $this->produccionModel->getWithDetails($sucursal_id, $fecha_inicio, $fecha_fin);
 
         $data = [
             'producciones' => $producciones,
@@ -498,6 +713,10 @@ class ReportesController
 
     public function pedidos()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $estado_filtro = $_GET['estado_pedido'] ?? null;
@@ -505,15 +724,15 @@ class ReportesController
         $formato = $_GET['formato'] ?? 'html';
 
         $pedidos = $this->pedidoModel->getWithDetails(
-            $_SESSION['sucursal_id'],
+            $sucursal_id,
             $estado_filtro ?: null,
             $pago_filtro ?: null,
             $fecha_inicio,
             $fecha_fin
         );
 
-        $resumen_estados = $this->pedidoModel->getResumenEstados($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
-        $repartidores = $this->pedidoModel->getRepartidorStats($_SESSION['sucursal_id'], $fecha_inicio, $fecha_fin);
+        $resumen_estados = $this->pedidoModel->getResumenEstados($sucursal_id, $fecha_inicio, $fecha_fin);
+        $repartidores = $this->pedidoModel->getRepartidorStats($sucursal_id, $fecha_inicio, $fecha_fin);
 
         // Calcular totales rápidos
         $total_monto = array_sum(array_column($pedidos, 'total'));
@@ -818,13 +1037,16 @@ class ReportesController
 
     public function vencimientos()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $dias = isset($_GET['dias']) ? (int)$_GET['dias'] : 30;
         if (!in_array($dias, [15, 30, 60, 90], true)) {
             $dias = 30;
         }
         $formato = $_GET['formato'] ?? 'html';
 
-        $sucursal_id = $_SESSION['sucursal_id'] ?? 1;
         $lotes = $this->loteModel->getPorVencer($sucursal_id, $dias, true);
 
         $pageTitle = 'Reporte de Vencimientos';
@@ -984,12 +1206,14 @@ class ReportesController
 
     public function compras()
     {
+        AuthMiddleware::check();
+        $user = AuthMiddleware::getUser();
+        $sucursal_id = $user['sucursal_id'] ?? ($_SESSION['sucursal_id'] ?? 1);
+
         $fecha_inicio = $_GET['fecha_inicio'] ?? date('Y-m-01');
         $fecha_fin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $id_proveedor = !empty($_GET['id_proveedor']) ? (int)$_GET['id_proveedor'] : null;
         $formato = $_GET['formato'] ?? 'html';
-
-        $sucursal_id = $_SESSION['sucursal_id'] ?? 1;
 
         $proveedores = $this->proveedorModel->getAllBySucursal($sucursal_id);
         foreach ($proveedores as &$prov) {

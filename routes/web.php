@@ -661,4 +661,15 @@ return [
     new Route('POST', '/chat/enviar/{id}', [ChatController::class, 'enviar']),
     new Route('GET', '/chat/poll', [ChatController::class, 'poll']),
     new Route('GET', '/chat/sync', [ChatController::class, 'sync']),
+
+    // Reportes del Sistema
+    new Route('GET', '/reportes', [ReportesController::class, 'index']),
+    new Route('GET', '/reportes/ventas', [ReportesController::class, 'ventas']),
+    new Route('GET', '/reportes/productos', [ReportesController::class, 'productos']),
+    new Route('GET', '/reportes/clientes', [ReportesController::class, 'clientes']),
+    new Route('GET', '/reportes/insumos', [ReportesController::class, 'insumos']),
+    new Route('GET', '/reportes/producciones', [ReportesController::class, 'producciones']),
+    new Route('GET', '/reportes/pedidos', [ReportesController::class, 'pedidos']),
+    new Route('GET', '/reportes/vencimientos', [ReportesController::class, 'vencimientos']),
+    new Route('GET', '/reportes/compras', [ReportesController::class, 'compras']),
 ];

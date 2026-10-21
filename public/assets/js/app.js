@@ -91,6 +91,58 @@ window.SIPAN = {
             alert('Aviso: ' + message)
         }
     },
+    validateForm: form => {
+        if (!form) return false
+        if (typeof form.checkValidity === 'function') {
+            if (!form.checkValidity()) {
+                if (typeof form.reportValidity === 'function') form.reportValidity()
+                return false
+            }
+            return true
+        }
+        const required = form.querySelectorAll('[required]')
+        for (let el of required) {
+            if (!el.value || !el.value.trim()) {
+                el.focus()
+                return false
+            }
+        }
+        return true
+    },
+    submitForm: async (form, onSuccess = null) => {
+        if (!form) return null
+        const url = form.getAttribute('action') || window.location.pathname
+        const method = (form.getAttribute('method') || 'POST').toUpperCase()
+        const formData = new FormData(form)
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: formData,
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                if (typeof onSuccess === 'function') {
+                    onSuccess(data)
+                } else {
+                    SIPAN.success(data.message || 'Guardado exitosamente')
+                }
+            } else {
+                SIPAN.error(data.message || 'Error al guardar los datos')
+            }
+            return data
+        } catch (err) {
+            console.error('Error al enviar formulario:', err)
+            SIPAN.error('Error de conexión o respuesta inesperada del servidor')
+            return { success: false, message: err.message }
+        }
+    },
 }
 
 document.addEventListener('DOMContentLoaded', () => {

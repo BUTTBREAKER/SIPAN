@@ -59,6 +59,16 @@ require_once __DIR__ . '/../layouts/header.php';
                         </select>
                     </div>
                 </div>
+
+                <div class="col-md-2">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Pedido <span class="text-danger">*</span></label>
+                        <select x-model="tipo" class="form-control">
+                            <option value="despacho_mayor">Despacho al Mayor</option>
+                            <option value="insumos">Pedido de Insumos</option>
+                        </select>
+                    </div>
+                </div>
                 
                 <div class="col-md-2">
                     <div class="form-group">
@@ -95,21 +105,27 @@ require_once __DIR__ . '/../layouts/header.php';
             </div>
 
             <!-- Panel Informativo: Gasto del Pedido Anterior (Insumos) -->
-            <div x-show="ultimo_pedido" class="alert alert-info border-info d-flex align-items-center mb-4 py-2" style="background-color: #e0f2fe; border-left: 4px solid #0284c7;">
-                <i class="fas fa-history fa-2x text-primary me-3"></i>
+            <div x-show="ultimo_pedido" class="alert alert-info border-info d-flex align-items-center mb-4 py-3" style="background-color: #f0fdf4; border-left: 5px solid #16a34a;">
+                <i class="fas fa-history fa-2x text-success me-3"></i>
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between align-items-center">
                         <strong class="text-dark">Historial del Cliente — Último Pedido (<span x-text="ultimo_pedido?.numero_pedido"></span>)</strong>
-                        <span class="badge bg-primary text-white" x-text="'Total: $' + parseFloat(ultimo_pedido?.total || 0).toFixed(2)"></span>
+                        <span class="badge bg-primary text-white" x-text="'Total Facturado: $' + parseFloat(ultimo_pedido?.total || 0).toFixed(2)"></span>
                     </div>
                     <div class="small text-muted mt-1">
                         Fecha: <span x-text="ultimo_pedido?.fecha_pedido ? ultimo_pedido.fecha_pedido.substring(0, 10) : ''"></span> |
-                        Items: <span x-text="ultimo_pedido?.productos_resumen || 'Detalles'"></span>
+                        Productos elaborados: <strong x-text="ultimo_pedido?.productos_resumen || 'Detalles'"></strong>
                     </div>
-                    <div class="mt-1">
-                        <span class="badge bg-warning text-dark me-2">Gasto en Insumos Pedido Anterior:</span>
-                        <strong class="text-danger h6 mb-0" x-text="'$' + parseFloat(ultimo_pedido?.gasto_insumos || 0).toFixed(2)"></strong>
-                        <small class="text-muted ms-2">(Costo estimado de insumos utilizados en su orden previa)</small>
+                    <div class="mt-2 p-2 rounded bg-white border">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                                <span class="badge bg-warning text-dark me-2"><i class="fas fa-boxes me-1"></i>Insumos invertidos en preparación:</span>
+                                <span class="small text-secondary" x-text="ultimo_pedido?.insumos_resumen_str || ''"></span>
+                            </span>
+                            <span class="ms-2">
+                                Gasto Insumos: <strong class="text-danger h6 mb-0" x-text="'$' + parseFloat(ultimo_pedido?.gasto_insumos || 0).toFixed(2)"></strong>
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -294,6 +310,7 @@ require_once __DIR__ . '/../layouts/header.php';
 function pedidoApp() {
     return {
         id_cliente: '',
+        tipo: 'despacho_mayor',
         id_repartidor: '',
         fecha_entrega: '',
         hora_entrega: '',
@@ -329,7 +346,9 @@ function pedidoApp() {
                         fecha_pedido: data.pedido.fecha_pedido,
                         total: data.pedido.total,
                         gasto_insumos: data.gasto_insumos,
-                        productos_resumen: data.productos_resumen
+                        productos_resumen: data.productos_resumen,
+                        insumos_resumen_str: data.insumos_resumen_str,
+                        insumos_detalle: data.insumos_detalle || []
                     };
                 } else {
                     this.ultimo_pedido = null;
@@ -484,6 +503,7 @@ function pedidoApp() {
             
             const formData = new FormData();
             formData.append('id_cliente', this.id_cliente);
+            formData.append('tipo', this.tipo || 'despacho_mayor');
             if (this.id_repartidor) formData.append('id_repartidor', this.id_repartidor);
             formData.append('fecha_entrega', this.fecha_entrega + (this.hora_entrega ? ' ' + this.hora_entrega : ' 12:00:00'));
             formData.append('total', this.total);

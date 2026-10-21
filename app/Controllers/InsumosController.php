@@ -27,6 +27,12 @@ class InsumosController
 
         $insumos = $this->insumoModel->all($sucursal_id);
 
+        $loteModel = new \App\Models\Lote();
+        $lotes_por_vencer = $loteModel->getPorVencer($sucursal_id, 30);
+        $lotes_insumos = array_filter($lotes_por_vencer, function($l) {
+            return ($l['tipo'] ?? '') === 'insumo';
+        });
+
         require_once __DIR__ . '/../Views/insumos/index.php';
     }
 

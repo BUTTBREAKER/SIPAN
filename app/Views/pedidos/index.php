@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridData = rawData.map(p => [
         p.id,
         p.id, // Display ID
+        p.tipo || 'despacho_mayor',
         p.fecha_pedido,
         p.cliente_nombre || 'Cliente #' + p.id_cliente,
         (p.rep_nombre) ? `${p.rep_nombre} ${p.rep_apellido || ''}`.trim() : 'Sin asignar',
@@ -49,6 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
             { 
                 name: 'Pedido',
                 formatter: (cell) => gridjs.html(`<span class="fw-bold font-monospace">#${String(cell).padStart(6, '0')}</span>`)
+            },
+            {
+                name: 'Tipo',
+                formatter: (cell) => {
+                    if (cell === 'insumos') {
+                        return gridjs.html(`<span class="badge bg-warning text-dark"><i class="fas fa-boxes me-1"></i> Insumos</span>`);
+                    } else {
+                        return gridjs.html(`<span class="badge bg-primary"><i class="fas fa-truck me-1"></i> Al Mayor</span>`);
+                    }
+                }
             },
             { 
                 name: 'Fecha',
