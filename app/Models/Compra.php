@@ -143,16 +143,55 @@ class Compra extends BaseModel
                 $loteModel->registrarBatch($lotesBatch);
             }
 
-            // 4c. Batch update insumos (O(N_unique_items) database round-trips, still better than O(N_items))
-            foreach ($insumosUpdates as $id => $data) {
-                $sql = "UPDATE insumos SET stock_actual = ?, precio_unitario = ? WHERE id = ?";
-                $this->db->execute($sql, [$data['stock_actual'], $data['precio_unitario'], $id]);
+            // 4c. Batch update insumos (Bolt Optimization: 1 query using CASE WHEN instead of N queries)
+            if (!empty($insumosUpdates)) {
+                $ids = array_keys($insumosUpdates);
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+                $casesStock = [];
+                $casesPrecio = [];
+                $paramsStock = [];
+                $paramsPrecio = [];
+
+                foreach ($insumosUpdates as $id => $data) {
+                    $casesStock[] = "WHEN id = ? THEN ?";
+                    $paramsStock[] = $id;
+                    $paramsStock[] = $data['stock_actual'];
+
+                    $casesPrecio[] = "WHEN id = ? THEN ?";
+                    $paramsPrecio[] = $id;
+                    $paramsPrecio[] = $data['precio_unitario'];
+                }
+
+                $sqlInsumos = "UPDATE insumos SET
+                                stock_actual = CASE " . implode(' ', $casesStock) . " ELSE stock_actual END,
+                                precio_unitario = CASE " . implode(' ', $casesPrecio) . " ELSE precio_unitario END
+                               WHERE id IN ($placeholders)";
+
+                $paramsInsumos = array_merge($paramsStock, $paramsPrecio, $ids);
+                $this->db->execute($sqlInsumos, $paramsInsumos);
             }
 
-            // 4d. Batch update productos
-            foreach ($productosUpdates as $id => $stock) {
-                $sql = "UPDATE productos SET stock_actual = ? WHERE id = ?";
-                $this->db->execute($sql, [$stock, $id]);
+            // 4d. Batch update productos (Bolt Optimization: 1 query using CASE WHEN instead of N queries)
+            if (!empty($productosUpdates)) {
+                $ids = array_keys($productosUpdates);
+                $placeholders = implode(',', array_fill(0, count($ids), '?'));
+
+                $casesStock = [];
+                $paramsStock = [];
+
+                foreach ($productosUpdates as $id => $stock) {
+                    $casesStock[] = "WHEN id = ? THEN ?";
+                    $paramsStock[] = $id;
+                    $paramsStock[] = $stock;
+                }
+
+                $sqlProductos = "UPDATE productos SET
+                                  stock_actual = CASE " . implode(' ', $casesStock) . " ELSE stock_actual END
+                                 WHERE id IN ($placeholders)";
+
+                $paramsProductos = array_merge($paramsStock, $ids);
+                $this->db->execute($sqlProductos, $paramsProductos);
             }
 
             $this->db->commit();
