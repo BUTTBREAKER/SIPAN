@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Batched Multi-Column Updates with CASE WHEN]
+**Learning:** Updating stock and prices for multiple records in loops causes $O(N)$ individual `UPDATE` database round-trips. Grouping parameters by column and combining them into single `UPDATE ... SET col1 = CASE ..., col2 = CASE ... WHERE id IN (...)` queries consolidates update execution into $O(1)$ round-trips while preserving calculation precision.
+**Action:** Replace sequential loop `UPDATE` statements for multi-item inventory transactions with batched `CASE WHEN ... END` queries.
