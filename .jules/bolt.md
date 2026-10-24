@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Batch Querying for Order Insumos & Recipes]
+**Learning:** In order details and previous order calculation endpoints, looping through products and issuing individual `find()`, `getByProducto()`, and `getInsumos()` queries causes $1 + 3N$ database round-trips. Pre-fetching product metadata via `WHERE IN (...)` and fetching recipe ingredients using a single `JOIN` query (`getInsumosPorProductos`) reduces database calls to $O(1)$ and speeds up AJAX response time.
+**Action:** When calculating recipe costs across multiple items in an order or production batch, always use batch queries (`WHERE IN`) to fetch recipes and insumos in bulk before iterating over items.
