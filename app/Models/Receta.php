@@ -209,4 +209,46 @@ class Receta extends BaseModel
                 WHERE r.id_producto = ?";
         return $this->db->fetchAll($sql, [$producto_id]);
     }
+
+    /**
+     * Obtiene las recetas y sus insumos para una lista de productos en una sola consulta.
+     * Optimización Bolt: Elimina el problema N+1 en cálculos de recetas por lotes.
+     *
+     * @param array $productIds List of product IDs
+     * @return array Map indexed by product ID containing 'receta' array and 'insumos' array
+     */
+    public function getInsumosPorProductos(array $productIds): array
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $sql = "SELECT r.id_producto, r.id as receta_id, r.rendimiento,
+                       ri.cantidad, ri.unidad_medida as unidad_insumo,
+                       i.nombre, i.unidad_medida, i.precio_unitario, i.precio_unitario as costo_unitario
+                FROM recetas r
+                INNER JOIN receta_insumos ri ON r.id = ri.id_receta
+                INNER JOIN insumos i ON ri.id_insumo = i.id
+                WHERE r.id_producto IN ($placeholders)";
+
+        $rows = $this->db->fetchAll($sql, array_values($productIds));
+
+        $result = [];
+        foreach ($rows as $row) {
+            $pId = (int)$row['id_producto'];
+            if (!isset($result[$pId])) {
+                $result[$pId] = [
+                    'receta' => [
+                        'id' => $row['receta_id'],
+                        'rendimiento' => $row['rendimiento']
+                    ],
+                    'insumos' => []
+                ];
+            }
+            $result[$pId]['insumos'][] = $row;
+        }
+
+        return $result;
+    }
 }

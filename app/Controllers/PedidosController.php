@@ -125,46 +125,51 @@ class PedidosController implements LoggerAwareInterface
         $detallesInsumos = [];
         $recetaModel = new \App\Models\Receta();
 
-        foreach ($productos as $prod) {
-            $pId = (int)$prod['id_producto'];
-            $pQty = floatval($prod['cantidad']);
-            $pInfo = $this->productoModel->find($pId);
+        // Optimización Bolt: Batch fetch de recetas, insumos y datos de producto para evitar N+1 queries (O(N) -> O(1))
+        $productIds = array_unique(array_filter(array_map('intval', array_column($productos, 'id_producto'))));
 
-            // Intentar calcular directamente desde la receta del producto
-            $receta = $recetaModel->getByProducto($pId);
-            $costoInsumosProducto = 0;
+        if (!empty($productIds)) {
+            $recetasMap = $recetaModel->getInsumosPorProductos($productIds);
+            $productosMap = $this->productoModel->getByIds($productIds);
 
-            if ($receta) {
-                $insumosReceta = $recetaModel->getInsumos($receta['id']);
-                $rendimiento = floatval($receta['rendimiento'] ?? 1) ?: 1;
-                $costoBatch = 0;
+            foreach ($productos as $prod) {
+                $pId = (int)$prod['id_producto'];
+                $pQty = floatval($prod['cantidad']);
 
-                foreach ($insumosReceta as $ir) {
-                    $cant = floatval($ir['cantidad']);
-                    $costoUnitInsumo = floatval($ir['precio_unitario'] ?? $ir['costo_unitario'] ?? 0);
-                    $sub = $cant * $costoUnitInsumo;
-                    $costoBatch += $sub;
+                if (isset($recetasMap[$pId])) {
+                    $recetaInfo = $recetasMap[$pId];
+                    $rendimiento = floatval($recetaInfo['receta']['rendimiento'] ?? 1) ?: 1;
+                    $insumosReceta = $recetaInfo['insumos'];
+                    $costoBatch = 0;
 
-                    $nomInsumo = $ir['nombre'];
-                    if (!isset($detallesInsumos[$nomInsumo])) {
-                        $detallesInsumos[$nomInsumo] = [
-                            'nombre' => $nomInsumo,
-                            'cantidad' => 0,
-                            'unidad' => $ir['unidad_insumo'] ?? ($ir['unidad_medida'] ?? 'kg'),
-                            'costo' => 0
-                        ];
+                    foreach ($insumosReceta as $ir) {
+                        $cant = floatval($ir['cantidad']);
+                        $costoUnitInsumo = floatval($ir['precio_unitario'] ?? $ir['costo_unitario'] ?? 0);
+                        $sub = $cant * $costoUnitInsumo;
+                        $costoBatch += $sub;
+
+                        $nomInsumo = $ir['nombre'];
+                        if (!isset($detallesInsumos[$nomInsumo])) {
+                            $detallesInsumos[$nomInsumo] = [
+                                'nombre' => $nomInsumo,
+                                'cantidad' => 0,
+                                'unidad' => $ir['unidad_insumo'] ?? ($ir['unidad_medida'] ?? 'kg'),
+                                'costo' => 0
+                            ];
+                        }
+                        $cantInvertida = ($cant / $rendimiento) * $pQty;
+                        $detallesInsumos[$nomInsumo]['cantidad'] += $cantInvertida;
+                        $detallesInsumos[$nomInsumo]['costo'] += $cantInvertida * $costoUnitInsumo;
                     }
-                    $cantInvertida = ($cant / $rendimiento) * $pQty;
-                    $detallesInsumos[$nomInsumo]['cantidad'] += $cantInvertida;
-                    $detallesInsumos[$nomInsumo]['costo'] += $cantInvertida * $costoUnitInsumo;
+                    $costoInsumosProducto = ($costoBatch / $rendimiento) * $pQty;
+                } else {
+                    // Fallback a precio_costo del producto si no tiene receta cargada
+                    $pInfo = $productosMap[$pId] ?? [];
+                    $costoInsumosProducto = floatval($pInfo['precio_costo'] ?? 0) * $pQty;
                 }
-                $costoInsumosProducto = ($costoBatch / $rendimiento) * $pQty;
-            } else {
-                // Fallback a precio_costo del producto si no tiene receta cargada
-                $costoInsumosProducto = floatval($pInfo['precio_costo'] ?? 0) * $pQty;
-            }
 
-            $gasto_insumos += $costoInsumosProducto;
+                $gasto_insumos += $costoInsumosProducto;
+            }
         }
 
         // Formatear resumen de insumos para vista (ej: "Harina: 2.5 kg, Azúcar: 0.5 kg")

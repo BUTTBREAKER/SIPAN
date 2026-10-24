@@ -110,4 +110,24 @@ class Producto extends BaseModel
         
         return $this->db->fetchAll($sql, [$fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59', $sucursal_id]);
     }
+
+    /**
+     * Obtiene múltiples productos por sus IDs en una sola consulta.
+     * Optimización Bolt: Reduce N consultas a 1 consulta por lotes.
+     *
+     * @param array $productIds Array de IDs de producto
+     * @return array Map indizado por ID del producto
+     */
+    public function getByIds(array $productIds): array
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $sql = "SELECT * FROM {$this->table} WHERE id IN ($placeholders)";
+        $rows = $this->db->fetchAll($sql, array_values($productIds));
+
+        return array_column($rows, null, 'id');
+    }
 }
