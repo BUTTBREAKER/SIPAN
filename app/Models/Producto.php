@@ -65,6 +65,21 @@ class Producto extends BaseModel
         return $this->db->execute($sql, [$cantidad, $id]);
     }
 
+    /**
+     * Obtiene múltiples productos por sus IDs en una sola consulta.
+     * Optimización Bolt: Evita N+1 queries al consultar productos individualmente.
+     */
+    public function getByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "SELECT * FROM {$this->table} WHERE id IN ($placeholders)";
+        return $this->db->fetchAll($sql, array_values($ids));
+    }
+
     public function getStockActual($id)
     {
         $sql = "SELECT stock_actual FROM {$this->table} WHERE id = ?";

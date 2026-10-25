@@ -123,19 +123,48 @@ class PedidosController implements LoggerAwareInterface
         $productos = $this->pedidoModel->getProductos($ultimo['id']);
         $gasto_insumos = 0;
         $detallesInsumos = [];
-        $recetaModel = new \App\Models\Receta();
+
+        // Optimización Bolt: Batch fetch de productos, recetas e insumos de recetas para eliminar N+1 queries.
+        $productIds = array_unique(array_filter(array_map(fn($p) => (int)($p['id_producto'] ?? 0), $productos)));
+
+        $productosMap = [];
+        $recetasMap = [];
+        $insumosRecetasMap = [];
+
+        if (!empty($productIds)) {
+            $prodsDb = $this->productoModel->getByIds($productIds);
+            foreach ($prodsDb as $p) {
+                $productosMap[$p['id']] = $p;
+            }
+
+            $recetaModel = new \App\Models\Receta();
+            $recetasDb = $recetaModel->getByProductoIds($productIds);
+            $recetaIds = [];
+
+            foreach ($recetasDb as $r) {
+                $recetasMap[$r['id_producto']] = $r;
+                $recetaIds[] = $r['id'];
+            }
+
+            if (!empty($recetaIds)) {
+                $insumosDb = $recetaModel->getInsumosPorRecetas($recetaIds);
+                foreach ($insumosDb as $ir) {
+                    $insumosRecetasMap[$ir['id_receta']][] = $ir;
+                }
+            }
+        }
 
         foreach ($productos as $prod) {
             $pId = (int)$prod['id_producto'];
             $pQty = floatval($prod['cantidad']);
-            $pInfo = $this->productoModel->find($pId);
+            $pInfo = $productosMap[$pId] ?? null;
 
             // Intentar calcular directamente desde la receta del producto
-            $receta = $recetaModel->getByProducto($pId);
+            $receta = $recetasMap[$pId] ?? null;
             $costoInsumosProducto = 0;
 
             if ($receta) {
-                $insumosReceta = $recetaModel->getInsumos($receta['id']);
+                $insumosReceta = $insumosRecetasMap[$receta['id']] ?? [];
                 $rendimiento = floatval($receta['rendimiento'] ?? 1) ?: 1;
                 $costoBatch = 0;
 
