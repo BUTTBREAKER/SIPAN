@@ -209,4 +209,53 @@ class Receta extends BaseModel
                 WHERE r.id_producto = ?";
         return $this->db->fetchAll($sql, [$producto_id]);
     }
+
+    /**
+     * Obtiene recetas agrupadas por id_producto en una sola consulta.
+     * Bolt Optimization: Batch fetching para evitar N+1 queries.
+     */
+    public function getByProductoIds(array $productoIds): array
+    {
+        if (empty($productoIds)) {
+            return [];
+        }
+
+        $productoIds = array_values(array_unique(array_map('intval', $productoIds)));
+        $placeholders = implode(',', array_fill(0, count($productoIds), '?'));
+        $sql = "SELECT * FROM {$this->table} WHERE id_producto IN ({$placeholders})";
+        $rows = $this->db->fetchAll($sql, $productoIds);
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['id_producto']] = $row;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Obtiene los insumos para un grupo de recetas en una sola consulta.
+     * Bolt Optimization: Batch fetching para evitar N+1 queries.
+     */
+    public function getInsumosPorRecetaIds(array $recetaIds): array
+    {
+        if (empty($recetaIds)) {
+            return [];
+        }
+
+        $recetaIds = array_values(array_unique(array_map('intval', $recetaIds)));
+        $placeholders = implode(',', array_fill(0, count($recetaIds), '?'));
+        $sql = "SELECT ri.*, i.nombre, i.unidad_medida as unidad_insumo, i.stock_actual, i.precio_unitario, i.precio_unitario as costo_unitario
+                FROM receta_insumos ri
+                INNER JOIN insumos i ON ri.id_insumo = i.id
+                WHERE ri.id_receta IN ({$placeholders})";
+        $rows = $this->db->fetchAll($sql, $recetaIds);
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['id_receta']][] = $row;
+        }
+
+        return $result;
+    }
 }
