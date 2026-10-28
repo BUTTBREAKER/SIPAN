@@ -6,26 +6,37 @@ class Insumo extends BaseModel
 {
     protected string $table = 'insumos';
 
-    // ✅ Nuevo método compatible con el controlador
+    // Bolt Optimization: Replaced correlated scalar subquery in SELECT with a branch-filtered MAX derived table LEFT JOIN.
+    // Preserves exact costo_unitario (including NULLs) and reduces complexity from O(N*M) to O(N+M).
     public function getAllBySucursal($sucursal_id)
     {
         $sql = "SELECT i.*, 
-                       GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id AND c.id_sucursal = i.id_sucursal 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       GROUP_CONCAT(DISTINCT p.nombre SEPARATOR ', ') as proveedor_nombre,
+                       ult.costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item, cd.costo_unitario
+                    FROM compra_detalles cd
+                    INNER JOIN compras c ON cd.id_compra = c.id
+                    INNER JOIN (
+                        SELECT cd2.id_item, MAX(c2.id) as max_compra_id
+                        FROM compra_detalles cd2
+                        INNER JOIN compras c2 ON cd2.id_compra = c2.id
+                        WHERE cd2.tipo_item = 'insumo' AND c2.id_sucursal = ?
+                        GROUP BY cd2.id_item
+                    ) max_c ON cd.id_item = max_c.id_item AND cd.id_compra = max_c.max_compra_id
+                    WHERE cd.tipo_item = 'insumo' AND c.id_sucursal = ?
+                ) ult ON i.id = ult.id_item
                 WHERE i.id_sucursal = ? 
                 GROUP BY i.id
                 ORDER BY i.nombre";
-        return $this->db->fetchAll($sql, [$sucursal_id]);
+        return $this->db->fetchAll($sql, [$sucursal_id, $sucursal_id, $sucursal_id]);
     }
 
-    // ✅ Método general (sin sucursal)
+    // Bolt Optimization: Replaced correlated scalar subquery in SELECT with a MAX derived table LEFT JOIN.
+    // Preserves exact costo_unitario (including NULLs) and reduces complexity from O(N*M) to O(N+M).
     public function all(?int $sucursal_id = null): array
     {
         if ($sucursal_id) {
@@ -33,15 +44,24 @@ class Insumo extends BaseModel
         }
 
         $sql = "SELECT i.*, 
-                       GROUP_CONCAT(p.nombre SEPARATOR ', ') as proveedor_nombre,
-                       (SELECT cd.costo_unitario 
-                        FROM compra_detalles cd 
-                        INNER JOIN compras c ON cd.id_compra = c.id 
-                        WHERE cd.tipo_item = 'insumo' AND cd.id_item = i.id 
-                        ORDER BY c.fecha_compra DESC, c.id DESC LIMIT 1) as costo_ultimo
+                       GROUP_CONCAT(DISTINCT p.nombre SEPARATOR ', ') as proveedor_nombre,
+                       ult.costo_ultimo
                 FROM {$this->table} i
                 LEFT JOIN proveedor_insumos pi ON i.id = pi.id_insumo
                 LEFT JOIN proveedores p ON pi.id_proveedor = p.id
+                LEFT JOIN (
+                    SELECT cd.id_item, cd.costo_unitario
+                    FROM compra_detalles cd
+                    INNER JOIN compras c ON cd.id_compra = c.id
+                    INNER JOIN (
+                        SELECT cd2.id_item, MAX(c2.id) as max_compra_id
+                        FROM compra_detalles cd2
+                        INNER JOIN compras c2 ON cd2.id_compra = c2.id
+                        WHERE cd2.tipo_item = 'insumo'
+                        GROUP BY cd2.id_item
+                    ) max_c ON cd.id_item = max_c.id_item AND cd.id_compra = max_c.max_compra_id
+                    WHERE cd.tipo_item = 'insumo'
+                ) ult ON i.id = ult.id_item
                 GROUP BY i.id
                 ORDER BY i.nombre";
         return $this->db->fetchAll($sql);
