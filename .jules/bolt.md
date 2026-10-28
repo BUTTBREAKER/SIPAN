@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Branch Isolation in Derived Table Joins]
+**Learning:** When replacing correlated scalar subqueries in `SELECT` list with derived table `JOIN`s, any scoped conditions (such as `id_sucursal`) must be included inside the derived table itself (e.g., `WHERE c2.id_sucursal = ?`). Otherwise, the database engine will scan and aggregate global data across all branches before filtering in the outer join, causing unexpected performance degradation on multi-branch installations.
+**Action:** Always scope derived subqueries with branch and status filters internally rather than relying on outer `WHERE` clauses.
