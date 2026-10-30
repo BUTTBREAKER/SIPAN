@@ -37,3 +37,7 @@
 ## 2025-01-24 - [Unused Controller Fetch and MVC Compliance]
 **Learning:** Fetching a full data catalog (e.g., `Producto::all()`) in a controller action when the view performs its own AJAX-based searches is a significant performance drain. Additionally, instantiating models and fetching data directly within views violates MVC patterns and hinders testability.
 **Action:** Audit controller-view pairs to ensure all data fetched in the controller is consumed by the view. If the view performs asynchronous searches for the same data, remove the redundant initial fetch. Always refactor in-view model logic into the appropriate controller action.
+
+## 2025-01-24 - [Batch Pre-Fetching for Multi-Level Related Entities]
+**Learning:** When calculating costs or summaries across hierarchical structures (e.g. order -> products -> recipes -> recipe ingredients), looping over items and calling `find()` or `getByProducto()` causes nested N+1 query cascades. Pre-fetching all products, recipes, and recipe ingredients using `WHERE IN` before the loop reduces total queries from $3 \times N$ to exactly 3.
+**Action:** Batch pre-fetch all multi-level related entities into indexed hash maps (`getByIds`, `getByProductoIds`, `getInsumosPorRecetaIds`) before nested processing loops.

@@ -61,7 +61,8 @@ $data ??= [];
                 </div>
             </div>
             <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        </div>    <?php else : ?>
+        </div>
+    <?php else : ?>
         <div class="stat-card info span-2">
             <div class="stat-content">
                 <div class="stat-label">Stock Bajo: Productos</div>
@@ -80,10 +81,10 @@ $data ??= [];
     <?php endif; ?>
 
     <!-- 2. Alertas Críticas (Full Width if any) -->
-    <?php if (!empty($data['lotes_por_vencer'])) : 
+    <?php if (!empty($data['lotes_por_vencer'])) :
         $prods_venc = array_filter($data['lotes_por_vencer'], fn($l) => ($l['tipo'] ?? '') === 'producto');
         $ins_venc = array_filter($data['lotes_por_vencer'], fn($l) => ($l['tipo'] ?? '') === 'insumo');
-    ?>
+        ?>
     <div class="bento-widget span-4" style="background: #FFFBEB; border: 1px solid #F59E0B; border-left: 5px solid #D97706;">
         <div class="d-flex align-items-center">
             <i class="fas fa-exclamation-triangle fa-2x text-warning me-3"></i>

@@ -103,7 +103,7 @@ class RecetasController
             ]);
 
             echo json_encode([
-                'success' => true, 
+                'success' => true,
                 'message' => 'Receta guardada correctamente',
                 'costo_produccion' => number_format($costo_unitario_produccion, 2, '.', ''),
                 'id_producto' => $id_producto

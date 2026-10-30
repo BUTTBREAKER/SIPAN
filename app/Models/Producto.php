@@ -107,7 +107,31 @@ class Producto extends BaseModel
                 WHERE p.id_sucursal = ?
                 GROUP BY p.id
                 ORDER BY total_vendido DESC, p.nombre ASC";
-        
+
         return $this->db->fetchAll($sql, [$fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59', $sucursal_id]);
+    }
+
+    /**
+     * Obtiene múltiples productos por sus IDs en una sola consulta (Optimización Bolt).
+     *
+     * @param array $ids
+     * @return array Mapa indexado por ID del producto
+     */
+    public function getByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "SELECT * FROM {$this->table} WHERE id IN ($placeholders)";
+        $rows = $this->db->fetchAll($sql, array_values($ids));
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row['id']] = $row;
+        }
+
+        return $map;
     }
 }

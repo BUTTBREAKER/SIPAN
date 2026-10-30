@@ -114,14 +114,14 @@ $total_deuda      = array_sum(array_column($clientes, 'total_deuda'));
                 </thead>
                 <tbody>
                     <?php foreach ($clientes as $cli) : ?>
-                    <?php
+                        <?php
                         $tiene_deuda = ($cli['total_deuda'] ?? 0) > 0;
                         $activo = ($cli['monto_periodo'] + $cli['monto_pedidos']) > 0;
-                    ?>
+                        ?>
                     <tr class="<?= $tiene_deuda ? 'table-warning' : '' ?>">
                         <td>
                             <strong><?= htmlspecialchars(trim($cli['nombre'] . ' ' . ($cli['apellido'] ?? ''))) ?></strong>
-                            <?php if (!$activo): ?>
+                            <?php if (!$activo) : ?>
                                 <br><small class="text-muted">Sin actividad</small>
                             <?php endif; ?>
                         </td>
@@ -131,9 +131,9 @@ $total_deuda      = array_sum(array_column($clientes, 'total_deuda'));
                         <td class="text-center"><?= $cli['total_pedidos'] ?></td>
                         <td>$ <?= number_format($cli['monto_pedidos'], 2) ?></td>
                         <td>
-                            <?php if ($tiene_deuda): ?>
+                            <?php if ($tiene_deuda) : ?>
                                 <strong class="text-danger">$ <?= number_format($cli['total_deuda'], 2) ?></strong>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <span class="text-success"><i class="fas fa-check-circle"></i> Al día</span>
                             <?php endif; ?>
                         </td>

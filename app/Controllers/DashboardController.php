@@ -135,10 +135,10 @@ class DashboardController
         } elseif ($fecha_inicio && $fecha_fin) {
             // Reutilizar el método del modelo pero adaptándolo al rango
             $ventas = $this->ventaModel->getByDateRange($sucursal_id, $fecha_inicio, $fecha_fin);
-            
+
             // Agrupar por fecha
             $agrupado = [];
-            
+
             // Crear el rango de fechas para que no queden huecos
             $current = strtotime($fecha_inicio);
             $end = strtotime($fecha_fin);

@@ -145,12 +145,12 @@ $badges = [
                 <table class="table mb-0">
                     <thead><tr><th>Estado</th><th>Cantidad</th><th>Monto</th><th>Deuda</th></tr></thead>
                     <tbody>
-                        <?php foreach ($por_estado as $est => $info): ?>
+                        <?php foreach ($por_estado as $est => $info) : ?>
                         <tr>
                             <td><span class="badge bg-<?= $badges[$est] ?? 'secondary' ?>"><?= ucfirst(str_replace('_', ' ', $est)) ?></span></td>
                             <td><?= $info['total'] ?></td>
                             <td>$ <?= number_format($info['monto'], 2) ?></td>
-                            <td><?= $info['deuda'] > 0 ? '<strong class="text-danger">$ '.number_format($info['deuda'], 2).'</strong>' : '-' ?></td>
+                            <td><?= $info['deuda'] > 0 ? '<strong class="text-danger">$ ' . number_format($info['deuda'], 2) . '</strong>' : '-' ?></td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -160,7 +160,7 @@ $badges = [
     </div>
 
     <!-- Tabla repartidores -->
-    <?php if (!empty($repartidores)): ?>
+    <?php if (!empty($repartidores)) : ?>
     <div class="col-md-5">
         <div class="card h-100">
             <div class="card-header">
@@ -170,7 +170,7 @@ $badges = [
                 <table class="table mb-0">
                     <thead><tr><th>Repartidor</th><th>Pedidos</th><th>Entregados</th></tr></thead>
                     <tbody>
-                        <?php foreach ($repartidores as $rep): ?>
+                        <?php foreach ($repartidores as $rep) : ?>
                         <tr>
                             <td><?= htmlspecialchars($rep['repartidor']) ?></td>
                             <td><?= $rep['total_pedidos'] ?></td>
@@ -207,16 +207,16 @@ $badges = [
                 </thead>
                 <tbody>
                     <?php foreach ($pedidos as $p) : ?>
-                    <?php $con_deuda = ($p['monto_deuda'] ?? 0) > 0; ?>
+                        <?php $con_deuda = ($p['monto_deuda'] ?? 0) > 0; ?>
                     <tr class="<?= $con_deuda ? 'table-warning' : '' ?>">
                         <td><strong><?= htmlspecialchars($p['numero_pedido']) ?></strong></td>
                         <td><?= date('d/m/Y H:i', strtotime($p['fecha_pedido'])) ?></td>
                         <td><?= htmlspecialchars($p['cliente_nombre'] . ' ' . $p['cliente_apellido']) ?></td>
                         <td>$ <?= number_format($p['total'], 2) ?></td>
                         <td>
-                            <?php if ($con_deuda): ?>
+                            <?php if ($con_deuda) : ?>
                                 <strong class="text-danger">$ <?= number_format($p['monto_deuda'], 2) ?></strong>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <span class="text-success">-</span>
                             <?php endif; ?>
                         </td>
@@ -227,9 +227,9 @@ $badges = [
                         </td>
                         <td><?= ucfirst($p['estado_pago']) ?></td>
                         <td>
-                            <?php if (!empty($p['rep_nombre'])): ?>
+                            <?php if (!empty($p['rep_nombre'])) : ?>
                                 <small><?= htmlspecialchars($p['rep_nombre'] . ' ' . $p['rep_apellido']) ?></small>
-                            <?php else: ?>
+                            <?php else : ?>
                                 <small class="text-muted">-</small>
                             <?php endif; ?>
                         </td>

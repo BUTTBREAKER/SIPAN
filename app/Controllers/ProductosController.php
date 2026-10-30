@@ -28,7 +28,7 @@ class ProductosController
 
         $loteModel = new \App\Models\Lote();
         $lotes_por_vencer = $loteModel->getPorVencer($sucursal_id, 30);
-        $lotes_productos = array_filter($lotes_por_vencer, function($l) {
+        $lotes_productos = array_filter($lotes_por_vencer, function ($l) {
             return ($l['tipo'] ?? '') === 'producto';
         });
 

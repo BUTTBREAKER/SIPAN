@@ -209,4 +209,55 @@ class Receta extends BaseModel
                 WHERE r.id_producto = ?";
         return $this->db->fetchAll($sql, [$producto_id]);
     }
+
+    /**
+     * Obtiene las recetas de múltiples productos en una sola consulta (Optimización Bolt).
+     *
+     * @param array $productIds
+     * @return array Mapa de recetas indexado por id_producto
+     */
+    public function getByProductoIds(array $productIds): array
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $sql = "SELECT * FROM {$this->table} WHERE id_producto IN ($placeholders)";
+        $rows = $this->db->fetchAll($sql, array_values($productIds));
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[$row['id_producto']] = $row;
+        }
+
+        return $map;
+    }
+
+    /**
+     * Obtiene los insumos de múltiples recetas en una sola consulta (Optimización Bolt).
+     *
+     * @param array $recetaIds
+     * @return array Mapa de listas de insumos agrupado por id_receta
+     */
+    public function getInsumosPorRecetaIds(array $recetaIds): array
+    {
+        if (empty($recetaIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($recetaIds), '?'));
+        $sql = "SELECT ri.*, i.nombre, i.unidad_medida as unidad_insumo, i.stock_actual, i.precio_unitario, i.precio_unitario as costo_unitario
+                FROM receta_insumos ri
+                INNER JOIN insumos i ON ri.id_insumo = i.id
+                WHERE ri.id_receta IN ($placeholders)";
+        $rows = $this->db->fetchAll($sql, array_values($recetaIds));
+
+        $grouped = [];
+        foreach ($rows as $row) {
+            $grouped[$row['id_receta']][] = $row;
+        }
+
+        return $grouped;
+    }
 }

@@ -125,17 +125,27 @@ class PedidosController implements LoggerAwareInterface
         $detallesInsumos = [];
         $recetaModel = new \App\Models\Receta();
 
+        // Bolt Optimization: Batch fetch product details, recipes, and recipe ingredients
+        // to eliminate N+1 database round-trips.
+        $productIds = array_values(array_unique(array_filter(array_column($productos, 'id_producto'))));
+
+        $productosMap = !empty($productIds) ? $this->productoModel->getByIds($productIds) : [];
+        $recetasMap = !empty($productIds) ? $recetaModel->getByProductoIds($productIds) : [];
+
+        $recetaIds = array_values(array_unique(array_column($recetasMap, 'id')));
+        $insumosRecetasMap = !empty($recetaIds) ? $recetaModel->getInsumosPorRecetaIds($recetaIds) : [];
+
         foreach ($productos as $prod) {
             $pId = (int)$prod['id_producto'];
             $pQty = floatval($prod['cantidad']);
-            $pInfo = $this->productoModel->find($pId);
+            $pInfo = $productosMap[$pId] ?? null;
 
             // Intentar calcular directamente desde la receta del producto
-            $receta = $recetaModel->getByProducto($pId);
+            $receta = $recetasMap[$pId] ?? null;
             $costoInsumosProducto = 0;
 
             if ($receta) {
-                $insumosReceta = $recetaModel->getInsumos($receta['id']);
+                $insumosReceta = $insumosRecetasMap[$receta['id']] ?? [];
                 $rendimiento = floatval($receta['rendimiento'] ?? 1) ?: 1;
                 $costoBatch = 0;
 
@@ -173,7 +183,7 @@ class PedidosController implements LoggerAwareInterface
             $insumosResumen[] = $d['nombre'] . ': ' . round($d['cantidad'], 2) . ' ' . $d['unidad'];
         }
 
-        $resumenItems = array_map(function($p) {
+        $resumenItems = array_map(function ($p) {
             return $p['producto_nombre'] . ' (' . (int)$p['cantidad'] . ')';
         }, $productos);
 
