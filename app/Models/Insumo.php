@@ -125,7 +125,7 @@ class Insumo extends BaseModel
                 WHERE i.id_sucursal = ?
                 GROUP BY i.id
                 ORDER BY cantidad_usada DESC, i.nombre ASC";
-        
+
         return $this->db->fetchAll($sql, [$fecha_inicio . ' 00:00:00', $fecha_fin . ' 23:59:59', $sucursal_id]);
     }
 }

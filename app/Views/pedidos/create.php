@@ -53,7 +53,9 @@ require_once __DIR__ . '/../layouts/header.php';
                                 ?>
                             <option value="<?= $cliente['id'] ?>" data-cedula="<?= htmlspecialchars($cliente['documento_numero'] ?? '') ?>">
                                 <?= htmlspecialchars($cliente['nombre'] . ' ' . $cliente['apellido']) ?>
-                                <?php if (!empty($cliente['documento_numero'])) : ?>(<?= $cliente['documento_numero'] ?>)<?php endif; ?>
+                                <?php if (!empty($cliente['documento_numero'])) :
+                                    ?>(<?= $cliente['documento_numero'] ?>)<?php
+                                endif; ?>
                             </option>
                             <?php endforeach; ?>
                         </select>

@@ -30,7 +30,7 @@ $userRol = $_SESSION['user_rol'] ?? '';
             <p class="mb-0 text-muted small">
                 Se detectaron <strong><?= count($lotes_productos) ?></strong> lote(s) de productos próximos a su tiempo límite de venta en los próximos 30 días:
                 <?php
-                $nombres = array_map(function($l) {
+                $nombres = array_map(function ($l) {
                     $dias = $l['dias_restantes'] ?? ceil((strtotime($l['fecha_vencimiento']) - time()) / 86400);
                     return htmlspecialchars($l['nombre_item'] ?? 'Lote #' . $l['codigo_lote']) . " (" . ($dias <= 0 ? 'Vencido' : $dias . 'd rest.') . ")";
                 }, array_slice($lotes_productos, 0, 4));
